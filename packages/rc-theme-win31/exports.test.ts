@@ -27,6 +27,7 @@ const componentEntries = [
   'modes',
   'navigation-bar',
   'navigation-rail',
+  'pagination',
   'popover',
   'progress',
   'range-slider',

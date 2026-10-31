@@ -348,6 +348,18 @@
         "default": "./dist/rc-page-turner/define.js"
       }
     },
+    "./rc-pagination": {
+      "import": {
+        "types": "./dist/types/rc-pagination/index.d.ts",
+        "default": "./dist/rc-pagination/index.js"
+      }
+    },
+    "./rc-pagination/define": {
+      "import": {
+        "types": "./dist/types/rc-pagination/define.d.ts",
+        "default": "./dist/rc-pagination/define.js"
+      }
+    },
     "./rc-popover": {
       "import": {
         "types": "./dist/types/rc-popover/index.d.ts",
@@ -589,6 +601,7 @@
     "@rcarls/rc-navigation-bar": "workspace:*",
     "@rcarls/rc-navigation-rail": "workspace:*",
     "@rcarls/rc-page-turner": "workspace:*",
+    "@rcarls/rc-pagination": "workspace:*",
     "@rcarls/rc-popover": "workspace:*",
     "@rcarls/rc-progress": "workspace:*",
     "@rcarls/rc-range-slider": "workspace:*",

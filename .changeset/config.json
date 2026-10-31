@@ -31,6 +31,7 @@
       "@rcarls/rc-navigation-rail",
       "@rcarls/rc-popover",
       "@rcarls/rc-page-turner",
+      "@rcarls/rc-pagination",
       "@rcarls/rc-progress",
       "@rcarls/rc-react",
       "@rcarls/rc-range-slider",

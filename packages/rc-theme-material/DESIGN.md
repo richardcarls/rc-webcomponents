@@ -858,6 +858,12 @@ var(--rc-app-bar-block-size))`; both values are published on the bar's
 - **Floating layer.** The FAB and other floating controls clear whatever is
   docked at the bottom: the navigation bar, and a persistent sheet's peek by
   16px plus the safe-area inset.
+- **Pagination.** Prefer infinite scroll or "Load more" for feeds; use
+  `rc-pagination` for bounded result sets where position matters, such as
+  tables and search results. The theme draws 40dp page items with a 48dp
+  target, the current page on `secondary-container`, and icon-button steps
+  whose chevrons mirror in RTL. After a client-side page change, move focus to
+  the start of the new results.
 - **Breadcrumbs.** Material 3 has no breadcrumb, so use `rc-breadcrumbs` only
   where the hierarchy is deeper than the navigation suite shows, such as
   settings or file trees, and only on medium and wider windows. On compact

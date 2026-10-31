@@ -42,6 +42,7 @@
 @import './components/disclosure.css';
 @import './components/accordion.css';
 @import './components/breadcrumbs.css';
+@import './components/pagination.css';
 @import './components/virtual-canvas.css';
 @import './components/virtual-scroller.css';
 @import './components/modes.css';

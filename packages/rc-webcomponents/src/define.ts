@@ -23,6 +23,7 @@ import '@rcarls/rc-menubar/define';
 import '@rcarls/rc-navigation-bar/define';
 import '@rcarls/rc-navigation-rail/define';
 import '@rcarls/rc-page-turner/define';
+import '@rcarls/rc-pagination/define';
 import '@rcarls/rc-popover/define';
 import '@rcarls/rc-progress/define';
 import '@rcarls/rc-range-slider/define';

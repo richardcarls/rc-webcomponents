@@ -175,6 +175,12 @@
         "default": "./dist/components/rc-page-turner.js"
       }
     },
+    "./rc-pagination": {
+      "import": {
+        "types": "./dist/types/components/rc-pagination.d.ts",
+        "default": "./dist/components/rc-pagination.js"
+      }
+    },
     "./rc-popover": {
       "import": {
         "types": "./dist/types/components/rc-popover.d.ts",
