@@ -19,6 +19,7 @@ export const aggregateSideEffects = [
   './dist/rc-webcomponents-define.js',
   './dist/*/define.js',
   './themes/*.css',
+  './dist/pre-upgrade.css',
 ];
 
 /** Export conditions mirror the per-package `.` and `./define` shape. */
