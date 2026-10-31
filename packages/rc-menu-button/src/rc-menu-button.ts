@@ -11,6 +11,7 @@ import {
   layoutOrientation,
   PopoverController,
   resolveFlow,
+  defineLightDomBaseStyles,
 } from '@rcarls/rc-common';
 import type { RCMenu } from '@rcarls/rc-menu';
 
@@ -55,6 +56,8 @@ const LIGHT_DOM_CSS = cssText`
   }
 }
 `;
+
+const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-menu-button', LIGHT_DOM_CSS);
 
 /** Detail payload for the `rc-menu-button-toggle` event. */
 export interface RCMenuButtonToggleEvent {
@@ -146,25 +149,8 @@ export class RCMenuButton extends LitElement {
     delegatesFocus: true,
   };
 
-  protected static readonly _styledRoots = new Set<Document | ShadowRoot>();
-
   protected static _ensureBaseStyles(root: Document | ShadowRoot): void {
-    if (RCMenuButton._styledRoots.has(root)) {
-      return;
-    }
-
-    RCMenuButton._styledRoots.add(root);
-
-    const style = document.createElement('style');
-
-    style.setAttribute('data-rc-light-dom-base', 'rc-menu-button');
-    style.textContent = LIGHT_DOM_CSS;
-
-    if (root instanceof Document) {
-      root.head.append(style);
-    } else {
-      root.append(style);
-    }
+    ensureLightDomBaseStyles(root);
   }
 
   private _defaultOpen = false;

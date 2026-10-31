@@ -2,7 +2,13 @@ import { LitElement, html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { arrowKeys, cssText, renderedOrientation, resolveFlow } from '@rcarls/rc-common';
+import {
+  arrowKeys,
+  cssText,
+  renderedOrientation,
+  resolveFlow,
+  defineLightDomBaseStyles,
+} from '@rcarls/rc-common';
 
 import segmentedButtonStyles from './rc-segmented-button.styles.js';
 
@@ -193,6 +199,8 @@ const LIGHT_DOM_CSS = cssText`
 }
 `;
 
+const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-segmented-button', LIGHT_DOM_CSS);
+
 /** Detail payload for `rc-segmented-button-change`. */
 export interface RCSegmentedButtonChangeDetail {
   /** Current selected radio value after user interaction. */
@@ -264,25 +272,8 @@ export interface RCSegmentedButtonChangeDetail {
 export class RCSegmentedButton extends LitElement {
   static override styles = segmentedButtonStyles;
 
-  private static readonly _styledRoots = new Set<Document | ShadowRoot>();
-
   private static _ensureBaseStyles(root: Document | ShadowRoot): void {
-    if (RCSegmentedButton._styledRoots.has(root)) {
-      return;
-    }
-
-    RCSegmentedButton._styledRoots.add(root);
-
-    const style = document.createElement('style');
-
-    style.setAttribute('data-rc-light-dom-base', 'rc-segmented-button');
-    style.textContent = LIGHT_DOM_CSS;
-
-    if (root instanceof Document) {
-      root.head.append(style);
-    } else {
-      root.append(style);
-    }
+    ensureLightDomBaseStyles(root);
   }
 
   private _value = '';

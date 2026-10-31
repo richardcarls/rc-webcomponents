@@ -6,6 +6,7 @@ import {
   type AnchorPlacement,
   cssText,
   PopoverController,
+  defineLightDomBaseStyles,
 } from '@rcarls/rc-common';
 
 import popoverStyles from './rc-popover.styles.js';
@@ -91,6 +92,8 @@ const LIGHT_DOM_CSS = cssText`
 }
 `;
 
+const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-popover', LIGHT_DOM_CSS);
+
 /**
  * Anchored non-modal surface around a native trigger and consumer-owned content.
  * The component manages visibility and positioning; the author supplies the
@@ -124,8 +127,6 @@ const LIGHT_DOM_CSS = cssText`
  */
 export class RCPopover extends LitElement {
   static override styles = popoverStyles;
-
-  private static readonly _styledRoots = new WeakSet<Document | ShadowRoot>();
 
   /** Preferred logical placement. */
   @property({ type: String })
@@ -272,22 +273,7 @@ export class RCPopover extends LitElement {
   }
 
   private static _ensureBaseStyles(root: Document | ShadowRoot): void {
-    if (RCPopover._styledRoots.has(root)) {
-      return;
-    }
-
-    RCPopover._styledRoots.add(root);
-
-    const style = (root instanceof Document ? root : root.ownerDocument).createElement('style');
-
-    style.setAttribute('data-rc-light-dom-base', 'rc-popover');
-    style.textContent = LIGHT_DOM_CSS;
-
-    if (root instanceof Document) {
-      root.head.append(style);
-    } else {
-      root.append(style);
-    }
+    ensureLightDomBaseStyles(root);
   }
 
   private _onSlotChange = (): void => this._queueSlotSync();

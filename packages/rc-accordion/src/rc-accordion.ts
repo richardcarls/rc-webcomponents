@@ -1,3 +1,5 @@
+import { ReactiveElement } from 'lit';
+
 import { ensureDisclosureBaseStyles } from '@rcarls/rc-disclosure';
 import { ensureAccordionBaseStyles } from './accordionBaseStyles.js';
 
@@ -35,13 +37,15 @@ declare global {
  * supported child forms: a native `<details>` directly inside the accordion, and one wrapped in
  * `rc-disclosure`.
  */
-export class RCAccordion extends HTMLElement {
+export class RCAccordion extends ReactiveElement {
   private _$managedGroupNames = new Map<HTMLDetailsElement, string>();
 
-  private _childrenObserver = new MutationObserver((records) => this._onChildrenChanged(records));
+  // Created on connect rather than construction, so constructing the element
+  // where `MutationObserver` does not exist (a server render) cannot throw.
+  private _childrenObserver: MutationObserver | undefined;
 
-  static get observedAttributes(): string[] {
-    return ['multiple', 'name'];
+  static override get observedAttributes(): string[] {
+    return [...super.observedAttributes, 'multiple', 'name'];
   }
 
   /** Allows more than one panel open at a time. */
@@ -53,7 +57,14 @@ export class RCAccordion extends HTMLElement {
     this.toggleAttribute('multiple', value);
   }
 
-  connectedCallback(): void {
+  /** Renders nothing: the consumer's native panels stay the element's only content. */
+  protected override createRenderRoot(): HTMLElement {
+    return this;
+  }
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+
     const root = this.getRootNode() as Document | ShadowRoot;
 
     ensureAccordionBaseStyles(root);
@@ -61,6 +72,7 @@ export class RCAccordion extends HTMLElement {
     // them, so an accordion of bare <details> children is styled the same way.
     ensureDisclosureBaseStyles(root);
 
+    this._childrenObserver ??= new MutationObserver((records) => this._onChildrenChanged(records));
     this._childrenObserver.observe(this, { childList: true, subtree: true });
 
     this.addEventListener('toggle', this._onDetailsToggle, true);
@@ -70,14 +82,21 @@ export class RCAccordion extends HTMLElement {
     this._enforceSingleOpen();
   }
 
-  disconnectedCallback(): void {
-    this._childrenObserver.disconnect();
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._childrenObserver?.disconnect();
 
     this.removeEventListener('toggle', this._onDetailsToggle, true);
     this.removeEventListener('keydown', this._onKeydown);
   }
 
-  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
+  override attributeChangedCallback(
+    name: string,
+    oldValue: string | null,
+    newValue: string | null,
+  ): void {
+    super.attributeChangedCallback(name, oldValue, newValue);
+
     if (oldValue === newValue) {
       return;
     }

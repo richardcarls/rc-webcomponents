@@ -220,8 +220,8 @@
       "lazyChunks": 1
     },
     "select": {
-      "initialGzip": 30586,
-      "initialBrotli": 26815,
+      "initialGzip": 30640,
+      "initialBrotli": 26825,
       "totalGzip": 52349,
       "totalBrotli": 45888,
       "largestLazyGzip": 9182,

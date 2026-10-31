@@ -82,6 +82,19 @@ fallbacks:
 @import '@rcarls/rc-webcomponents/themes/base.css';
 ```
 
+## Server-Rendered Pages
+
+Two more optional stylesheets lay out the native markup before the elements
+upgrade: `themes/components-base.css` imports every light-DOM component's
+structural styles, and `themes/pre-upgrade.css` gives each undefined shadow-DOM
+element its upgraded `display`. See the
+[server rendering guide](https://richardcarls.github.io/rc-webcomponents/guide/ssr).
+
+```css
+@import '@rcarls/rc-webcomponents/themes/components-base.css';
+@import '@rcarls/rc-webcomponents/themes/pre-upgrade.css';
+```
+
 ## Included Packages
 
 | Package               | Purpose                                                               |

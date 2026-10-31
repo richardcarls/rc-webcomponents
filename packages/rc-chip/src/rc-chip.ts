@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { cssText } from '@rcarls/rc-common';
+import { cssText, defineLightDomBaseStyles } from '@rcarls/rc-common';
 
 import chipStyles from './rc-chip.styles.js';
 
@@ -114,6 +114,8 @@ const LIGHT_DOM_CSS = cssText`
 }
 `;
 
+const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-chip', LIGHT_DOM_CSS);
+
 /** Supported chip variants. */
 export type RCChipVariant = 'assist' | 'filter' | 'input' | 'suggestion';
 
@@ -217,25 +219,8 @@ export interface RCChipRemoveDetail {
 export class RCChip extends LitElement {
   static override styles = chipStyles;
 
-  private static readonly _styledRoots = new WeakSet<Document | ShadowRoot>();
-
   private static _ensureBaseStyles(root: Document | ShadowRoot): void {
-    if (RCChip._styledRoots.has(root)) {
-      return;
-    }
-
-    RCChip._styledRoots.add(root);
-
-    const $style = (root instanceof Document ? root : root.ownerDocument).createElement('style');
-
-    $style.setAttribute('data-rc-light-dom-base', 'rc-chip');
-    $style.textContent = LIGHT_DOM_CSS;
-
-    if (root instanceof Document) {
-      root.head.append($style);
-    } else {
-      root.append($style);
-    }
+    ensureLightDomBaseStyles(root);
   }
 
   private _selected: boolean | undefined;

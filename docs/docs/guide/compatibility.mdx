@@ -29,16 +29,24 @@ Component pages document narrower platform caveats. In particular, read the
 mobile notes for [`rc-select`](../components/rc-select) and
 [`rc-combobox`](../components/rc-combobox) before choosing a popup mode.
 
-## Browser-only runtime
+## Server rendering
 
-The packages are browser modules. Importing a component evaluates classes that
-extend browser globals such as `HTMLElement`; importing the aggregate package
-also evaluates the full collection. Node-only import safety, server-side custom
-element rendering, declarative shadow DOM output, and hydration are not current
-support contracts.
+Every package entry point imports in Node without a DOM: Lit's server build
+supplies the `HTMLElement` and `customElements` shims, and no package touches
+`document` or `window` while its module evaluates. The CI build checks every
+entry point this way. A framework that evaluates client modules during a server
+render, such as a React client component, can therefore import the packages.
+Calling a `define` entry on the server registers the element with the shim and
+has no other effect.
 
-A server may emit the native fallback markup. Register components only in a
-client entry point:
+Rendering components on the server is a separate contract. The server emits
+the native fallback markup, and the elements upgrade once the client loads
+their definitions. Server-side custom element rendering, declarative shadow DOM
+output, and hydration are not current support contracts. The
+[server rendering guide](./ssr) covers the stylesheets that keep that native
+markup laid out before upgrade.
+
+Register components in a client entry point:
 
 ```html
 <rc-select>

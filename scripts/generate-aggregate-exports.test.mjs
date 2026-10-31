@@ -6,6 +6,7 @@ import {
   aggregateSources,
   buildExportMap,
   componentSource,
+  componentsBaseCss,
   exportEntry,
 } from './generate-aggregate-exports.mjs';
 
@@ -83,4 +84,14 @@ test('collection entries cover every component and only define what registers', 
 
 test('generated define output is marked side-effectful', () => {
   assert.ok(aggregateSideEffects.includes('./dist/*/define.js'));
+});
+
+test('imports base styles only from components that export them', () => {
+  const css = componentsBaseCss([
+    { manifest: { name: '@rcarls/rc-button', exports: { './base.css': './dist/base.css' } } },
+    { manifest: { name: '@rcarls/rc-card', exports: { './define': {} } } },
+  ]);
+
+  assert.match(css, /^@import '@rcarls\/rc-button\/base\.css';$/m);
+  assert.doesNotMatch(css, /rc-card/);
 });

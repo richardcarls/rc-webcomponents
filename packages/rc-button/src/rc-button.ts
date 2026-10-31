@@ -2,7 +2,13 @@ import { LitElement, html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
-import { cssText, cssZoom, logicalRect, resolveFlow } from '@rcarls/rc-common';
+import {
+  cssText,
+  cssZoom,
+  logicalRect,
+  resolveFlow,
+  defineLightDomBaseStyles,
+} from '@rcarls/rc-common';
 
 import buttonStyles from './rc-button.styles.js';
 
@@ -58,6 +64,8 @@ const LIGHT_DOM_CSS = cssText`
   }
 }
 `;
+
+const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-button', LIGHT_DOM_CSS);
 
 const ACTIVATION_KEYS = new Set(['Enter', ' ']);
 
@@ -161,25 +169,8 @@ export interface RCButtonToggleDetail {
 export class RCButton extends LitElement {
   static override styles = buttonStyles;
 
-  protected static readonly _styledRoots = new WeakSet<Document | ShadowRoot>();
-
   protected static _ensureBaseStyles(root: Document | ShadowRoot): void {
-    if (RCButton._styledRoots.has(root)) {
-      return;
-    }
-
-    RCButton._styledRoots.add(root);
-
-    const $style = (root instanceof Document ? root : root.ownerDocument).createElement('style');
-
-    $style.setAttribute('data-rc-light-dom-base', 'rc-button');
-    $style.textContent = LIGHT_DOM_CSS;
-
-    if (root instanceof Document) {
-      root.head.append($style);
-    } else {
-      root.append($style);
-    }
+    ensureLightDomBaseStyles(root);
   }
 
   /** Mirror disabled state to the native child. */

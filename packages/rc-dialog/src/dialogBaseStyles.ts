@@ -1,4 +1,4 @@
-import { cssText } from '@rcarls/rc-common';
+import { cssText, defineLightDomBaseStyles } from '@rcarls/rc-common';
 
 /**
  * Light-DOM base styles for the dialog surface.
@@ -188,24 +188,6 @@ export const DIALOG_BASE_CSS = cssText`
 }
 `;
 
-const styledRoots = new WeakSet<Document | ShadowRoot>();
-
 /** Installs the dialog surface styles once per containing root. */
-export function ensureDialogBaseStyles(root: Document | ShadowRoot): void {
-  if (styledRoots.has(root)) {
-    return;
-  }
-
-  styledRoots.add(root);
-
-  const $style = (root instanceof Document ? root : root.ownerDocument).createElement('style');
-
-  $style.setAttribute('data-rc-light-dom-base', 'rc-dialog');
-  $style.textContent = DIALOG_BASE_CSS;
-
-  if (root instanceof Document) {
-    root.head.append($style);
-  } else {
-    root.append($style);
-  }
-}
+export const ensureDialogBaseStyles: (root: Document | ShadowRoot) => void =
+  defineLightDomBaseStyles('rc-dialog', DIALOG_BASE_CSS);

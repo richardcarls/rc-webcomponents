@@ -1,4 +1,4 @@
-import { cssText } from '@rcarls/rc-common';
+import { cssText, defineLightDomBaseStyles } from '@rcarls/rc-common';
 
 /**
  * Light-DOM base styles for the disclosure panel recipe.
@@ -136,24 +136,6 @@ export const DISCLOSURE_BASE_CSS = cssText`
 }
 `;
 
-const styledRoots = new WeakSet<Document | ShadowRoot>();
-
 /** Installs the shared disclosure panel styles once per containing root. */
-export function ensureDisclosureBaseStyles(root: Document | ShadowRoot): void {
-  if (styledRoots.has(root)) {
-    return;
-  }
-
-  styledRoots.add(root);
-
-  const $style = (root instanceof Document ? root : root.ownerDocument).createElement('style');
-
-  $style.setAttribute('data-rc-light-dom-base', 'rc-disclosure');
-  $style.textContent = DISCLOSURE_BASE_CSS;
-
-  if (root instanceof Document) {
-    root.head.append($style);
-  } else {
-    root.append($style);
-  }
-}
+export const ensureDisclosureBaseStyles: (root: Document | ShadowRoot) => void =
+  defineLightDomBaseStyles('rc-disclosure', DISCLOSURE_BASE_CSS);

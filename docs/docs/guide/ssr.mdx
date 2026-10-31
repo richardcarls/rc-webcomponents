@@ -1,0 +1,117 @@
+---
+title: Server rendering
+---
+
+# Server rendering
+
+A server-rendered page can use `rc-webcomponents` today. The server sends the
+native markup each component wraps, and that markup works on its own: links
+navigate, forms submit, `<details>` opens, `<dialog>` shows. The elements
+upgrade once the browser loads their definitions. See
+[Compatibility](./compatibility#server-rendering) for the exact contract. This
+guide covers the parts that make the window before upgrade look right.
+
+## Imports are safe on the server
+
+Every package imports in Node without a DOM. Server frameworks evaluate client
+modules while rendering, so a module that imports a component, a type, or a
+`define` entry no longer needs a dynamic import or a client-only wrapper just
+to keep the server build from throwing. A `define` entry that runs on the
+server registers the element with Lit's server shim and does nothing else.
+
+`lit` is a peer dependency of every component package. Install it as a runtime
+dependency of your app, not a development one, because the components import
+it in production.
+
+## Stylesheets for the first paint
+
+Until an element is defined, the browser treats its tag as an unknown inline
+element. Three stylesheets cover that state, and each is optional.
+
+| Stylesheet                                            | What it does before upgrade                                                                                                                                         |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@rcarls/rc-webcomponents/themes/base.css`            | Defines the shared `--rc-*` semantic tokens.                                                                                                                        |
+| `@rcarls/rc-webcomponents/themes/components-base.css` | Imports each light-DOM component's structural styles. These are the same rules the elements inject when they connect. Each package also exports its own `base.css`. |
+| `@rcarls/rc-webcomponents/themes/pre-upgrade.css`     | Gives each shadow-DOM element the `display` it takes once defined, so blocks stack and grids lay out before the definition loads.                                   |
+
+```css
+@import '@rcarls/rc-webcomponents/themes/base.css';
+@import '@rcarls/rc-webcomponents/themes/components-base.css';
+@import '@rcarls/rc-webcomponents/themes/pre-upgrade.css';
+```
+
+All three put their rules in the `rc-base` cascade layer, below any theme. Load
+them before your theme so the theme's layer order applies; the
+[styling guide](./styling) explains the layers.
+
+`components-base.css` uses `@import` with package specifiers, so it needs a
+bundler or CSS tool that resolves packages, such as Vite, Next.js, or Tailwind
+CSS. To link a single component's styles directly instead, use its own file,
+for example `@rcarls/rc-button/base.css`.
+
+### Skipping the runtime copy
+
+A light-DOM component still injects its structural stylesheet when it
+connects, unless the root already holds one. Mark a linked or inlined
+stylesheet with `data-rc-light-dom-base` to say which components it covers:
+
+```html
+<link rel="stylesheet" href="/rc/button-base.css" data-rc-light-dom-base="rc-button" />
+<link rel="stylesheet" href="/rc/components-base.css" data-rc-light-dom-base="all" />
+```
+
+The value is a space-separated list of tags, or `all`. A bundler that merges
+these files into the app stylesheet drops the attribute, so the elements inject
+their copy as well. The rules are identical and sit in the same layer, so the
+duplicate costs only a few bytes of parsing.
+
+## Register components on the client
+
+Register the components a page uses in one client entry. In a framework with a
+client boundary, keep that list in a single module rather than repeating it in
+every component that renders a tag. In the Next.js App Router, for example:
+
+```tsx title="app/rc-elements.tsx"
+'use client';
+
+import { useEffect } from 'react';
+
+export function RcElements(): null {
+  useEffect(() => {
+    void Promise.all([
+      import('@rcarls/rc-webcomponents/rc-app-bar/define'),
+      import('@rcarls/rc-webcomponents/rc-card/define'),
+      import('@rcarls/rc-webcomponents/rc-chip/define'),
+    ]);
+  }, []);
+
+  return null;
+}
+```
+
+```tsx title="app/layout.tsx"
+import './globals.css';
+import { RcElements } from './rc-elements';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        {children}
+        <RcElements />
+      </body>
+    </html>
+  );
+}
+```
+
+Server components can then render `<rc-card>` and the other tags directly. The
+effect runs after hydration, so React has already matched the server markup
+before any element upgrades and starts adding its own attributes, such as
+`aria-controls` or a generated `id`.
+
+## Not yet supported
+
+The server does not render the components' shadow DOM. Declarative shadow DOM
+output and hydration of upgraded elements are not part of the current
+contract.

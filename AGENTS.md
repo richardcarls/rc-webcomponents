@@ -124,10 +124,19 @@ short and tell the tool to read `AGENTS.md` before project work.
   leaving a package-local copy.
 - Each package builds ESM, UMD, and declarations. Keep package exports and
   `sideEffects: false` tree-shaking behavior intact.
-- Runtime packages are browser-only. Server output may contain the native
-  fallback markup, but component registration belongs in a client-only entry;
-  do not claim Node import safety, server-side custom-element rendering, or
+- Every package entry point must import in Node without a DOM
+  (`yarn check:node-import`, part of `ci`). Extend `LitElement` or
+  `ReactiveElement`, never `HTMLElement` directly, so Lit's server shim
+  applies. Keep `document`, `window`, `CSSStyleSheet`, and observers out of
+  module scope and constructors; create them on connect or first use. Server
+  output contains the native fallback markup and registration belongs in a
+  client entry; do not claim server-side custom-element rendering or
   hydration support without implementing and testing that contract.
+- Register light-DOM base styles through `rc-common`'s
+  `defineLightDomBaseStyles(tag, css)` at module scope. The package build
+  emits the registered CSS as `dist/base.css`, exported as `./base.css`, so
+  new light-DOM packages need the `emit-light-dom-base-css.mjs` build step,
+  that export, and the matching `sideEffects` entry.
 - In `firstUpdated()`, guard required native child checks behind
   `import.meta.env.DEV` and emit a `console.warn` when the expected child is
   absent. Use `:scope > <tagname>` to scope the query to direct children only.

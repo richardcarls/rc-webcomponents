@@ -29,15 +29,17 @@
         "types": "./dist/types/packages/rc-bottom-sheet/src/define.d.ts",
         "default": "./dist/rc-bottom-sheet-define.js"
       }
-    }
+    },
+    "./base.css": "./dist/base.css"
   },
   "types": "./dist/types/packages/rc-bottom-sheet/src/index.d.ts",
   "sideEffects": [
-    "./dist/rc-bottom-sheet-define.js"
+    "./dist/rc-bottom-sheet-define.js",
+    "./dist/base.css"
   ],
   "customElements": "dist/custom-elements.json",
   "scripts": {
-    "build": "tsc && vite build && cem analyze",
+    "build": "tsc && vite build && node ../../scripts/emit-light-dom-base-css.mjs && cem analyze",
     "cem:analyze": "cem analyze",
     "preview": "vite preview",
     "test:browser": "vitest --run",

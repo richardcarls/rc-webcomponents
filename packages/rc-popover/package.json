@@ -29,15 +29,17 @@
         "types": "./dist/types/packages/rc-popover/src/define.d.ts",
         "default": "./dist/rc-popover-define.js"
       }
-    }
+    },
+    "./base.css": "./dist/base.css"
   },
   "types": "./dist/types/packages/rc-popover/src/index.d.ts",
   "sideEffects": [
-    "./dist/rc-popover-define.js"
+    "./dist/rc-popover-define.js",
+    "./dist/base.css"
   ],
   "customElements": "dist/custom-elements.json",
   "scripts": {
-    "build": "tsc && vite build && cem analyze",
+    "build": "tsc && vite build && node ../../scripts/emit-light-dom-base-css.mjs && cem analyze",
     "cem:analyze": "cem analyze",
     "preview": "vite preview",
     "test:browser": "vitest --run",

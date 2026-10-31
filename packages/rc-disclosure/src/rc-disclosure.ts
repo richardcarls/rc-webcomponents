@@ -1,3 +1,5 @@
+import { ReactiveElement } from 'lit';
+
 import { ensureDisclosureBaseStyles } from './disclosureBaseStyles.js';
 
 export interface RCDisclosureToggleEvent {
@@ -62,8 +64,10 @@ declare global {
  *   runs on `::details-content` where that is supported and is skipped entirely where it is not.
  * @cssprop [--rc-disclosure-easing=ease] - Open and close transition easing.
  */
-export class RCDisclosure extends HTMLElement {
-  private _observer = new MutationObserver(() => this._setupDetails());
+export class RCDisclosure extends ReactiveElement {
+  // Created on connect rather than construction, so constructing the element
+  // where `MutationObserver` does not exist (a server render) cannot throw.
+  private _observer: MutationObserver | undefined;
 
   private _$details: HTMLDetailsElement | null = null;
 
@@ -76,8 +80,8 @@ export class RCDisclosure extends HTMLElement {
   private _reflectingOpen = false;
   private _suppressNextToggle = false;
 
-  static get observedAttributes(): string[] {
-    return ['open', 'default-open'];
+  static override get observedAttributes(): string[] {
+    return [...super.observedAttributes, 'open', 'default-open'];
   }
 
   /** Current open state. Host writes are silent; assign `undefined` to release control. */
@@ -111,21 +115,35 @@ export class RCDisclosure extends HTMLElement {
     }
   }
 
-  connectedCallback(): void {
+  /** Renders nothing: the consumer's native `<details>` stays the element's only content. */
+  protected override createRenderRoot(): HTMLElement {
+    return this;
+  }
+
+  override connectedCallback(): void {
+    super.connectedCallback();
     ensureDisclosureBaseStyles(this.getRootNode() as Document | ShadowRoot);
+    this._observer ??= new MutationObserver(() => this._setupDetails());
     this._observer.observe(this, { childList: true });
     window.addEventListener('hashchange', this._onHashChange);
     this._setupDetails();
   }
 
-  disconnectedCallback(): void {
-    this._observer.disconnect();
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._observer?.disconnect();
     window.removeEventListener('hashchange', this._onHashChange);
     cancelAnimationFrame(this._scrollFrame);
     this._teardownDetails();
   }
 
-  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
+  override attributeChangedCallback(
+    name: string,
+    oldValue: string | null,
+    newValue: string | null,
+  ): void {
+    super.attributeChangedCallback(name, oldValue, newValue);
+
     if (oldValue === newValue) {
       return;
     }

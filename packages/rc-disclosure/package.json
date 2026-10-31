@@ -29,15 +29,17 @@
         "types": "./dist/types/packages/rc-disclosure/src/define.d.ts",
         "default": "./dist/rc-disclosure-define.js"
       }
-    }
+    },
+    "./base.css": "./dist/base.css"
   },
   "types": "./dist/types/packages/rc-disclosure/src/index.d.ts",
   "sideEffects": [
-    "./dist/rc-disclosure-define.js"
+    "./dist/rc-disclosure-define.js",
+    "./dist/base.css"
   ],
   "customElements": "dist/custom-elements.json",
   "scripts": {
-    "build": "tsc && vite build && cem analyze",
+    "build": "tsc && vite build && node ../../scripts/emit-light-dom-base-css.mjs && cem analyze",
     "cem:analyze": "cem analyze",
     "test:browser": "vitest --run",
     "test:browser:chrome": "vitest --run --project=chromium",

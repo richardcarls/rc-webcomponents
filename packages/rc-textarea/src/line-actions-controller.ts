@@ -43,10 +43,7 @@ export interface LineActionsOptions {
   renderButton?: (action: LineAction, btn: HTMLButtonElement) => void;
 }
 
-// Constructed once at module level and shared across all controller instances
-const WIDGET_SHEET = new CSSStyleSheet();
-
-WIDGET_SHEET.replaceSync(`
+const WIDGET_CSS = `
   .rc-line-actions {
     display: inline-flex;
     align-items: center;
@@ -75,7 +72,20 @@ WIDGET_SHEET.replaceSync(`
     background: var(--rc-line-action-hover-bg, transparent);
     color: var(--rc-line-action-hover-color, inherit);
   }
-`);
+`;
+
+let widgetSheetInstance: CSSStyleSheet | undefined;
+
+// Built on first use and shared by every instance. Constructing it lazily keeps
+// the module importable where `CSSStyleSheet` does not exist (a server render).
+function widgetSheet(): CSSStyleSheet {
+  if (!widgetSheetInstance) {
+    widgetSheetInstance = new CSSStyleSheet();
+    widgetSheetInstance.replaceSync(WIDGET_CSS);
+  }
+
+  return widgetSheetInstance;
+}
 
 const POPOVER_STYLE_ID = 'rc-line-actions-popover-style';
 
@@ -153,7 +163,7 @@ export class LineActionsController {
     this._api = api;
     this._options = options ?? {};
 
-    api.adoptStyleSheet(WIDGET_SHEET);
+    api.adoptStyleSheet(widgetSheet());
 
     this._blurHandler = () => this._hidePopover();
     api.host.addEventListener('rc-textarea-blur', this._blurHandler);
