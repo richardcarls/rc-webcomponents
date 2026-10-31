@@ -14,7 +14,7 @@
     --rc-list-item-active-bg: color-mix(
       in srgb,
       var(--md-sys-color-on-surface, CanvasText)
-        calc(var(--md-sys-state-pressed-state-layer-opacity, 0.12) * 100%),
+        calc(var(--md-sys-state-pressed-state-layer-opacity, 0.1) * 100%),
       transparent
     );
     --rc-list-item-selected-bg: var(--md-sys-color-secondary-container, Highlight);
@@ -40,7 +40,7 @@
     --rc-list-item-focus-state-layer-opacity: var(--md-sys-state-focus-state-layer-opacity, 0.1);
     --rc-list-item-pressed-state-layer-opacity: var(
       --md-sys-state-pressed-state-layer-opacity,
-      0.12
+      0.1
     );
     --rc-list-item-disabled-opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
     --rc-list-item-transition-duration: var(--rc-motion-effects-duration-fast, 150ms);

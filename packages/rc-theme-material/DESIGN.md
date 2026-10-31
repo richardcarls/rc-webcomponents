@@ -1318,11 +1318,13 @@ widths; route between panes instead.
 
 ## Accessibility and interaction states
 
-- **State layers.** Interactive surfaces show hover (8%), focus (12%) and
-  pressed (12%) layers of their foreground color. Components draw their
+- **State layers.** Interactive surfaces show hover (8%), focus (10%) and
+  pressed (10%) layers of their foreground color (dragged surfaces use 16%). Components draw their
   own; add `.rc-state-layer` to custom interactive elements that already set a
   border radius.
-- **Focus.** Keep the visible focus ring. When a surface closes or a control
+- **Focus.** Keep the visible focus ring: a 3px `secondary` outline drawn
+  2px outside the control (`--md-sys-state-focus-indicator-thickness` and
+  `--md-sys-state-focus-indicator-outer-offset`). When a surface closes or a control
   moves, put focus somewhere sensible: the trigger, or the same action in its
   new position.
 - **Targets.** 48px minimum activation area for everything a finger can hit;

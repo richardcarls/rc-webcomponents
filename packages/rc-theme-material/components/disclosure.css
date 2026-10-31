@@ -160,7 +160,7 @@
     background: color-mix(
       in srgb,
       var(--md-sys-color-on-surface, CanvasText)
-        calc(var(--md-sys-state-pressed-state-layer-opacity, 0.12) * 100%),
+        calc(var(--md-sys-state-pressed-state-layer-opacity, 0.1) * 100%),
       transparent
     );
   }

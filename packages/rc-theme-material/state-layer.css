@@ -28,10 +28,10 @@
   }
 
   .rc-state-layer:focus-visible::after {
-    opacity: var(--md-sys-state-focus-state-layer-opacity, 0.12);
+    opacity: var(--md-sys-state-focus-state-layer-opacity, 0.1);
   }
 
   .rc-state-layer:active::after {
-    opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+    opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.1);
   }
 }
