@@ -260,26 +260,34 @@ export class RCVirtualCanvas extends LitElement {
   };
 
   /** Watches the slotted canvas for DPR-accurate dimension changes */
-  protected _resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
-    for (const entry of entries) {
-      const devicePixelBoxSize = Array.isArray(entry.devicePixelContentBoxSize)
-        ? entry.devicePixelContentBoxSize[0]
-        : entry.devicePixelContentBoxSize;
+  protected _resizeObserverInstance: ResizeObserver | undefined;
 
-      this._viewRect.width = this._getMeasuredCanvasWidth(
-        devicePixelBoxSize?.inlineSize ??
-          Math.round(entry.contentRect.width * window.devicePixelRatio),
-      );
+  // Created on first use, so constructing the element without a DOM (a
+  // server render) cannot throw.
+  protected get _resizeObserver(): ResizeObserver {
+    return (this._resizeObserverInstance ??= new ResizeObserver(
+      (entries: ResizeObserverEntry[]) => {
+        for (const entry of entries) {
+          const devicePixelBoxSize = Array.isArray(entry.devicePixelContentBoxSize)
+            ? entry.devicePixelContentBoxSize[0]
+            : entry.devicePixelContentBoxSize;
 
-      this._viewRect.height = this._getMeasuredCanvasHeight(
-        devicePixelBoxSize?.blockSize ??
-          Math.round(entry.contentRect.height * window.devicePixelRatio),
-      );
+          this._viewRect.width = this._getMeasuredCanvasWidth(
+            devicePixelBoxSize?.inlineSize ??
+              Math.round(entry.contentRect.width * window.devicePixelRatio),
+          );
 
-      this._syncCanvasBackingStore();
-      this._scheduleRender('viewport-change');
-    }
-  });
+          this._viewRect.height = this._getMeasuredCanvasHeight(
+            devicePixelBoxSize?.blockSize ??
+              Math.round(entry.contentRect.height * window.devicePixelRatio),
+          );
+
+          this._syncCanvasBackingStore();
+          this._scheduleRender('viewport-change');
+        }
+      },
+    ));
+  }
 
   /** Reads scroll position from the root container and schedules a render */
   protected _onScroll() {

@@ -4,6 +4,7 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import {
+  HydrationController,
   LocaleController,
   NativeChildController,
   numberFormat,
@@ -357,6 +358,7 @@ export class RCProgress extends LitElement {
 
   /** Formats the default percentage in the element's own `lang`, else `<html lang>`. */
   private readonly _locale = new LocaleController(this);
+  private readonly _hydration = new HydrationController(this);
 
   /** Orientation; reflected as an attribute and forwarded to `aria-orientation`. */
   @property({ reflect: true }) orientation: 'horizontal' | 'vertical' = 'horizontal';
@@ -406,7 +408,8 @@ export class RCProgress extends LitElement {
   }
 
   override render() {
-    const $progress = this._$nativeProgress;
+    // The server cannot see the native child, so hydrate without it first.
+    const $progress = this._hydration.serverView ? null : this._$nativeProgress;
 
     if (!$progress) {
       return nothing;

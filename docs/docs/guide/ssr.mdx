@@ -95,8 +95,24 @@ attributes, such as `aria-controls` or a generated `id`. The
 [React guide](./react#server-rendering-and-nextjs) covers the wrapper
 components, which register themselves.
 
+## Rendering with Lit's server renderer
+
+Every element renders with [`@lit-labs/ssr`](https://lit.dev/docs/ssr/overview/), and
+shadow-DOM elements render a declarative shadow root, so a page shows their structure
+before any script runs. The CI build renders every element this way.
+
+- On the server, elements cannot see their children, so anything they derive from a native
+  child renders as if it were absent until the browser takes over.
+- Server-rendered text uses each element's own `lang`, else the default set with
+  `setServerLocale()` from `@rcarls/rc-common`. Set it to the page's `<html lang>`.
+- Install a single copy of `@lit-labs/ssr-dom-shim`. If your package manager keeps an older
+  copy for `lit` beside the one `@lit-labs/ssr` brings, nested elements fail to render with
+  `getRootNode is not a function`; deduplicate it (`yarn dedupe @lit-labs/ssr-dom-shim`).
+
 ## Not yet supported
 
-The server does not render the components' shadow DOM. Declarative shadow DOM
-output and hydration of upgraded elements are not part of the current
-contract.
+Hydrating server-rendered shadow roots with Lit's hydration support is not yet part of the
+contract. Several elements hydrate correctly, but an element that derives state from its
+native children before its first update can keep the server's values after hydrating.
+Until every element is verified, render the native markup on the server and let the
+elements render on the client, as the sections above describe.

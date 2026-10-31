@@ -1,4 +1,4 @@
-import { LitElement, html, type PropertyValues } from 'lit';
+import { LitElement, html, isServer, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
 import {
@@ -362,6 +362,11 @@ export class RCField extends LitElement {
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
+    // The native control's state is only readable in a browser.
+    if (isServer) {
+      return;
+    }
+
     if (changed.has('invalid') || changed.has('counter')) {
       this._syncState();
       this._syncAssociations();
@@ -939,9 +944,11 @@ export class RCField extends LitElement {
 
   protected override render() {
     const invalid = this._effectiveInvalid();
-    const $control = this.control;
+    // The native control is only readable in a browser.
+    const $control = isServer ? null : this.control;
     const length = $control?.value.length ?? 0;
-    const maxLength = $control instanceof HTMLSelectElement ? -1 : ($control?.maxLength ?? -1);
+    const maxLength =
+      !$control || $control instanceof HTMLSelectElement ? -1 : ($control.maxLength ?? -1);
     const counterText = maxLength >= 0 ? `${length} / ${maxLength}` : String(length);
     const hasError = invalid && (this._hasError || this._validationMessage);
     const hasSupporting = this._hasHint || hasError || this.counter;

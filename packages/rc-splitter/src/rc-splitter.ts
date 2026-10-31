@@ -428,7 +428,13 @@ export class RCSplitter extends LitElement {
     onCancel: () => this._onGestureCancel(),
   });
 
-  protected _resizeObserver = new ResizeObserver(() => this._onResize());
+  protected _resizeObserverInstance: ResizeObserver | undefined;
+
+  // Created on first use, so constructing the element without a DOM (a
+  // server render) cannot throw.
+  protected get _resizeObserver(): ResizeObserver {
+    return (this._resizeObserverInstance ??= new ResizeObserver(() => this._onResize()));
+  }
 
   /** Keeps the separator's aria-orientation and drag axis on the rendered layout. */
   protected readonly _flow = new FlowController(this);
