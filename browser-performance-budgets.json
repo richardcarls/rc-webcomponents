@@ -66,7 +66,7 @@
       "p95": 333.90000009536743,
       "longFrames": 0,
       "longestFrameMs": 16.800000000000182,
-      "animationCount": 1
+      "animationCount": 2
     }
   },
   "budgets": {
@@ -135,7 +135,7 @@
       "p95": 400.68000011444093,
       "longFrames": 0,
       "longestFrameMs": 50,
-      "animationCount": 1
+      "animationCount": 2
     }
   }
 }
