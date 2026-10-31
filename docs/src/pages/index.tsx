@@ -88,6 +88,11 @@ const packages = [
     '/components/rc-range-slider',
   ],
   [
+    'rc-breadcrumbs',
+    'Breadcrumb trail enhancer for a native <nav> and ordered list of links',
+    '/components/rc-breadcrumbs',
+  ],
+  [
     'rc-progress',
     'Native <progress> enhancement with formatted and indeterminate states',
     '/components/rc-progress',

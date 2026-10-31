@@ -1,0 +1,99 @@
+---
+title: rc-breadcrumbs
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { BreadcrumbsDemo } from '@site/src/components/BreadcrumbsDemos';
+
+# rc-breadcrumbs
+
+Breadcrumb trail enhancer for a native `<nav>` and ordered list of links, following the
+[WAI-ARIA Breadcrumb pattern](https://www.w3.org/WAI/ARIA/apg/patterns/breadcrumb/).
+
+<AtAGlance
+  packageName="@rcarls/rc-breadcrumbs"
+  tag="rc-breadcrumbs"
+  native="Requires a native nav child holding an ordered list of links"
+  state="Optional current-href that moves aria-current"
+  related={[
+    { label: 'rc-navigation-rail', href: '/components/rc-navigation-rail' },
+    { label: 'rc-app-bar', href: '/components/rc-app-bar' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-webcomponents
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-webcomponents
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-webcomponents/rc-breadcrumbs/define';
+```
+
+## Live demo
+
+<BreadcrumbsDemo />
+
+## Markup
+
+Author the whole trail. It is a complete, working breadcrumb before the element upgrades:
+
+```html
+<rc-breadcrumbs>
+  <nav>
+    <ol>
+      <li><a href="/">Home</a></li>
+      <li><a href="/settings">Settings</a></li>
+      <li><a href="/settings/members" aria-current="page">Members</a></li>
+    </ol>
+  </nav>
+</rc-breadcrumbs>
+```
+
+The element lays the list out as a wrapping row and draws a separator before each item
+after the first. The separators are CSS generated content with empty alternative text, so
+screen readers read only the links.
+
+## Accessibility
+
+- The `<nav>` is a navigation landmark. When it has no `aria-label` or `aria-labelledby`,
+  the element names it "Breadcrumb", in the element's language (see
+  [Localization](../guide/localization)). An authored name always wins; give each landmark
+  a distinct name when a page has more than one.
+- Mark the current page's link with `aria-current="page"`. If the current page is plain
+  text rather than a link, `aria-current` is optional.
+- There is no keyboard behavior beyond the links' own: each link is one tab stop.
+
+## Current page after client navigation
+
+In an app that changes pages without reloading, set `current-href` to the current URL
+instead of re-rendering the trail. The element moves `aria-current="page"` to the link
+whose resolved `href` matches, ignoring any fragment. Remove the attribute to give
+`aria-current` back to the markup.
+
+## Theming
+
+`--rc-breadcrumbs-separator` sets the separator string, and the theme packages choose one
+that follows the reading direction. The default demo mode shows the component without a
+package theme; use the shared preview controls to compare themes.
+
+## API
+
+<ApiTable tag="rc-breadcrumbs" />

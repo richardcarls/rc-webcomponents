@@ -283,3 +283,12 @@ test('tooltips and popovers take popup chrome inside nested shadow roots', () =>
   expect(getComputedStyle(probe).paddingBlockStart).toBe('6px');
   expect(getComputedStyle(probe).paddingInlineStart).toBe('6px');
 });
+
+test('breadcrumbs read like a File Manager path', () => {
+  const scope = renderScope();
+  const host = document.createElement('rc-breadcrumbs');
+
+  scope.append(host);
+
+  expect(getComputedStyle(host).getPropertyValue('--rc-breadcrumbs-separator')).toContain('\\');
+});

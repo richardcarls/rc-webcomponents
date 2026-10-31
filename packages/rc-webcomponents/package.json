@@ -96,6 +96,18 @@
         "default": "./dist/rc-bottom-sheet/define.js"
       }
     },
+    "./rc-breadcrumbs": {
+      "import": {
+        "types": "./dist/types/rc-breadcrumbs/index.d.ts",
+        "default": "./dist/rc-breadcrumbs/index.js"
+      }
+    },
+    "./rc-breadcrumbs/define": {
+      "import": {
+        "types": "./dist/types/rc-breadcrumbs/define.d.ts",
+        "default": "./dist/rc-breadcrumbs/define.js"
+      }
+    },
     "./rc-button": {
       "import": {
         "types": "./dist/types/rc-button/index.d.ts",
@@ -556,6 +568,7 @@
     "@rcarls/rc-adaptive-menu": "workspace:*",
     "@rcarls/rc-app-bar": "workspace:*",
     "@rcarls/rc-bottom-sheet": "workspace:*",
+    "@rcarls/rc-breadcrumbs": "workspace:*",
     "@rcarls/rc-button": "workspace:*",
     "@rcarls/rc-card": "workspace:*",
     "@rcarls/rc-carousel": "workspace:*",

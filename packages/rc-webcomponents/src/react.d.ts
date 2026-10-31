@@ -18,6 +18,7 @@ import type { RCAccordion } from '@rcarls/rc-accordion';
 import type { RCAdaptiveMenu } from '@rcarls/rc-adaptive-menu';
 import type { RCAppBar } from '@rcarls/rc-app-bar';
 import type { RCBottomSheet } from '@rcarls/rc-bottom-sheet';
+import type { RCBreadcrumbs } from '@rcarls/rc-breadcrumbs';
 import type { RCButton } from '@rcarls/rc-button';
 import type { RCCard } from '@rcarls/rc-card';
 import type { RCCarousel, RCCarouselItem } from '@rcarls/rc-carousel';
@@ -158,6 +159,16 @@ declare module 'react' {
         | 'rc-dialog-open'
         | 'rc-dialog-request-close'
         | 'rc-dialog-toggle'
+      >;
+
+      'rc-breadcrumbs': RCElementProps<
+        RCBreadcrumbs,
+        {
+          'current-href'?: RCAttribute<RCBreadcrumbs['currentHref']>;
+          currentHref?: RCBreadcrumbs['currentHref'];
+          messages?: RCBreadcrumbs['messages'];
+        },
+        never
       >;
 
       'rc-button': RCElementProps<
@@ -930,6 +941,10 @@ declare module 'react' {
     '--rc-bottom-sheet-shadow'?: string | number;
     '--rc-bottom-sheet-snap-duration'?: string | number;
     '--rc-bottom-sheet-snap-easing'?: string | number;
+    '--rc-breadcrumbs-current-color'?: string | number;
+    '--rc-breadcrumbs-gap'?: string | number;
+    '--rc-breadcrumbs-separator'?: string | number;
+    '--rc-breadcrumbs-separator-color'?: string | number;
     '--rc-button-bg'?: string | number;
     '--rc-button-block-size'?: string | number;
     '--rc-button-border'?: string | number;

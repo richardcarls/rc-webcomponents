@@ -1,0 +1,78 @@
+@layer rc-theme-material.components {
+  /*
+   * Material 3 has no breadcrumb component. The trail composes M3 primitives:
+   * Body Medium links in on-surface-variant, the current page in on-surface, a
+   * chevron separator, and the standard state layers on a 48px target.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-breadcrumbs {
+    --rc-breadcrumbs-gap: 0.25rem;
+    --rc-breadcrumbs-separator: '\203A';
+    --rc-breadcrumbs-separator-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-breadcrumbs-current-color: var(--md-sys-color-on-surface, CanvasText);
+
+    color: var(--md-sys-color-on-surface-variant, CanvasText);
+    font: var(--md-sys-typescale-body-medium-weight, 400)
+      var(--md-sys-typescale-body-medium-size, 0.875rem) /
+      var(--md-sys-typescale-body-medium-line-height, 1.25rem)
+      var(--md-sys-typescale-body-medium-font, inherit);
+  }
+
+  /* The chevron points along the reading direction. */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-breadcrumbs:dir(rtl) {
+    --rc-breadcrumbs-separator: '\2039';
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-breadcrumbs > nav > ol > li > a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 3rem;
+    padding-inline: 0.5rem;
+    border-radius: var(--md-sys-shape-corner-small, 0.5rem);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color var(--rc-motion-effects-duration-fast, 150ms)
+      var(--md-sys-motion-easing-standard, ease);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-breadcrumbs > nav > ol > li > a:hover {
+    background-color: color-mix(
+      in srgb,
+      currentColor calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 100%),
+      transparent
+    );
+    text-decoration: underline;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-breadcrumbs
+    > nav
+    > ol
+    > li
+    > a:focus-visible {
+    background-color: color-mix(
+      in srgb,
+      currentColor calc(var(--md-sys-state-focus-state-layer-opacity, 0.1) * 100%),
+      transparent
+    );
+    outline: var(--rc-focus-ring, 3px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-breadcrumbs > nav > ol > li > a:active {
+    background-color: color-mix(
+      in srgb,
+      currentColor calc(var(--md-sys-state-pressed-state-layer-opacity, 0.1) * 100%),
+      transparent
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-breadcrumbs [aria-current='page'] {
+    font-weight: var(--md-sys-typescale-label-large-weight, 500);
+  }
+
+  @media (forced-colors: active) {
+    :where(.rc-theme-material, :host(.rc-theme-material)) rc-breadcrumbs [aria-current='page'] {
+      text-decoration: underline;
+    }
+  }
+}
