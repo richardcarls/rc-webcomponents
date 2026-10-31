@@ -20,6 +20,14 @@ export default defineConfig({
   // path that esbuild cannot read on Windows.
   resolve: {
     conditions: ['import', 'module', 'browser', 'default'],
+    // The bundled DOM decoder touches `document` at import time; this copy
+    // defers that to first use so the package can be imported without a DOM.
+    alias: {
+      'decode-named-character-reference': resolve(
+        __dirname,
+        'src/vendor/decode-named-character-reference.ts',
+      ),
+    },
   },
 
   // Exclude bundled deps from esbuild pre-bundling — they are served via

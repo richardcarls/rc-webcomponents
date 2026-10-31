@@ -23,9 +23,7 @@ import { rmeStyles } from './rc-markdown-editor.styles.js';
 // Syntax-highlight stylesheet for the source editor, injected into rc-textarea's
 // shadow via adoptStyleSheet. CSS custom properties inherit through the shadow
 // boundary so consumers can override individual colors.
-const _sourceHighlightSheet = new CSSStyleSheet();
-
-_sourceHighlightSheet.replaceSync(`
+const SOURCE_HIGHLIGHT_CSS = `
   .rme-heading-h1,
   .rme-heading-h2,
   .rme-heading-h3,
@@ -61,7 +59,20 @@ _sourceHighlightSheet.replaceSync(`
   .rme-underline {
     text-decoration: underline;
   }
-`);
+`;
+
+let sourceHighlightSheetInstance: CSSStyleSheet | undefined;
+
+// Built on first use and shared by every instance. Constructing it lazily keeps
+// the module importable where `CSSStyleSheet` does not exist (a server render).
+function sourceHighlightSheet(): CSSStyleSheet {
+  if (!sourceHighlightSheetInstance) {
+    sourceHighlightSheetInstance = new CSSStyleSheet();
+    sourceHighlightSheetInstance.replaceSync(SOURCE_HIGHLIGHT_CSS);
+  }
+
+  return sourceHighlightSheetInstance;
+}
 
 // preserves <u> underline passthrough; renders ~~text~~ as <del>
 const MICROMARK_OPTIONS = {
@@ -731,7 +742,7 @@ export class RcMarkdownEditor extends LitElement {
     this._$sourceEditor.usePlugin({
       mount: (api: RCTextareaPluginAPI) => {
         this._pluginApi = api;
-        api.adoptStyleSheet(_sourceHighlightSheet);
+        api.adoptStyleSheet(sourceHighlightSheet());
 
         api.onCursorMove((start: number, end: number) => {
           if (!this.sourceMode) {
