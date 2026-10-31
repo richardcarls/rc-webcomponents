@@ -46,6 +46,7 @@
         "default": "./dist/rc-textarea/folding.js"
       }
     },
+    "./themes/components-base.css": "./themes/components-base.css",
     "./rc-accordion": {
       "import": {
         "types": "./dist/types/rc-accordion/index.d.ts",

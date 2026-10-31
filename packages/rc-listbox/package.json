@@ -29,15 +29,17 @@
         "types": "./dist/types/packages/rc-listbox/src/define.d.ts",
         "default": "./dist/rc-listbox-define.js"
       }
-    }
+    },
+    "./base.css": "./dist/base.css"
   },
   "types": "./dist/types/packages/rc-listbox/src/index.d.ts",
   "sideEffects": [
-    "./dist/rc-listbox-define.js"
+    "./dist/rc-listbox-define.js",
+    "./dist/base.css"
   ],
   "customElements": "dist/custom-elements.json",
   "scripts": {
-    "build": "tsc && vite build && cem analyze",
+    "build": "tsc && vite build && node ../../scripts/emit-light-dom-base-css.mjs && cem analyze",
     "cem:analyze": "cem analyze",
     "preview": "vite preview",
     "test:browser": "vitest --run",
