@@ -25,7 +25,8 @@
     "./css-components.css": "./css-components.css",
     "./css-components/*.css": "./css-components/*.css",
     "./native.css": "./native.css",
-    "./theme.css": "./theme.css"
+    "./theme.css": "./theme.css",
+    "./layers.css": "./layers.css"
   },
   "files": [
     "*.css",

@@ -1,0 +1,10 @@
+/*
+ * Cascade layer order for apps that also load Tailwind CSS v4. Import this
+ * before both Tailwind and this theme. It places the rc layers after
+ * Tailwind's `base` layer, so Preflight resets cannot override component
+ * structure or theme rules, and before `components` and `utilities`, so an
+ * app's own component classes and utilities still win over the theme.
+ */
+@layer theme, base, rc-base, rc-theme-tailwind.defaults, rc-theme-tailwind.bridge,
+  rc-theme-tailwind.native, rc-theme-tailwind.components, rc-theme-tailwind.css-components,
+  rc-theme-tailwind.overrides, components, utilities;

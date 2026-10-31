@@ -51,6 +51,24 @@ override the Tailwind tokens at your theme boundary:
 }
 ```
 
+### Layer order with Tailwind
+
+Cascade layers sort in the order they are first declared. Importing this theme
+before Tailwind puts every `rc-*` layer below Tailwind's `base` layer, so
+Preflight's resets (such as the universal `margin: 0` that undoes a modal
+dialog's centering) override component structure. Importing it after Tailwind
+puts the theme above Tailwind's utilities instead. Import `layers.css` first
+so the `rc-*` layers sit after `base` and before `components` and `utilities`:
+
+```css
+@import '@rcarls/rc-theme-tailwind/layers.css';
+@import '@rcarls/rc-theme-tailwind/bridge.css';
+@import '@rcarls/rc-theme-tailwind/components.css';
+@import 'tailwindcss';
+```
+
+Your own `@layer components` rules and utility classes still override the theme.
+
 If your Tailwind theme uses a different palette, set the documented
 `--color-*` tokens (or override the resulting `--rc-*` semantic tokens) at the
 same boundary. No utility classes or Tailwind build step are required by this
