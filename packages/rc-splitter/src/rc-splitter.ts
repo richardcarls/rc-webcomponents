@@ -61,9 +61,21 @@ const MIN_SWIPE_DISTANCE = 24;
 const DEFAULT_SNAP_DURATION_MS = 200;
 const SNAP_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
+/** Detail of `rc-splitter-change`. */
+export interface RCSplitterChangeEvent {
+  /** The new separator value. */
+  value: number;
+  /** The value as a CSS length, such as `40%` or `240px`. */
+  valueText: string;
+}
+
 declare global {
   interface HTMLElementTagNameMap {
     'rc-splitter': RCSplitter;
+  }
+
+  interface HTMLElementEventMap {
+    'rc-splitter-change': CustomEvent<RCSplitterChangeEvent>;
   }
 }
 
@@ -315,7 +327,7 @@ export class RCSplitter extends LitElement {
 
     if (dispatch && this._value !== oldValue) {
       this.dispatchEvent(
-        new CustomEvent('rc-splitter-change', {
+        new CustomEvent<RCSplitterChangeEvent>('rc-splitter-change', {
           bubbles: true,
           composed: true,
           detail: { value: this._value, valueText: this.valueText },

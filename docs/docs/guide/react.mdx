@@ -4,14 +4,23 @@ title: Using with React
 
 # Using with React
 
-## Setup
+There are two ways to use the components in React:
 
-Register the elements you use once in your application entry point. Prefer the
-aggregate package's per-component subpaths so unused components stay out of the
-bundle:
+- **Plain tags.** React 19 supports custom elements directly. Write `<rc-select>` in JSX and
+  reference the generated JSX typings.
+- **Wrappers.** `@rcarls/rc-react` provides one React component per element. Each wrapper
+  registers its element, takes typed props and `on` event props in camel case, and also works
+  in React 18.
+
+Both keep the native child the component enhances, so forms, labels, and pre-upgrade
+behavior work the same either way.
+
+## Plain tags (React 19)
+
+Register the elements you use once in your application entry point. Prefer the aggregate
+package's per-component subpaths so unused components stay out of the bundle:
 
 ```ts title="main.tsx"
-import '@rcarls/rc-webcomponents/rc-combobox/define';
 import '@rcarls/rc-webcomponents/rc-dialog/define';
 import '@rcarls/rc-webcomponents/rc-select/define';
 import { createRoot } from 'react-dom/client';
@@ -20,97 +29,58 @@ import { App } from './App';
 createRoot(document.getElementById('root')!).render(<App />);
 ```
 
-## TypeScript JSX types
-
-Add a triple-slash reference once, for example, in `vite-env.d.ts`:
+Add the JSX typings once, for example in `vite-env.d.ts`:
 
 ```ts title="vite-env.d.ts"
 /// <reference types="vite/client" />
 /// <reference types="@rcarls/rc-webcomponents/react" />
 ```
 
-This gives all `rc-*` elements proper attribute completions and ref types in
-JSX. You can also import ref and event detail types directly for use with
-`useRef` and `addEventListener`:
+The typings are generated from each component's source. They cover every attribute and
+property, type each element's custom events, and accept the components' CSS custom
+properties in `style` objects.
 
-```ts
-import type { RCSelectRef, RCSelectChangeDetail } from '@rcarls/rc-webcomponents/react';
-```
+### Attributes and properties
 
-## Elements in JSX
-
-Custom elements render in JSX like any HTML element. String attributes map
-directly:
+React 19 sets a prop as a property when the element has one by that name, and as an
+attribute otherwise. Use the kebab-case attribute for anything that should appear in
+server-rendered markup, and the camel-case property for rich values such as arrays:
 
 ```tsx
-<rc-select placeholder="Choose one">
-  <select name="status">
+<rc-select popup-mode="dialog" value={['draft']}>
+  <select name="status" aria-label="Status" multiple>
     <option value="draft">Draft</option>
     <option value="published">Published</option>
   </select>
 </rc-select>
 ```
 
-Boolean attributes use a JSX boolean (no string needed in React):
+### Events
+
+React 19 attaches an `on<event-name>` prop as a listener for exactly that event, so custom
+events need no `useEffect`. The handler receives the typed event:
 
 ```tsx
-<rc-combobox allow-create placeholder="Add tags">
-  <select name="tags" multiple>
-    <option value="a">Alpha</option>
+<rc-select onrc-select-change={(event) => console.log(event.detail.value)}>
+  <select name="status" aria-label="Status">
+    <option value="draft">Draft</option>
+    <option value="published">Published</option>
   </select>
-</rc-combobox>
+</rc-select>
 ```
 
-## Custom events
+Each component's page documents its events and the shape of `event.detail`.
 
-Components dispatch custom DOM events with a structured `detail` payload.
-Use `addEventListener` in a `useEffect` to subscribe:
+### Refs and methods
 
-```tsx
-import { useEffect, useRef } from 'react';
-import type { RCSelectRef, RCSelectChangeDetail } from '@rcarls/rc-webcomponents/react';
-
-function StatusPicker() {
-  const ref = useRef<RCSelectRef>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const handler = (e: Event) => {
-      const { value } = (e as CustomEvent<RCSelectChangeDetail>).detail;
-      console.log('selected:', value);
-    };
-
-    el.addEventListener('rc-select-change', handler);
-    return () => el.removeEventListener('rc-select-change', handler);
-  }, []);
-
-  return (
-    <rc-select ref={ref}>
-      <select name="status">
-        <option value="draft">Draft</option>
-        <option value="published">Published</option>
-      </select>
-    </rc-select>
-  );
-}
-```
-
-Each component's page documents which events it dispatches and the shape of
-`event.detail`. All detail types are exported from `@rcarls/rc-webcomponents/react`.
-
-## Refs and imperative methods
-
-Some components expose methods for programmatic control. Use a ref typed with
-the exported ref type:
+Type refs with the element's class, imported from its package or the aggregate subpath:
 
 ```tsx
 import { useRef } from 'react';
-import type { RCDialogRef } from '@rcarls/rc-webcomponents/react';
+import type { RCDialog } from '@rcarls/rc-webcomponents/rc-dialog';
 
 function ConfirmDialog() {
-  const ref = useRef<RCDialogRef>(null);
+  const ref = useRef<RCDialog>(null);
 
   return (
     <>
@@ -118,8 +88,8 @@ function ConfirmDialog() {
         Open
       </button>
       <rc-dialog ref={ref} movable resize="both">
-        <dialog aria-labelledby="title">
-          <strong id="title">Confirm</strong>
+        <dialog aria-labelledby="confirm-title">
+          <strong id="confirm-title">Confirm</strong>
           <button type="button" onClick={() => ref.current?.close('ok')}>
             OK
           </button>
@@ -130,6 +100,67 @@ function ConfirmDialog() {
 }
 ```
 
-All ref types (`RCSelectRef`, `RCComboboxRef`, `RCDialogRef`, …) are exported
-from `@rcarls/rc-webcomponents/react` and document the full public API surface
-of each element.
+## Wrappers (`@rcarls/rc-react`)
+
+```sh
+yarn add @rcarls/rc-react @rcarls/rc-webcomponents lit
+```
+
+Import each wrapper from the subpath named after its component package. The module
+registers the element when it loads:
+
+```tsx
+'use client';
+
+import { RcSelect } from '@rcarls/rc-react/rc-select';
+
+export function StatusPicker() {
+  return (
+    <RcSelect popup-mode="dialog" onRcSelectChange={(event) => console.log(event.detail.value)}>
+      <select name="status" aria-label="Status">
+        <option value="draft">Draft</option>
+        <option value="published">Published</option>
+      </select>
+    </RcSelect>
+  );
+}
+```
+
+Wrapper refs resolve to the element instance, typed as its class. Event props are the event
+name in camel case: `rc-select-change` becomes `onRcSelectChange`.
+
+## Server rendering and Next.js
+
+Every package imports safely on the server, so client components that use the wrappers or
+import a `define` entry render in the Next.js App Router without dynamic imports. During a
+server render:
+
+- A wrapper outputs its tag, its attributes, and its children. Props that are element
+  properties are set in the browser after hydration, so pass the attribute form for state
+  the server markup needs.
+- Plain tags from a React Server Component render as written and upgrade once their
+  definitions load. Render `RcRegister` once in the root layout with every such tag:
+
+```tsx title="app/layout.tsx"
+import { RcRegister } from '@rcarls/rc-react';
+import './globals.css';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        {children}
+        <RcRegister tags={['rc-app-bar', 'rc-card', 'rc-chip']} />
+      </body>
+    </html>
+  );
+}
+```
+
+`RcRegister` loads each definition as its own chunk after hydration, so React matches the
+server markup before any element upgrades and adds its own attributes.
+
+To keep the native markup laid out before upgrade, load the static base and pre-upgrade
+stylesheets. With Tailwind CSS, also import `@rcarls/rc-theme-tailwind/layers.css` first so
+Preflight cannot override component structure. The [server rendering guide](./ssr) covers
+both.

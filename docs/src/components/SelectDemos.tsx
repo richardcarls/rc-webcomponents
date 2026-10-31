@@ -1,6 +1,6 @@
+import type { RCSelect, RCSelectChangeEvent } from '@rcarls/rc-webcomponents/rc-select';
 import type * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import type { RCSelectRef, RCSelectChangeDetail } from '@rcarls/rc-webcomponents/react';
 import { DemoFrame } from './DemoFrame';
 
 function addLogLine(setter: (next: string[]) => void, lines: string[], line: string) {
@@ -15,7 +15,7 @@ export function SingleSelectDemo() {
     if (!selectEl) return;
 
     const handleChange = (event: Event) => {
-      const { value } = (event as CustomEvent<RCSelectChangeDetail>).detail;
+      const { value } = (event as CustomEvent<RCSelectChangeEvent>).detail;
       setLog((current) => [`rc-select-change -> value: "${value}"`, ...current].slice(0, 20));
     };
 
@@ -81,7 +81,7 @@ export function MultiSelectDemo() {
     if (!selectEl) return;
 
     const handleChange = (event: Event) => {
-      const { value } = (event as CustomEvent<RCSelectChangeDetail>).detail;
+      const { value } = (event as CustomEvent<RCSelectChangeEvent>).detail;
       const values = Array.isArray(value) ? value.join(', ') : value;
       setLog((current) => [`rc-select-change -> value: [${values}]`, ...current].slice(0, 20));
     };
@@ -159,7 +159,7 @@ export function SelectFormDemo() {
 }
 
 export function DynamicOptionsDemo() {
-  const selectRef = useRef<RCSelectRef>(null);
+  const selectRef = useRef<RCSelect>(null);
   const countRef = useRef(2);
 
   const addDynamicOption = () => {

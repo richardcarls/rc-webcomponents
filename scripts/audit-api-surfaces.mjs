@@ -110,34 +110,21 @@ for (const file of readdirSync(join(root, 'docs/docs/components')).filter((name)
   }
 }
 
-for (const needle of [
-  'checkmark: boolean',
-  'checkmark?: boolean',
-  'label: string',
-  "orientation: 'horizontal' | 'vertical'",
-  'readonly atBlockStart: boolean',
-  'readonly atBlockEnd: boolean',
-  'readonly atInlineStart: boolean',
-  'readonly atInlineEnd: boolean',
-  'export type RCRangeSliderRef = HTMLElement & {',
-  'readonly: boolean',
-]) {
-  assertIncludes(reactTypes, needle, 'packages/rc-webcomponents/src/react.d.ts');
-}
+// The framework typings are generated (`yarn codegen:typings`) and compiled
+// against fixtures (`yarn test:typings`); here, only check that every element
+// in the manifest has an entry in both.
+for (const tag of tags) {
+  assertIncludes(
+    reactTypes,
+    `'${tag}': RCElementProps<`,
+    'packages/rc-webcomponents/src/react.d.ts',
+  );
 
-for (const needle of [
-  'checkmark: boolean',
-  'checkmark?: boolean | string',
-  'label: string',
-  "orientation: 'horizontal' | 'vertical'",
-  'readonly atBlockStart: boolean',
-  'readonly atBlockEnd: boolean',
-  'readonly atInlineStart: boolean',
-  'readonly atInlineEnd: boolean',
-  'export type RCRangeSliderRef = HTMLElement & {',
-  'readonly: boolean',
-]) {
-  assertIncludes(solidTypes, needle, 'packages/rc-webcomponents/src/solid.d.ts');
+  assertIncludes(
+    solidTypes,
+    `'${tag}': RCElementProps<`,
+    'packages/rc-webcomponents/src/solid.d.ts',
+  );
 }
 
 for (const exportName of [

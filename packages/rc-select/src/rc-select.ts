@@ -58,6 +58,12 @@ declare global {
   interface HTMLElementTagNameMap {
     'rc-select': RCSelect;
   }
+
+  interface HTMLElementEventMap {
+    'rc-select-open': CustomEvent<null>;
+    'rc-select-close': CustomEvent<null>;
+    'rc-select-change': CustomEvent<RCSelectChangeEvent>;
+  }
 }
 
 /** Built-in text of `rc-select`. */

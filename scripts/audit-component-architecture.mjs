@@ -377,6 +377,7 @@ export function findAllowlistErrors(hits, allowlist, describe) {
 
 const NON_COMPONENT_PACKAGES = new Set([
   'rc-common',
+  'rc-react',
   'rc-textarea-adapters',
   'rc-textarea-plugin-markdown',
   'rc-theme-material',

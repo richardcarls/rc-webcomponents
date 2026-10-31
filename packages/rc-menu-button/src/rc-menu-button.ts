@@ -21,6 +21,10 @@ declare global {
   interface HTMLElementTagNameMap {
     'rc-menu-button': RCMenuButton;
   }
+
+  interface HTMLElementEventMap {
+    'rc-menu-button-toggle': CustomEvent<RCMenuButtonToggleEvent>;
+  }
 }
 
 const LIGHT_DOM_CSS = cssText`

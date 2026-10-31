@@ -1,8 +1,8 @@
+import type { RCDialog } from '@rcarls/rc-webcomponents/rc-dialog';
+import type { RCTextarea } from '@rcarls/rc-webcomponents/rc-textarea';
 import { useCallback, useRef } from 'react';
 
 import { markdownPlugin } from '@rcarls/rc-textarea-plugin-markdown';
-
-import type { RCDialogRef, RCTextareaRef } from '@rcarls/rc-webcomponents/react';
 
 import { DemoFrame } from './DemoFrame';
 
@@ -81,8 +81,8 @@ A *brief* summary with **key** points.
 - [Link text](url)`;
 
 export function ThemePreviewShowcase() {
-  const dialogRef = useRef<RCDialogRef>(null);
-  const textareaRef = useCallback((el: RCTextareaRef | null) => {
+  const dialogRef = useRef<RCDialog>(null);
+  const textareaRef = useCallback((el: RCTextarea | null) => {
     if (el) el.plugin = markdownPlugin;
   }, []);
 

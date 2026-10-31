@@ -67,48 +67,33 @@ duplicate costs only a few bytes of parsing.
 
 ## Register components on the client
 
-Register the components a page uses in one client entry. In a framework with a
-client boundary, keep that list in a single module rather than repeating it in
-every component that renders a tag. In the Next.js App Router, for example:
-
-```tsx title="app/rc-elements.tsx"
-'use client';
-
-import { useEffect } from 'react';
-
-export function RcElements(): null {
-  useEffect(() => {
-    void Promise.all([
-      import('@rcarls/rc-webcomponents/rc-app-bar/define'),
-      import('@rcarls/rc-webcomponents/rc-card/define'),
-      import('@rcarls/rc-webcomponents/rc-chip/define'),
-    ]);
-  }, []);
-
-  return null;
-}
-```
+Register the components a page uses in one client entry, rather than repeating
+the list in every component that renders a tag. In a React app,
+`@rcarls/rc-react` provides `RcRegister`, which a server component can render
+because it takes plain tag names:
 
 ```tsx title="app/layout.tsx"
+import { RcRegister } from '@rcarls/rc-react';
 import './globals.css';
-import { RcElements } from './rc-elements';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
         {children}
-        <RcElements />
+        <RcRegister tags={['rc-app-bar', 'rc-card', 'rc-chip']} />
       </body>
     </html>
   );
 }
 ```
 
-Server components can then render `<rc-card>` and the other tags directly. The
-effect runs after hydration, so React has already matched the server markup
-before any element upgrades and starts adding its own attributes, such as
-`aria-controls` or a generated `id`.
+Server components can then render `<rc-card>` and the other tags directly.
+`RcRegister` loads each definition after hydration, so React has already
+matched the server markup before any element upgrades and starts adding its own
+attributes, such as `aria-controls` or a generated `id`. The
+[React guide](./react#server-rendering-and-nextjs) covers the wrapper
+components, which register themselves.
 
 ## Not yet supported
 

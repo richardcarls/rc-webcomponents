@@ -1,0 +1,10 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": [],
+    "skipLibCheck": false,
+    "noUnusedLocals": false
+  },
+  "files": ["../src/react.d.ts", "react.fixture.tsx"]
+}

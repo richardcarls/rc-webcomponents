@@ -1,0 +1,11 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "types": [],
+    "skipLibCheck": false,
+    "noUnusedLocals": false
+  },
+  "files": ["../src/solid.d.ts", "solid.fixture.tsx"]
+}

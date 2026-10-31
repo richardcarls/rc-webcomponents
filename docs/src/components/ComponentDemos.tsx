@@ -1,41 +1,49 @@
+import type { RCAppBar } from '@rcarls/rc-webcomponents/rc-app-bar';
+import type {
+  RCBottomSheet,
+  RCBottomSheetSnapDetail,
+} from '@rcarls/rc-webcomponents/rc-bottom-sheet';
+import type { RCButton, RCButtonToggleDetail } from '@rcarls/rc-webcomponents/rc-button';
+import type { RCDialog } from '@rcarls/rc-webcomponents/rc-dialog';
+import type { RCDisclosure } from '@rcarls/rc-webcomponents/rc-disclosure';
+import type { RCField } from '@rcarls/rc-webcomponents/rc-field';
+import type { RCListbox } from '@rcarls/rc-webcomponents/rc-listbox';
+import type { RCMenu, RCMenuActivateEvent } from '@rcarls/rc-webcomponents/rc-menu';
+import type {
+  RCNavigationRail,
+  RCNavigationRailToggleDetail,
+} from '@rcarls/rc-webcomponents/rc-navigation-rail';
+import type { RCProgress } from '@rcarls/rc-webcomponents/rc-progress';
+import type { RCRangeSlider } from '@rcarls/rc-webcomponents/rc-range-slider';
+import type { RCSearchBar } from '@rcarls/rc-webcomponents/rc-search-bar';
+import type { RCSegmentedButtonChangeDetail } from '@rcarls/rc-webcomponents/rc-segmented-button';
+import type { RCSlider } from '@rcarls/rc-webcomponents/rc-slider';
+import type {
+  RCSnackbar,
+  RCSnackbarActionDetail,
+  RCSnackbarCloseDetail,
+} from '@rcarls/rc-webcomponents/rc-snackbar';
+import type { RCSwitchChangeDetail } from '@rcarls/rc-webcomponents/rc-switch';
+import type { RCTextarea } from '@rcarls/rc-webcomponents/rc-textarea';
+import type {
+  RCTransferList,
+  RCTransferListChangeEvent,
+} from '@rcarls/rc-webcomponents/rc-transfer-list';
+import type {
+  RCVirtualCanvas,
+  RCVirtualCanvasPointerInit,
+  RCVirtualCanvasRenderInit,
+} from '@rcarls/rc-webcomponents/rc-virtual-canvas';
+import type {
+  RCVirtualScroller,
+  RCVirtualScrollerRangeDetail,
+} from '@rcarls/rc-webcomponents/rc-virtual-scroller';
 import type { CSSProperties } from 'react';
 import type * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import hljs from 'highlight.js/lib/core';
 import rust from 'highlight.js/lib/languages/rust';
 
-import type { RCVirtualScrollerRef } from '@rcarls/rc-webcomponents/react';
-import type {
-  RCAppBarRef,
-  RCBottomSheetRef,
-  RCBottomSheetSnapDetail,
-  RCButtonRef,
-  RCButtonToggleDetail,
-  RCDialogRef,
-  RCDisclosureRef,
-  RCFieldRef,
-  RCListboxRef,
-  RCMenuActivateDetail,
-  RCMenuRef,
-  RCNavigationRailRef,
-  RCNavigationRailToggleDetail,
-  RCProgressRef,
-  RCRangeSliderRef,
-  RCSearchBarRef,
-  RCSegmentedButtonChangeDetail,
-  RCSliderRef,
-  RCSnackbarActionDetail,
-  RCSnackbarCloseDetail,
-  RCSnackbarRef,
-  RCSwitchChangeDetail,
-  RCTextareaRef,
-  RCTransferListChangeDetail,
-  RCTransferListRef,
-  RCVirtualCanvasRef,
-  RCVirtualCanvasRenderDetail,
-  RCVirtualCanvasPointerDetail,
-  RCVirtualScrollerRangeDetail,
-} from '@rcarls/rc-webcomponents/react';
 import type { RCTextareaPluginAPI } from '@rcarls/rc-textarea';
 import { FoldingActionController } from '@rcarls/rc-textarea/folding';
 
@@ -90,7 +98,7 @@ function EventLog({
 }
 
 export function BottomSheetDemo() {
-  const [sheetEl, setSheetEl] = useState<RCBottomSheetRef | null>(null);
+  const [sheetEl, setSheetEl] = useState<RCBottomSheet | null>(null);
   const log = useEventLog<RCBottomSheetSnapDetail>(
     sheetEl,
     'rc-bottom-sheet-snap',
@@ -148,13 +156,13 @@ export function BottomSheetDemo() {
 }
 
 export function ButtonDemo() {
-  const [buttonEl, setButtonEl] = useState<RCButtonRef | null>(null);
+  const [buttonEl, setButtonEl] = useState<RCButton | null>(null);
   const [selected, setSelected] = useState(false);
   const [pending, setPending] = useState(false);
   const [progress, setProgress] = useState(false);
   const [progressValue, setProgressValue] = useState(0);
   const setButtonRef = useCallback(
-    (element: HTMLElement | null) => setButtonEl(element as RCButtonRef | null),
+    (element: HTMLElement | null) => setButtonEl(element as RCButton | null),
     [],
   );
 
@@ -413,7 +421,7 @@ const VIRTUAL_SCROLLER_DEMO_CSS = `
 const VIRTUAL_SCROLLER_DEMO_COUNT = 2000;
 
 export function VirtualScrollerDemo() {
-  const [$host, setHost] = useState<RCVirtualScrollerRef | null>(null);
+  const [$host, setHost] = useState<RCVirtualScroller | null>(null);
   const [range, setRange] = useState({ start: 0, end: 0 });
   const [layout, setLayout] = useState('list');
   const [expanded, setExpanded] = useState(false);
@@ -939,7 +947,7 @@ export function ChipGroupDemo() {
 
 export function FabMenuDemo() {
   const [menuEl, setMenuEl] = useState<HTMLElement | null>(null);
-  const log = useEventLog<RCMenuActivateDetail>(
+  const log = useEventLog<RCMenuActivateEvent>(
     menuEl,
     'rc-menu-activate',
     ({ value }) => `rc-menu-activate -> ${value}`,
@@ -1019,7 +1027,7 @@ export function NavigationBarDemo() {
 }
 
 export function NavigationRailDemo() {
-  const [railEl, setRailEl] = useState<RCNavigationRailRef | null>(null);
+  const [railEl, setRailEl] = useState<RCNavigationRail | null>(null);
   const [active, setActive] = useState('#library');
   const [expanded, setExpanded] = useState(false);
   const log = useEventLog<RCNavigationRailToggleDetail>(
@@ -1279,7 +1287,7 @@ export function SegmentedButtonDemo() {
 }
 
 export function SnackbarDemo() {
-  const [snackbarEl, setSnackbarEl] = useState<RCSnackbarRef | null>(null);
+  const [snackbarEl, setSnackbarEl] = useState<RCSnackbar | null>(null);
   const actionLog = useEventLog<RCSnackbarActionDetail>(
     snackbarEl,
     'rc-snackbar-action',
@@ -1393,7 +1401,7 @@ export function SwitchDemo() {
 }
 
 export function AppBarDemo() {
-  const [barEl, setBarEl] = useState<RCAppBarRef | null>(null);
+  const [barEl, setBarEl] = useState<RCAppBar | null>(null);
   const [scrollEl, setScrollEl] = useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -1556,8 +1564,8 @@ export function ComboboxDemo() {
 }
 
 export function DialogDemo() {
-  const [dialogEl, setDialogEl] = useState<RCDialogRef | null>(null);
-  const [confirmEl, setConfirmEl] = useState<RCDialogRef | null>(null);
+  const [dialogEl, setDialogEl] = useState<RCDialog | null>(null);
+  const [confirmEl, setConfirmEl] = useState<RCDialog | null>(null);
   const log = useEventLog<{ returnValue: string }>(
     dialogEl,
     'rc-dialog-close',
@@ -1584,7 +1592,7 @@ export function DialogDemo() {
         </rc-button>
       </p>
       <rc-dialog
-        ref={(el) => setDialogEl(el as RCDialogRef | null)}
+        ref={(el) => setDialogEl(el as RCDialog | null)}
         movable
         move-handle="[data-titlebar]"
         resize="both"
@@ -1612,7 +1620,7 @@ export function DialogDemo() {
           </div>
         </dialog>
       </rc-dialog>
-      <rc-dialog ref={(el) => setConfirmEl(el as RCDialogRef | null)}>
+      <rc-dialog ref={(el) => setConfirmEl(el as RCDialog | null)}>
         <dialog aria-label="Confirm delete" style={{ maxInlineSize: '24rem' }}>
           <p style={{ marginBlockStart: 0 }}>
             This will permanently delete the document. Continue?
@@ -1637,7 +1645,7 @@ export function DialogDemo() {
 }
 
 export function DisclosureDemo() {
-  const disclosureRef = useRef<RCDisclosureRef>(null);
+  const disclosureRef = useRef<RCDisclosure>(null);
 
   return (
     <DemoFrame>
@@ -1750,8 +1758,8 @@ export function FabDemo() {
 }
 
 export function ListboxDemo() {
-  const [listboxEl, setListboxEl] = useState<RCListboxRef | null>(null);
-  const seedListbox = useCallback((listbox: RCListboxRef | null) => {
+  const [listboxEl, setListboxEl] = useState<RCListbox | null>(null);
+  const seedListbox = useCallback((listbox: RCListbox | null) => {
     setListboxEl(listbox);
 
     if (!listbox) {
@@ -1879,7 +1887,7 @@ export function MarkdownEditorDemo() {
 
 export function MenuDemo() {
   const [menuEl, setMenuEl] = useState<HTMLElement | null>(null);
-  const setMenuRef = useCallback((element: RCMenuRef | null) => {
+  const setMenuRef = useCallback((element: RCMenu | null) => {
     setMenuEl(element as HTMLElement | null);
   }, []);
   const log = useEventLog<{ value?: string }>(
@@ -2080,7 +2088,7 @@ export function MenubarDemo() {
 }
 
 export function RangeSliderDemo() {
-  const [sliderEl, setSliderEl] = useState<RCRangeSliderRef | null>(null);
+  const [sliderEl, setSliderEl] = useState<RCRangeSlider | null>(null);
   const log = useEventLog<{ value: [number, number] }>(
     sliderEl,
     'rc-range-slider-change',
@@ -2099,7 +2107,7 @@ export function RangeSliderDemo() {
 }
 
 export function SearchBarDemo() {
-  const [searchEl, setSearchEl] = useState<RCSearchBarRef | null>(null);
+  const [searchEl, setSearchEl] = useState<RCSearchBar | null>(null);
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
@@ -2162,7 +2170,7 @@ export function SearchBarDemo() {
 }
 
 export function FieldDemo() {
-  const [titleField, setTitleField] = useState<RCFieldRef | null>(null);
+  const [titleField, setTitleField] = useState<RCField | null>(null);
 
   return (
     <DemoFrame>
@@ -2217,7 +2225,7 @@ export function FieldDemo() {
 }
 
 export function SliderDemo() {
-  const [sliderEl, setSliderEl] = useState<RCSliderRef | null>(null);
+  const [sliderEl, setSliderEl] = useState<RCSlider | null>(null);
   const log = useEventLog<{ value: number }>(
     sliderEl,
     'rc-slider-change',
@@ -2235,7 +2243,7 @@ export function SliderDemo() {
 }
 
 export function ProgressDemo() {
-  const [progressEl, setProgressEl] = useState<RCProgressRef | null>(null);
+  const [progressEl, setProgressEl] = useState<RCProgress | null>(null);
   const log = useEventLog<Record<string, never>>(
     progressEl,
     'rc-progress-complete',
@@ -2295,7 +2303,7 @@ export function TextareaDemo() {
 }
 
 export function TextareaDisclosureDemo() {
-  const [editor, setEditor] = useState<RCTextareaRef | null>(null);
+  const [editor, setEditor] = useState<RCTextarea | null>(null);
 
   useEffect(() => {
     if (!editor) {
@@ -2435,7 +2443,7 @@ const MARKDOWN_SEED =
   '# Shopping list\n\n- **Carrots** — 1 bunch\n- *Ginger* — 2 cm piece\n- Garlic — 4 cloves\n\n> Buy organic where possible.';
 
 export function TextareaMarkdownDemo() {
-  const [editor, setEditor] = useState<RCTextareaRef | null>(null);
+  const [editor, setEditor] = useState<RCTextarea | null>(null);
   const [preview, setPreview] = useState('');
 
   useEffect(() => {
@@ -2533,7 +2541,7 @@ const HLJS_DEMO_CSS = `
 `;
 
 export function TextareaHljsDemo() {
-  const [editor, setEditor] = useState<RCTextareaRef | null>(null);
+  const [editor, setEditor] = useState<RCTextarea | null>(null);
 
   useEffect(() => {
     if (!editor) {
@@ -2662,9 +2670,9 @@ export function AdaptiveMenuDemo() {
 }
 
 export function TransferListDemo() {
-  const [transferEl, setTransferEl] = useState<RCTransferListRef | null>(null);
+  const [transferEl, setTransferEl] = useState<RCTransferList | null>(null);
   const [compact, setCompact] = useState(false);
-  const log = useEventLog<RCTransferListChangeDetail>(
+  const log = useEventLog<RCTransferListChangeEvent>(
     transferEl,
     'rc-transfer-list-change',
     ({ selected }) =>
@@ -2711,13 +2719,13 @@ export function VirtualCanvasDemo() {
       return;
     }
 
-    const vc = vcEl as RCVirtualCanvasRef;
+    const vc = vcEl as RCVirtualCanvas;
 
     vc.contentWidth = VC_CONTENT_W;
     vc.contentHeight = VC_CONTENT_H;
 
     function drawGrid(e: Event) {
-      const { viewRect } = (e as CustomEvent<RCVirtualCanvasRenderDetail>).detail;
+      const { viewRect } = (e as CustomEvent<RCVirtualCanvasRenderInit>).detail;
       const canvas = canvasRef.current;
 
       if (!canvas) {
@@ -2809,7 +2817,7 @@ export function VirtualCanvasDemo() {
     }
 
     function handlePointer(e: Event) {
-      const { type, contentX, contentY } = (e as CustomEvent<RCVirtualCanvasPointerDetail>).detail;
+      const { type, contentX, contentY } = (e as CustomEvent<RCVirtualCanvasPointerInit>).detail;
 
       if (overlayRef.current) {
         overlayRef.current.textContent = `${Math.round(contentX)}, ${Math.round(contentY)}`;

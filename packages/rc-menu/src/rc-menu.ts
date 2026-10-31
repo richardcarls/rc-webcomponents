@@ -14,9 +14,19 @@ declare global {
   interface HTMLElementTagNameMap {
     'rc-menu': RCMenu;
   }
+
+  interface HTMLElementEventMap {
+    'rc-menu-activate': CustomEvent<RCMenuActivateEvent>;
+    'rc-menu-close': CustomEvent<RCMenuCloseEvent>;
+  }
 }
 
 /** Detail payload for the `rc-menu-activate` event. */
+/** Detail of `rc-menu-close`: why the menu asked its owner to close it. */
+export interface RCMenuCloseEvent {
+  reason: 'escape';
+}
+
 export interface RCMenuActivateEvent {
   /** The activated menu item element. */
   item: HTMLElement;
@@ -519,7 +529,7 @@ export class RCMenu extends LitElement {
         e.stopPropagation();
 
         this.dispatchEvent(
-          new CustomEvent('rc-menu-close', {
+          new CustomEvent<RCMenuCloseEvent>('rc-menu-close', {
             bubbles: true,
             composed: true,
             detail: { reason: 'escape' },

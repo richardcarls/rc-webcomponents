@@ -7,13 +7,16 @@ export interface RCDisclosureToggleEvent {
   open: boolean;
 }
 
-const TOGGLE_EVENT = 'rc-disclosure-toggle';
 const DETAILS_SELECTOR = ':scope > details';
 const SUMMARY_SELECTOR = ':scope > summary';
 
 declare global {
   interface HTMLElementTagNameMap {
     'rc-disclosure': RCDisclosure;
+  }
+
+  interface HTMLElementEventMap {
+    'rc-disclosure-toggle': CustomEvent<RCDisclosureToggleEvent>;
   }
 }
 
@@ -252,7 +255,7 @@ export class RCDisclosure extends ReactiveElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent<RCDisclosureToggleEvent>(TOGGLE_EVENT, {
+      new CustomEvent<RCDisclosureToggleEvent>('rc-disclosure-toggle', {
         bubbles: true,
         composed: true,
         detail: { open: requestedOpen },
@@ -289,7 +292,7 @@ export class RCDisclosure extends ReactiveElement {
       this._reflectOpen(true);
     } else {
       this.dispatchEvent(
-        new CustomEvent<RCDisclosureToggleEvent>(TOGGLE_EVENT, {
+        new CustomEvent<RCDisclosureToggleEvent>('rc-disclosure-toggle', {
           bubbles: true,
           composed: true,
           detail: { open: true },

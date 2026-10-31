@@ -8,6 +8,7 @@ import { join } from 'node:path';
  */
 export const infrastructurePackages = new Set([
   '@rcarls/rc-common',
+  '@rcarls/rc-react',
   '@rcarls/rc-textarea-adapters',
   '@rcarls/rc-textarea-plugin-markdown',
   '@rcarls/rc-theme-material',
