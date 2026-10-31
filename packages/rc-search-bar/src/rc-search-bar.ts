@@ -8,6 +8,7 @@ import {
   MessagesController,
   NativeChildController,
   warnMissingDirectChild,
+  defineLightDomBaseStyles,
 } from '@rcarls/rc-common';
 
 import searchBarStyles from './rc-search-bar.styles.js';
@@ -43,6 +44,8 @@ const LIGHT_DOM_CSS = cssText`
   }
 }
 `;
+
+const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-search-bar', LIGHT_DOM_CSS);
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -192,25 +195,8 @@ export class RCSearchBar extends LitElement {
     },
   );
 
-  private static readonly _styledRoots = new Set<Document | ShadowRoot>();
-
   private static _ensureBaseStyles(root: Document | ShadowRoot): void {
-    if (RCSearchBar._styledRoots.has(root)) {
-      return;
-    }
-
-    RCSearchBar._styledRoots.add(root);
-
-    const style = document.createElement('style');
-
-    style.setAttribute('data-rc-light-dom-base', 'rc-search-bar');
-    style.textContent = LIGHT_DOM_CSS;
-
-    if (root instanceof Document) {
-      root.head.append(style);
-    } else {
-      root.append(style);
-    }
+    ensureLightDomBaseStyles(root);
   }
 
   /** Presentation mode: docked search bar or expandable search view. */

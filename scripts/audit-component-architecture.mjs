@@ -753,7 +753,10 @@ function inspectPackage(directory, declarations, baseTokens) {
   const markers = extractMarkers(source);
   const tokens = extractTokenReferences(source);
   const transitionAnalysis = extractTransitionAnalysis(source);
-  const hasLightDomBase = markers.has('data-rc-light-dom-base');
+  // Packages register their base stylesheet through rc-common's helper, which
+  // writes the sentinel attribute itself.
+  const hasLightDomBase =
+    markers.has('data-rc-light-dom-base') || /\bdefineLightDomBaseStyles\(/.test(source);
   const hasShadowStyles = sourceFiles.some(
     (path) => path.endsWith('.styles.ts') || /static\s+(?:override\s+)?styles\s*=/.test(read(path)),
   );

@@ -1,7 +1,12 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { ActiveDescendantController, cssText, isFocusable } from '@rcarls/rc-common';
+import {
+  ActiveDescendantController,
+  cssText,
+  isFocusable,
+  defineLightDomBaseStyles,
+} from '@rcarls/rc-common';
 
 import menuStyles from './rc-menu.styles.js';
 
@@ -181,6 +186,8 @@ const LIGHT_DOM_CSS = cssText`
 }
 `;
 
+const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-menu', LIGHT_DOM_CSS);
+
 /**
  * Menu popup for command surfaces with keyboard navigation and typed activation events,
  * following the WAI-ARIA Menu pattern.
@@ -246,25 +253,8 @@ const LIGHT_DOM_CSS = cssText`
 export class RCMenu extends LitElement {
   static styles = [menuStyles];
 
-  private static readonly _$styledRoots = new Set<Document | ShadowRoot>();
-
   private static _ensureBaseStyles($root: Document | ShadowRoot): void {
-    if (RCMenu._$styledRoots.has($root)) {
-      return;
-    }
-
-    RCMenu._$styledRoots.add($root);
-
-    const $style = document.createElement('style');
-
-    $style.setAttribute('data-rc-light-dom-base', 'rc-menu');
-    $style.textContent = LIGHT_DOM_CSS;
-
-    if ($root instanceof Document) {
-      $root.head.appendChild($style);
-    } else {
-      $root.appendChild($style);
-    }
+    ensureLightDomBaseStyles($root);
   }
 
   /**

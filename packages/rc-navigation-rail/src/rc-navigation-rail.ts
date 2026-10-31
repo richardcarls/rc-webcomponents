@@ -2,7 +2,11 @@ import { LitElement, html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
-import { cssText, NavigationIndicatorController } from '@rcarls/rc-common';
+import {
+  cssText,
+  NavigationIndicatorController,
+  defineLightDomBaseStyles,
+} from '@rcarls/rc-common';
 
 import navigationRailStyles from './rc-navigation-rail.styles.js';
 
@@ -60,6 +64,8 @@ const LIGHT_DOM_CSS = cssText`
   }
 }
 `;
+
+const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-navigation-rail', LIGHT_DOM_CSS);
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -145,25 +151,8 @@ export interface RCNavigationRailToggleDetail {
 export class RCNavigationRail extends LitElement {
   static override styles = [navigationRailStyles];
 
-  private static readonly _styledRoots = new Set<Document | ShadowRoot>();
-
   private static _ensureBaseStyles(root: Document | ShadowRoot): void {
-    if (RCNavigationRail._styledRoots.has(root)) {
-      return;
-    }
-
-    RCNavigationRail._styledRoots.add(root);
-
-    const $style = document.createElement('style');
-
-    $style.setAttribute('data-rc-light-dom-base', 'rc-navigation-rail');
-    $style.textContent = LIGHT_DOM_CSS;
-
-    if (root instanceof Document) {
-      root.head.append($style);
-    } else {
-      root.append($style);
-    }
+    ensureLightDomBaseStyles(root);
   }
 
   private _defaultExpanded = false;

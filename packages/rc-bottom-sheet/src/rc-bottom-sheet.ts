@@ -11,6 +11,7 @@ import {
   type ResizeDirection,
   type ResizeLifecycleDetail,
   type ResizeOrigin,
+  defineLightDomBaseStyles,
 } from '@rcarls/rc-common';
 
 declare global {
@@ -189,6 +190,8 @@ const LIGHT_DOM_CSS = cssText`
 }
 `;
 
+const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-bottom-sheet', LIGHT_DOM_CSS);
+
 // Floor so a noisy near-zero-distance release can't misread as a decisive
 // fling; a real swipe travels at least this far even if it's very quick.
 const MIN_SWIPE_DISTANCE = 24;
@@ -337,25 +340,9 @@ function localHeight(target: HTMLElement): number {
  */
 export class RCBottomSheet extends RCDialog {
   private static readonly swipeDismissThreshold = 96;
-  private static readonly _styledRoots = new Set<Document | ShadowRoot>();
 
   private static _ensureBaseStyles(root: Document | ShadowRoot): void {
-    if (RCBottomSheet._styledRoots.has(root)) {
-      return;
-    }
-
-    RCBottomSheet._styledRoots.add(root);
-
-    const $style = document.createElement('style');
-
-    $style.setAttribute('data-rc-light-dom-base', 'rc-bottom-sheet');
-    $style.textContent = LIGHT_DOM_CSS;
-
-    if (root instanceof Document) {
-      root.head.append($style);
-    } else {
-      root.append($style);
-    }
+    ensureLightDomBaseStyles(root);
   }
 
   // Sheets always resize, so their move and resize behavior loads with them.

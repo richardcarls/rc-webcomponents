@@ -11,6 +11,7 @@ import {
   keyNavigation,
   PopoverController,
   renderedOrientation,
+  defineLightDomBaseStyles,
 } from '@rcarls/rc-common';
 
 import adaptiveMenuStyles from './rc-adaptive-menu.styles.js';
@@ -156,6 +157,8 @@ const LIGHT_DOM_CSS = cssText`
 }
 `;
 
+const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-adaptive-menu', LIGHT_DOM_CSS);
+
 /** Built-in text of `rc-adaptive-menu`. */
 export interface RCAdaptiveMenuMessages {
   /** Default accessible name of the toolbar, when `label` is unset. */
@@ -286,8 +289,6 @@ export class RCAdaptiveMenu extends LitElement {
       overrides: () => this.messages,
     },
   );
-
-  private static readonly _styledRoots = new WeakSet<Document | ShadowRoot>();
 
   /** Accessible label for the toolbar. Defaults to the `label` message. */
   @property({ type: String })
@@ -541,22 +542,7 @@ export class RCAdaptiveMenu extends LitElement {
   }
 
   private static _ensureBaseStyles(root: Document | ShadowRoot): void {
-    if (RCAdaptiveMenu._styledRoots.has(root)) {
-      return;
-    }
-
-    RCAdaptiveMenu._styledRoots.add(root);
-
-    const $style = (root instanceof Document ? root : root.ownerDocument).createElement('style');
-
-    $style.setAttribute('data-rc-light-dom-base', 'rc-adaptive-menu');
-    $style.textContent = LIGHT_DOM_CSS;
-
-    if (root instanceof Document) {
-      root.head.append($style);
-    } else {
-      root.append($style);
-    }
+    ensureLightDomBaseStyles(root);
   }
 
   private _onSlotChange = (): void => {

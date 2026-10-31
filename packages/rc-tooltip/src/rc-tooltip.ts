@@ -6,6 +6,7 @@ import {
   type AnchorPlacement,
   cssText,
   PopoverController,
+  defineLightDomBaseStyles,
 } from '@rcarls/rc-common';
 
 import tooltipStyles from './rc-tooltip.styles.js';
@@ -57,6 +58,8 @@ const LIGHT_DOM_CSS = cssText`
 }
 `;
 
+const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-tooltip', LIGHT_DOM_CSS);
+
 /**
  * Tooltip wrapper for a consumer-owned trigger and descriptive content,
  * following the [WAI-ARIA Tooltip pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/).
@@ -94,8 +97,6 @@ const LIGHT_DOM_CSS = cssText`
  */
 export class RCTooltip extends LitElement {
   static override styles = tooltipStyles;
-
-  private static readonly _styledRoots = new WeakSet<Document | ShadowRoot>();
 
   /** Preferred logical placement relative to the trigger. */
   @property({ type: String })
@@ -200,22 +201,7 @@ export class RCTooltip extends LitElement {
   }
 
   private static _ensureBaseStyles(root: Document | ShadowRoot): void {
-    if (RCTooltip._styledRoots.has(root)) {
-      return;
-    }
-
-    RCTooltip._styledRoots.add(root);
-
-    const style = (root instanceof Document ? root : root.ownerDocument).createElement('style');
-
-    style.setAttribute('data-rc-light-dom-base', 'rc-tooltip');
-    style.textContent = LIGHT_DOM_CSS;
-
-    if (root instanceof Document) {
-      root.head.append(style);
-    } else {
-      root.append(style);
-    }
+    ensureLightDomBaseStyles(root);
   }
 
   private _onSlotChange = (): void => {

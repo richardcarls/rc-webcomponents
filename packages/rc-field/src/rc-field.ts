@@ -6,6 +6,7 @@ import {
   getDirectChildren,
   NativeChildController,
   warnMissingDirectChild,
+  defineLightDomBaseStyles,
 } from '@rcarls/rc-common';
 
 import fieldStyles from './rc-field.styles.js';
@@ -86,6 +87,8 @@ const LIGHT_DOM_CSS = cssText`
   }
 }
 `;
+
+const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-field', LIGHT_DOM_CSS);
 
 const TEXT_INPUT_TYPES = new Set([
   'date',
@@ -197,28 +200,8 @@ function groupControls($group: HTMLFieldSetElement): RCFieldControl[] {
 export class RCField extends LitElement {
   static styles = [fieldStyles];
 
-  private static readonly _styledRoots = new WeakSet<Document | ShadowRoot>();
-
   private static _ensureBaseStyles(root: Node): void {
-    if (
-      !(root instanceof Document || root instanceof ShadowRoot) ||
-      RCField._styledRoots.has(root)
-    ) {
-      return;
-    }
-
-    RCField._styledRoots.add(root);
-
-    const $style = (root instanceof Document ? root : root.ownerDocument).createElement('style');
-
-    $style.setAttribute('data-rc-light-dom-base', 'rc-field');
-    $style.textContent = LIGHT_DOM_CSS;
-
-    if (root instanceof Document) {
-      root.head.append($style);
-    } else {
-      root.append($style);
-    }
+    ensureLightDomBaseStyles(root);
   }
 
   /** Shows the current native value length and `maxlength`, when present. */

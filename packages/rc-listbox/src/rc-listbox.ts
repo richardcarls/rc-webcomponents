@@ -11,6 +11,7 @@ import {
   type ItemsCollectionFilterStrategy,
   type ItemsCollectionOption,
   type ItemsCollectionSelectableOption,
+  defineLightDomBaseStyles,
 } from '@rcarls/rc-common';
 
 declare global {
@@ -156,6 +157,8 @@ const LIGHT_DOM_CSS = cssText`
 }
 `;
 
+const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-listbox', LIGHT_DOM_CSS);
+
 /** Built-in text of `rc-listbox`. */
 export interface RCListboxMessages {
   /** Text of the "Create" option for typed text that matches nothing. */
@@ -237,25 +240,8 @@ export class RCListbox extends LitElement {
     }
   `;
 
-  private static readonly _styledRoots = new Set<Document | ShadowRoot>();
-
   private static _ensureBaseStyles(root: Document | ShadowRoot): void {
-    if (RCListbox._styledRoots.has(root)) {
-      return;
-    }
-
-    RCListbox._styledRoots.add(root);
-
-    const $style = document.createElement('style');
-
-    $style.setAttribute('data-rc-light-dom-base', 'rc-listbox');
-    $style.textContent = LIGHT_DOM_CSS;
-
-    if (root instanceof Document) {
-      root.head.appendChild($style);
-    } else {
-      root.appendChild($style);
-    }
+    ensureLightDomBaseStyles(root);
   }
 
   /** Allow multiple selection. Reflected as `aria-multiselectable` on the host. */

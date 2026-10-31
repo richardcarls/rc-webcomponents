@@ -1,4 +1,4 @@
-import { cssText } from '@rcarls/rc-common';
+import { cssText, defineLightDomBaseStyles } from '@rcarls/rc-common';
 
 /**
  * Light-DOM base styles for `rc-list` reordering.
@@ -37,24 +37,8 @@ export const LIST_BASE_CSS = cssText`
 }
 `;
 
-const styledRoots = new WeakSet<Document | ShadowRoot>();
-
 /** Installs the shared list reorder styles once per containing root. */
-export function ensureListBaseStyles(root: Document | ShadowRoot): void {
-  if (styledRoots.has(root)) {
-    return;
-  }
-
-  styledRoots.add(root);
-
-  const $style = (root instanceof Document ? root : root.ownerDocument).createElement('style');
-
-  $style.setAttribute('data-rc-light-dom-base', 'rc-list');
-  $style.textContent = LIST_BASE_CSS;
-
-  if (root instanceof Document) {
-    root.head.append($style);
-  } else {
-    root.append($style);
-  }
-}
+export const ensureListBaseStyles: (root: Document | ShadowRoot) => void = defineLightDomBaseStyles(
+  'rc-list',
+  LIST_BASE_CSS,
+);
