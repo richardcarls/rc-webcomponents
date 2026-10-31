@@ -1891,6 +1891,35 @@
           }
         },
         {
+          "name": "color/computed/core-page-turner-navigation-button-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-page-turner-navigation-button-background)"
+          },
+          "cssVar": "--rc-page-turner-navigation-button-background",
+          "description": "Resolved from --rc-page-turner-navigation-button-background, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.992157,
+              "g": 0.972549,
+              "b": 0.992157,
+              "a": 0.75,
+              "hex": "#fdf8fd"
+            },
+            "Dark": {
+              "r": 0.078431,
+              "g": 0.07451,
+              "b": 0.090196,
+              "a": 0.75,
+              "hex": "#141317"
+            }
+          }
+        },
+        {
           "name": "color/computed/core-popup-background",
           "type": "COLOR",
           "scopes": [
@@ -2226,14 +2255,14 @@
               "r": 0.109804,
               "g": 0.105882,
               "b": 0.121569,
-              "a": 0.12,
+              "a": 0.1,
               "hex": "#1c1b1f"
             },
             "Dark": {
               "r": 0.901961,
               "g": 0.882353,
               "b": 0.898039,
-              "a": 0.12,
+              "a": 0.1,
               "hex": "#e6e1e5"
             }
           }
@@ -5719,6 +5748,35 @@
           }
         },
         {
+          "name": "state/focus-indicator-outer-offset",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-state-focus-indicator-outer-offset)"
+          },
+          "cssVar": "--md-sys-state-focus-indicator-outer-offset",
+          "values": {
+            "Value": 2
+          }
+        },
+        {
+          "name": "state/focus-indicator-thickness",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-state-focus-indicator-thickness)"
+          },
+          "cssVar": "--md-sys-state-focus-indicator-thickness",
+          "values": {
+            "Value": 3
+          }
+        },
+        {
           "name": "state/focus-state-layer-opacity",
           "type": "FLOAT",
           "scopes": [
@@ -5729,7 +5787,7 @@
           },
           "cssVar": "--md-sys-state-focus-state-layer-opacity",
           "values": {
-            "Value": 0.11999999731779099
+            "Value": 0.10000000149011612
           }
         },
         {
@@ -5757,7 +5815,7 @@
           },
           "cssVar": "--md-sys-state-pressed-state-layer-opacity",
           "values": {
-            "Value": 0.11999999731779099
+            "Value": 0.10000000149011612
           }
         }
       ]
@@ -6406,7 +6464,10 @@
           },
           "cssVar": "--rc-button-focus-state-layer-opacity",
           "values": {
-            "Value": 0.12
+            "Value": {
+              "alias": "state/focus-state-layer-opacity",
+              "collection": "State"
+            }
           }
         },
         {
@@ -6481,7 +6542,10 @@
           },
           "cssVar": "--rc-button-pressed-state-layer-opacity",
           "values": {
-            "Value": 0.12
+            "Value": {
+              "alias": "state/pressed-state-layer-opacity",
+              "collection": "State"
+            }
           }
         },
         {
@@ -6691,7 +6755,10 @@
           },
           "cssVar": "--rc-card-pressed-state-layer-opacity",
           "values": {
-            "Value": 0.12
+            "Value": {
+              "alias": "state/pressed-state-layer-opacity",
+              "collection": "State"
+            }
           }
         },
         {
@@ -7699,7 +7766,10 @@
           },
           "cssVar": "--rc-focus-ring-offset",
           "values": {
-            "Value": 2
+            "Value": {
+              "alias": "state/focus-indicator-outer-offset",
+              "collection": "State"
+            }
           }
         },
         {
@@ -8160,6 +8230,149 @@
             "Value": {
               "alias": "core/motion-spatial-easing-fast",
               "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "core/page-turner-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-page-turner-color)"
+          },
+          "cssVar": "--rc-page-turner-color",
+          "description": "Applied where rc-page-turner is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/page-turner-duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-page-turner-duration)"
+          },
+          "cssVar": "--rc-page-turner-duration",
+          "description": "Applied where rc-page-turner is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-spatial-duration-default",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "core/page-turner-easing",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-page-turner-easing)"
+          },
+          "cssVar": "--rc-page-turner-easing",
+          "description": "Applied where rc-page-turner is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-spatial-easing-default",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "core/page-turner-navigation-button-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-page-turner-navigation-button-background)"
+          },
+          "cssVar": "--rc-page-turner-navigation-button-background",
+          "description": "Applied where rc-page-turner is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/core-page-turner-navigation-button-background",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/page-turner-navigation-button-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-page-turner-navigation-button-color)"
+          },
+          "cssVar": "--rc-page-turner-navigation-button-color",
+          "description": "Applied where rc-page-turner is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/page-turner-page-back-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-page-turner-page-back-background)"
+          },
+          "cssVar": "--rc-page-turner-page-back-background",
+          "description": "Applied where rc-page-turner is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-container",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/page-turner-page-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-page-turner-page-background)"
+          },
+          "cssVar": "--rc-page-turner-page-background",
+          "description": "Applied where rc-page-turner-page is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-container",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/page-turner-page-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-page-turner-page-color)"
+          },
+          "cssVar": "--rc-page-turner-page-color",
+          "description": "Applied where rc-page-turner-page is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
             }
           }
         },
@@ -14844,7 +15057,7 @@
       },
       {
         "property": "--rc-focus-ring",
-        "raw": "2px solid var(--md-sys-color-primary, Highlight)",
+        "raw": "var(--md-sys-state-focus-indicator-thickness, 3px) solid var(--md-sys-color-secondary, Highlight)",
         "name": "core/focus-ring"
       },
       {
