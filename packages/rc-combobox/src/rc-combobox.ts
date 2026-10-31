@@ -23,6 +23,10 @@ declare global {
   interface HTMLElementTagNameMap {
     'rc-combobox': RCCombobox;
   }
+
+  interface HTMLElementEventMap {
+    'rc-combobox-create': CustomEvent<RCComboboxCreateEvent>;
+  }
 }
 
 /**

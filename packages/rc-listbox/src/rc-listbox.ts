@@ -18,6 +18,10 @@ declare global {
   interface HTMLElementTagNameMap {
     'rc-listbox': RCListbox;
   }
+
+  interface HTMLElementEventMap {
+    'rc-listbox-change': CustomEvent<RCListboxChangeEvent>;
+  }
 }
 
 /** Option shape accepted by `rc-listbox`. */

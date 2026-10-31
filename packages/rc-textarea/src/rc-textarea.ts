@@ -35,9 +35,30 @@ import { generateId } from './types.js';
 
 import { styles } from './rc-textarea.styles.js';
 
+/** Detail of `rc-textarea-change`. */
+export interface RCTextareaChangeEvent {
+  /** The editor's new plain-text value. */
+  value: string;
+}
+
+/** Detail of `rc-textarea-select`. */
+export interface RCTextareaSelectEvent {
+  /** Selection anchor offset. */
+  selectionStart: number;
+  /** Selection focus offset. */
+  selectionEnd: number;
+}
+
 declare global {
   interface HTMLElementTagNameMap {
     'rc-textarea': RCTextarea;
+  }
+
+  interface HTMLElementEventMap {
+    'rc-textarea-focus': CustomEvent<null>;
+    'rc-textarea-blur': CustomEvent<null>;
+    'rc-textarea-change': CustomEvent<RCTextareaChangeEvent>;
+    'rc-textarea-select': CustomEvent<RCTextareaSelectEvent>;
   }
 }
 
@@ -1112,7 +1133,7 @@ export class RCTextarea extends LitElement {
       }
 
       this.dispatchEvent(
-        new CustomEvent('rc-textarea-select', {
+        new CustomEvent<RCTextareaSelectEvent>('rc-textarea-select', {
           bubbles: true,
           composed: true,
           detail: {
@@ -2226,7 +2247,7 @@ export class RCTextarea extends LitElement {
 
   protected _dispatchChange(value: string): void {
     this.dispatchEvent(
-      new CustomEvent('rc-textarea-change', {
+      new CustomEvent<RCTextareaChangeEvent>('rc-textarea-change', {
         bubbles: true,
         composed: true,
         detail: { value },

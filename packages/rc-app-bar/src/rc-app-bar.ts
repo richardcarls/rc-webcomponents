@@ -15,6 +15,10 @@ declare global {
   interface HTMLElementTagNameMap {
     'rc-app-bar': RCAppBar;
   }
+
+  interface HTMLElementEventMap {
+    'rc-app-bar-scroll': CustomEvent<RCAppBarScrollDetail>;
+  }
 }
 
 export type RCAppBarVariant = 'compact' | 'expanded';

@@ -58,6 +58,10 @@ declare global {
   interface HTMLElementTagNameMap {
     'rc-transfer-list': RCTransferList;
   }
+
+  interface HTMLElementEventMap {
+    'rc-transfer-list-change': CustomEvent<RCTransferListChangeEvent>;
+  }
 }
 
 /**
