@@ -14,6 +14,7 @@ export const elementLoaders = {
   'rc-chip': () => import('@rcarls/rc-webcomponents/rc-chip/define'),
   'rc-chip-group': () => import('@rcarls/rc-webcomponents/rc-chip-group/define'),
   'rc-combobox': () => import('@rcarls/rc-webcomponents/rc-combobox/define'),
+  'rc-data-table': () => import('@rcarls/rc-webcomponents/rc-data-table/define'),
   'rc-dialog': () => import('@rcarls/rc-webcomponents/rc-dialog/define'),
   'rc-disclosure': () => import('@rcarls/rc-webcomponents/rc-disclosure/define'),
   'rc-fab': () => import('@rcarls/rc-webcomponents/rc-fab/define'),

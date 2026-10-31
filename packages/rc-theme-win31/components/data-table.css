@@ -1,0 +1,47 @@
+@layer rc-theme-win31.components {
+  /*
+   * A File Manager details view: a sunken white well, beveled column headers
+   * that work as buttons, and the selection color for the hovered row.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-data-table {
+    --rc-data-table-cell-padding-block: 1px;
+    --rc-data-table-cell-padding-inline: var(--win31-padding-inline);
+
+    border: var(--win31-border);
+    border-color: var(--win31-inset-border-color);
+    background: var(--win31-color-field);
+    color: var(--win31-color-field-text);
+    font: var(--win31-font-weight) var(--win31-font-size) / var(--win31-line-height)
+      var(--win31-font-family);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-data-table > table {
+    inline-size: 100%;
+    border-collapse: collapse;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-data-table > table :is(th, td) {
+    text-align: start;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-data-table > table > thead th {
+    border: var(--win31-border);
+    border-color: var(--win31-outset-border-color);
+    background: var(--win31-color-surface);
+    color: var(--win31-color-frame);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-data-table > table > tbody > tr:hover {
+    background: var(--win31-color-selection);
+    color: var(--win31-color-selection-text);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-data-table:focus-visible,
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-data-table
+    th[data-rc-sort-key]
+    > :is(button, a):focus-visible {
+    outline: var(--win31-focus-ring);
+    outline-offset: var(--win31-focus-ring-offset);
+  }
+}

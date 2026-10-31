@@ -228,8 +228,8 @@ test('the current component architecture satisfies hard guardrails', () => {
   const result = runAudit(process.cwd());
 
   assert.deepEqual(result.errors, []);
-  assert.equal(result.summary.componentPackages, 43);
-  assert.equal(result.summary.customElements, 47);
+  assert.equal(result.summary.componentPackages, 44);
+  assert.equal(result.summary.customElements, 48);
   // Substrate coverage is selective; rc-page-turner has no recipe there yet.
   assert.deepEqual(result.themeCoverage['rc-theme-substrate'].missing, ['rc-page-turner']);
 

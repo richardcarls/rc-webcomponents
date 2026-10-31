@@ -1,0 +1,55 @@
+@layer rc-theme-substrate.components {
+  /* A calm grid: hairline row dividers, muted headers, and a subtle row hover. */
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-data-table {
+    --rc-data-table-cell-padding-block: 0.625rem;
+    --rc-data-table-cell-padding-inline: 0.75rem;
+
+    color: var(--substrate-on-surface, CanvasText);
+    font-size: var(--substrate-font-size, 0.95rem);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-data-table > table {
+    inline-size: 100%;
+    border-collapse: collapse;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-data-table > table > caption {
+    padding-block: 0.5rem;
+    font-weight: 650;
+    text-align: start;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-data-table > table :is(th, td) {
+    border-block-end: 1px solid var(--substrate-border-color, ButtonBorder);
+    text-align: start;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-data-table > table > thead th {
+    color: var(--substrate-on-surface-muted, CanvasText);
+    font-weight: 600;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-data-table > table > tbody > tr:hover {
+    background: color-mix(in srgb, var(--substrate-primary, Highlight) 5%, transparent);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-data-table
+    th[data-rc-sort-key]
+    > :is(button, a) {
+    border-radius: var(--substrate-radius-sm, 0.25rem);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-data-table:focus-visible,
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-data-table
+    th[data-rc-sort-key]
+    > :is(button, a):focus-visible {
+    outline: var(--substrate-focus-ring, 2px solid Highlight);
+    outline-offset: var(--substrate-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-data-table th[aria-sort] {
+    color: var(--substrate-on-surface, CanvasText);
+  }
+}

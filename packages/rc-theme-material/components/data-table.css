@@ -1,0 +1,121 @@
+@layer rc-theme-material.components {
+  /*
+   * Material 3 has no data table (material-web #386; the MDC Android data
+   * table is unfinished). The recipe keeps the M2 data table metrics, a 56px
+   * header and 52px rows with 16px cell padding, and expresses them in M3
+   * roles: outline-variant dividers, Title Small headers over Body Medium
+   * cells, and the M3 state layer opacities for row hover and sort buttons.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-data-table {
+    --rc-data-table-cell-padding-block: 0;
+    --rc-data-table-cell-padding-inline: 1rem;
+    --rc-data-table-sort-indicator-gap: 0.5rem;
+
+    color: var(--md-sys-color-on-surface, CanvasText);
+    font: var(--md-sys-typescale-body-medium-weight, 400)
+      var(--md-sys-typescale-body-medium-size, 0.875rem) /
+      var(--md-sys-typescale-body-medium-line-height, 1.25rem)
+      var(--md-sys-typescale-body-medium-font, inherit);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-data-table > table {
+    inline-size: 100%;
+    border-collapse: collapse;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-data-table > table > caption {
+    padding-block: 0.75rem;
+    padding-inline: 1rem;
+    color: var(--md-sys-color-on-surface, CanvasText);
+    font: var(--md-sys-typescale-title-medium-weight, 500)
+      var(--md-sys-typescale-title-medium-size, 1rem) /
+      var(--md-sys-typescale-title-medium-line-height, 1.5rem)
+      var(--md-sys-typescale-title-medium-font, inherit);
+    text-align: start;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-data-table > table :is(th, td) {
+    block-size: 3.25rem;
+    border-block-end: 1px solid var(--md-sys-color-outline-variant, GrayText);
+    text-align: start;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-data-table > table > thead th {
+    block-size: 3.5rem;
+    color: var(--md-sys-color-on-surface-variant, CanvasText);
+    font: var(--md-sys-typescale-title-small-weight, 500)
+      var(--md-sys-typescale-title-small-size, 0.875rem) /
+      var(--md-sys-typescale-title-small-line-height, 1.25rem)
+      var(--md-sys-typescale-title-small-font, inherit);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-data-table > table > tbody > tr {
+    transition: background-color var(--rc-motion-effects-duration-fast, 150ms)
+      var(--md-sys-motion-easing-standard, ease);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-data-table > table > tbody > tr:hover {
+    background-color: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText)
+        calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 100%),
+      transparent
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-data-table
+    th[data-rc-sort-key]
+    > :is(button, a) {
+    min-block-size: 3rem;
+    margin-inline: -0.5rem;
+    padding-inline: 0.5rem;
+    border-radius: var(--md-sys-shape-corner-small, 0.5rem);
+    transition: background-color var(--rc-motion-effects-duration-fast, 150ms)
+      var(--md-sys-motion-easing-standard, ease);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-data-table
+    th[data-rc-sort-key]
+    > :is(button, a):hover {
+    background-color: color-mix(
+      in srgb,
+      currentColor calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 100%),
+      transparent
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-data-table
+    th[data-rc-sort-key]
+    > :is(button, a):focus-visible {
+    background-color: color-mix(
+      in srgb,
+      currentColor calc(var(--md-sys-state-focus-state-layer-opacity, 0.1) * 100%),
+      transparent
+    );
+    outline: var(--rc-focus-ring, 3px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-data-table
+    th[data-rc-sort-key]
+    > :is(button, a):active {
+    background-color: color-mix(
+      in srgb,
+      currentColor calc(var(--md-sys-state-pressed-state-layer-opacity, 0.1) * 100%),
+      transparent
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-data-table th[aria-sort] {
+    color: var(--md-sys-color-on-surface, CanvasText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-data-table:focus-visible {
+    outline: var(--rc-focus-ring, 3px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+}

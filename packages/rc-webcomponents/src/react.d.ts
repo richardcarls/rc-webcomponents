@@ -25,6 +25,7 @@ import type { RCCarousel, RCCarouselItem } from '@rcarls/rc-carousel';
 import type { RCChip } from '@rcarls/rc-chip';
 import type { RCChipGroup } from '@rcarls/rc-chip-group';
 import type { RCCombobox } from '@rcarls/rc-combobox';
+import type { RCDataTable } from '@rcarls/rc-data-table';
 import type { RCDialog } from '@rcarls/rc-dialog';
 import type { RCDisclosure } from '@rcarls/rc-disclosure';
 import type { RCFab } from '@rcarls/rc-fab';
@@ -297,6 +298,23 @@ declare module 'react' {
           value?: RCCombobox['value'];
         },
         'rc-combobox-create' | 'rc-select-change' | 'rc-select-close' | 'rc-select-open'
+      >;
+
+      'rc-data-table': RCElementProps<
+        RCDataTable,
+        {
+          'default-sort-direction'?: RCAttribute<RCDataTable['defaultSortDirection']>;
+          'default-sort-key'?: RCAttribute<RCDataTable['defaultSortKey']>;
+          'sort-direction'?: RCAttribute<RCDataTable['sortDirection']>;
+          'sort-key'?: RCAttribute<RCDataTable['sortKey']>;
+          announce?: RCDataTable['announce'];
+          defaultSortDirection?: RCDataTable['defaultSortDirection'];
+          defaultSortKey?: RCDataTable['defaultSortKey'];
+          messages?: RCDataTable['messages'];
+          sortDirection?: RCDataTable['sortDirection'];
+          sortKey?: RCDataTable['sortKey'];
+        },
+        'rc-data-table-sort'
       >;
 
       'rc-dialog': RCElementProps<
@@ -1125,6 +1143,12 @@ declare module 'react' {
     '--rc-combobox-radius'?: string | number;
     '--rc-combobox-shadow'?: string | number;
     '--rc-combobox-toggle-size'?: string | number;
+    '--rc-data-table-cell-padding-block'?: string | number;
+    '--rc-data-table-cell-padding-inline'?: string | number;
+    '--rc-data-table-sort-ascending'?: string | number;
+    '--rc-data-table-sort-descending'?: string | number;
+    '--rc-data-table-sort-indicator-gap'?: string | number;
+    '--rc-data-table-sort-none'?: string | number;
     '--rc-dialog-background'?: string | number;
     '--rc-dialog-border'?: string | number;
     '--rc-dialog-color'?: string | number;

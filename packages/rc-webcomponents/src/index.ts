@@ -9,6 +9,7 @@ export * from '@rcarls/rc-carousel';
 export * from '@rcarls/rc-chip';
 export * from '@rcarls/rc-chip-group';
 export * from '@rcarls/rc-combobox';
+export * from '@rcarls/rc-data-table';
 export * from '@rcarls/rc-dialog';
 export * from '@rcarls/rc-disclosure';
 export * from '@rcarls/rc-fab';

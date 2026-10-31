@@ -1139,6 +1139,19 @@ for icon geometry), the default headline and supporting text, `trailing`
 - Keep one primary target per row. A trailing icon button is a second target
   only when the row itself does something else.
 
+### Data tables
+
+Material 3 has no data table, so `rc-data-table` keeps the Material 2 data
+table metrics in M3 roles: a 56px header and 52px rows, 16px cell padding,
+`outline-variant` dividers, Title Small headers in `on-surface-variant` and
+Body Medium cells. Hovered rows take the on-surface hover state layer, and the
+sort buttons in sortable headers take the full state layers with a 48px
+target. Use a table when people compare values across rows; use `rc-list` for
+items they act on one at a time. On compact windows, show fewer columns or
+switch to a list rather than scrolling a wide table sideways. Pair it with
+`rc-pagination` for long result sets, and say in the table's `<caption>` that
+the column header buttons sort it.
+
 ### Disclosures and accordions
 
 `rc-disclosure` around `<details>` is Material's expandable list item: a

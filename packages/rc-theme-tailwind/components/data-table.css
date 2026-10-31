@@ -1,0 +1,55 @@
+@layer rc-theme-tailwind.components {
+  /* A calm grid: hairline row dividers, muted headers, and a subtle row hover. */
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-data-table {
+    --rc-data-table-cell-padding-block: 0.625rem;
+    --rc-data-table-cell-padding-inline: 0.75rem;
+
+    color: var(--tailwind-on-surface, CanvasText);
+    font-size: var(--tailwind-font-size, 0.95rem);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-data-table > table {
+    inline-size: 100%;
+    border-collapse: collapse;
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-data-table > table > caption {
+    padding-block: 0.5rem;
+    font-weight: 650;
+    text-align: start;
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-data-table > table :is(th, td) {
+    border-block-end: 1px solid var(--tailwind-border-color, ButtonBorder);
+    text-align: start;
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-data-table > table > thead th {
+    color: var(--tailwind-on-surface-muted, CanvasText);
+    font-weight: 600;
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-data-table > table > tbody > tr:hover {
+    background: color-mix(in srgb, var(--tailwind-primary, Highlight) 5%, transparent);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
+    rc-data-table
+    th[data-rc-sort-key]
+    > :is(button, a) {
+    border-radius: var(--tailwind-radius-sm, 0.25rem);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-data-table:focus-visible,
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
+    rc-data-table
+    th[data-rc-sort-key]
+    > :is(button, a):focus-visible {
+    outline: var(--tailwind-focus-ring, 2px solid Highlight);
+    outline-offset: var(--tailwind-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-data-table th[aria-sort] {
+    color: var(--tailwind-on-surface, CanvasText);
+  }
+}

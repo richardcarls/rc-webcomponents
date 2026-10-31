@@ -100,6 +100,7 @@ test('aggregate component styles cover the reference styling surface', () => {
     ['rc-disclosure', ['display', 'block']],
     ['rc-accordion', ['display', 'grid']],
     ['rc-breadcrumbs', ['--rc-breadcrumbs-current-color', '']],
+    ['rc-data-table', ['--rc-data-table-cell-padding-inline', '']],
     ['rc-pagination', ['--rc-pagination-gap', '0.25rem']],
     ['rc-virtual-canvas', ['overflow', 'hidden']],
     ['rc-popover', ['--rc-popover-padding-inline', '0.75rem']],

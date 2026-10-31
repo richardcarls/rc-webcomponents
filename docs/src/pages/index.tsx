@@ -92,6 +92,7 @@ const packages = [
     'Breadcrumb trail enhancer for a native <nav> and ordered list of links',
     '/components/rc-breadcrumbs',
   ],
+  ['rc-data-table', 'Sortable-header enhancer for a native <table>', '/components/rc-data-table'],
   [
     'rc-pagination',
     'Pagination enhancer for a native <nav> holding page links or buttons',
