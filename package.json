@@ -56,6 +56,7 @@
     "test:design-guide": "node --test scripts/theme-material-design-guide.test.mjs scripts/theme-win31-design-guide.test.mjs",
     "test:typings": "tsc -p packages/rc-webcomponents/typings/tsconfig.react.json && tsc -p packages/rc-webcomponents/typings/tsconfig.solid.json && yarn workspace @rcarls/rc-webcomponents run test:typings",
     "test:blazor": "node scripts/test-blazor-bindings.mjs",
+    "test:server-templates": "node scripts/test-server-templates.mjs",
     "test:react-ssr": "node --test packages/rc-react/test/ssr.test.mjs && node --test packages/rc-react/test/ssr-react.test.mjs",
     "test:ssr": "yarn cem:analyze && node --test scripts/ssr-render.test.mjs",
     "format": "prettier --write .",

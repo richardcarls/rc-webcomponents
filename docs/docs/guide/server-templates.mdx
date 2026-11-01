@@ -1,0 +1,635 @@
+---
+title: Server templates
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Server templates
+
+`rc-pagination`, `rc-breadcrumbs`, and `rc-data-table` enhance markup that a
+server page already has: a `<nav>` of page links, an ordered list of links, a
+table with sortable headers. A server-rendered app writes that markup once, in
+a partial, and every page that uses it works with or without JavaScript. This
+guide gives those partials for Rails (ERB), Laravel (Blade), and ASP.NET Core
+(Razor components).
+
+The partials follow the same rules in every framework:
+
+- **The server owns the state.** The current page and sort order come from the
+  request, and the partials write them as attributes (`page`, `sort-key`,
+  `sort-direction`). The elements treat attributes the server sets as controlled
+  state.
+- **Every control is a link.** Paging and sorting send a new request, so the
+  markup works before the elements upgrade and with scripting off. Once they
+  upgrade, the elements add names, `aria-current`, and announcements, and fire
+  their events before the link navigates.
+- **The partial writes the accessible state too.** It sets `aria-current` and
+  `aria-sort` itself, so the first paint is correct and a page update that
+  morphs the DOM (Turbo, Livewire, htmx) keeps it. See
+  [Pages updated by DOM morphing](./ssr#pages-updated-by-dom-morphing).
+
+CI renders each partial on this page with ActionView, Blade, and the Razor
+`HtmlRenderer`, and checks the output against the markup the components
+document.
+
+## Loading the elements
+
+Register the elements in the page layout, from your bundler's entry or a CDN
+as in the [installation guide](./installation#cdn-no-bundler). Load the
+[structural stylesheets](./ssr#stylesheets-for-the-first-paint) so the markup
+has its layout before the definitions arrive:
+
+```html
+<link
+  rel="stylesheet"
+  href="https://esm.sh/@rcarls/rc-pagination/base.css"
+  data-rc-light-dom-base="rc-pagination"
+/>
+<link
+  rel="stylesheet"
+  href="https://esm.sh/@rcarls/rc-breadcrumbs/base.css"
+  data-rc-light-dom-base="rc-breadcrumbs"
+/>
+<link
+  rel="stylesheet"
+  href="https://esm.sh/@rcarls/rc-data-table/base.css"
+  data-rc-light-dom-base="rc-data-table"
+/>
+<script type="module" src="https://esm.sh/@rcarls/rc-webcomponents/rc-pagination/define"></script>
+<script type="module" src="https://esm.sh/@rcarls/rc-webcomponents/rc-breadcrumbs/define"></script>
+<script type="module" src="https://esm.sh/@rcarls/rc-webcomponents/rc-data-table/define"></script>
+```
+
+## Pagination
+
+The partial takes the current page, the page count, a function that returns
+the URL of a page, and an optional landmark name. It renders nothing for a
+single page, leaves out the previous and next links at either end, and lists
+the pages the way `paginationRange()` from `@rcarls/rc-pagination/range` does:
+the first and last page, the pages beside the current one, and an ellipsis for
+each hidden run of two or more pages. Each framework gets a port of that
+function, tested against the original.
+
+<Tabs groupId="server-framework">
+  <TabItem value="rails" label="Rails">
+
+```ruby title="app/helpers/rc_helper.rb"
+module RcHelper
+  # The pages to list, with :ellipsis for each run of hidden pages.
+  # A port of paginationRange() from @rcarls/rc-pagination/range.
+  def rc_pagination_range(page, total, siblings: 1, boundaries: 1)
+    last = [total.to_i, 0].max
+    return [] if last.zero?
+
+    current = page.to_i.clamp(1, last)
+    shown = [
+      *(1..boundaries),
+      *((last - boundaries + 1)..last),
+      *((current - siblings)..(current + siblings)),
+    ].select { |value| value.between?(1, last) }.uniq.sort
+
+    shown.each_with_index.flat_map do |value, index|
+      gap = index.zero? ? 1 : value - shown[index - 1]
+
+      if gap == 1
+        [value]
+      elsif gap == 2
+        [value - 1, value]
+      else
+        [:ellipsis, value]
+      end
+    end
+  end
+
+  # The direction a sortable header link asks for: the reverse of the current
+  # direction on the sorted column, else the column's first direction.
+  def rc_next_sort_direction(key, sort_key, sort_direction, first: "ascending")
+    return first unless key == sort_key
+
+    sort_direction == "ascending" ? "descending" : "ascending"
+  end
+end
+```
+
+```erb title="app/views/rc/_pagination.html.erb"
+<%# locals: (page:, total:, href:, label: nil) -%>
+<% if total > 1 -%>
+<rc-pagination page="<%= page %>" total="<%= total %>">
+  <nav <%= tag.attributes(aria: { label: label }) %>>
+    <ul>
+<% if page > 1 -%>
+      <li><a href="<%= href.call(page - 1) %>" data-rc-page="previous" rel="prev">Previous</a></li>
+<% end -%>
+<% rc_pagination_range(page, total).each do |item| -%>
+<% if item == :ellipsis -%>
+      <li aria-hidden="true">…</li>
+<% else -%>
+      <li><a <%= tag.attributes(href: href.call(item), data: { rc_page: item }, aria: { current: ("page" if item == page) }) %>><%= item %></a></li>
+<% end -%>
+<% end -%>
+<% if page < total -%>
+      <li><a href="<%= href.call(page + 1) %>" data-rc-page="next" rel="next">Next</a></li>
+<% end -%>
+    </ul>
+  </nav>
+</rc-pagination>
+<% end -%>
+```
+
+Render it from a view with a lambda for the page URLs:
+
+```erb
+<%= render "rc/pagination",
+  page: @page,
+  total: @page_count,
+  href: ->(page) { members_path(page: page) } %>
+```
+
+With Pagy, pass `@pagy.page`, `@pagy.last`, and `->(page) { pagy_url_for(@pagy, page) }`.
+
+  </TabItem>
+  <TabItem value="laravel" label="Laravel">
+
+```php title="app/Support/Rc.php"
+<?php
+
+namespace App\Support;
+
+final class Rc
+{
+    /**
+     * The pages to list, with 'ellipsis' for each run of hidden pages.
+     * A port of paginationRange() from @rcarls/rc-pagination/range.
+     *
+     * @return list<int|'ellipsis'>
+     */
+    public static function paginationRange(int $page, int $total, int $siblings = 1, int $boundaries = 1): array
+    {
+        $last = max(0, $total);
+
+        if ($last === 0) {
+            return [];
+        }
+
+        $current = min(max(1, $page), $last);
+        $shown = [];
+
+        $add = function (int $from, int $to) use (&$shown, $last): void {
+            for ($value = max(1, $from); $value <= min($last, $to); $value++) {
+                $shown[$value] = true;
+            }
+        };
+
+        $add(1, $boundaries);
+        $add($last - $boundaries + 1, $last);
+        $add($current - $siblings, $current + $siblings);
+
+        $pages = array_keys($shown);
+        sort($pages);
+
+        $items = [];
+        $previous = null;
+
+        foreach ($pages as $value) {
+            if ($previous !== null && $value - $previous === 2) {
+                $items[] = $previous + 1;
+            } elseif ($previous !== null && $value - $previous > 2) {
+                $items[] = 'ellipsis';
+            }
+
+            $items[] = $value;
+            $previous = $value;
+        }
+
+        return $items;
+    }
+
+    /**
+     * The direction a sortable header link asks for: the reverse of the current
+     * direction on the sorted column, else the column's first direction.
+     */
+    public static function nextSortDirection(string $key, ?string $sortKey, string $direction, string $first = 'ascending'): string
+    {
+        if ($key !== $sortKey) {
+            return $first;
+        }
+
+        return $direction === 'ascending' ? 'descending' : 'ascending';
+    }
+}
+```
+
+```html title="resources/views/components/rc/pagination.blade.php"
+@props(['page', 'total', 'href', 'label' => null]) @if ($total > 1)
+<rc-pagination page="{{ $page }}" total="{{ $total }}">
+  <nav @if ($label) aria-label="{{ $label }}" @endif>
+    <ul>
+      @if ($page > 1)
+      <li><a href="{{ $href($page - 1) }}" data-rc-page="previous" rel="prev">Previous</a></li>
+      @endif @foreach (\App\Support\Rc::paginationRange($page, $total) as $item) @if ($item ===
+      'ellipsis')
+      <li aria-hidden="true">…</li>
+      @else
+      <li>
+        <a
+          href="{{ $href($item) }}"
+          data-rc-page="{{ $item }}"
+          @if
+          ($item=""
+          =""
+          ="$page)"
+          aria-current="page"
+          @endif
+          >{{ $item }}</a
+        >
+      </li>
+      @endif @endforeach @if ($page < $total)
+      <li><a href="{{ $href($page + 1) }}" data-rc-page="next" rel="next">Next</a></li>
+      @endif
+    </ul>
+  </nav>
+</rc-pagination>
+@endif
+```
+
+Render it from a view, here with a paginator from `paginate()`:
+
+```html
+<x-rc.pagination
+  :page="$members->currentPage()"
+  :total="$members->lastPage()"
+  :href="fn (int $page) => $members->url($page)"
+/>
+```
+
+Pass integers: the component compares `page` with each listed page strictly.
+
+  </TabItem>
+  <TabItem value="razor" label="Razor">
+
+```razor title="Components/Rc/RcPagination.razor"
+@if (Total > 1)
+{
+    <rc-pagination page="@Page" total="@Total">
+        <nav aria-label="@Label">
+            <ul>
+                @if (Page > 1)
+                {
+                    <li><a href="@Href(Page - 1)" data-rc-page="previous" rel="prev">Previous</a></li>
+                }
+                @foreach (var item in Range(Page, Total))
+                {
+                    if (item is int number)
+                    {
+                        <li><a href="@Href(number)" data-rc-page="@number" aria-current="@(number == Page ? "page" : null)">@number</a></li>
+                    }
+                    else
+                    {
+                        <li aria-hidden="true">…</li>
+                    }
+                }
+                @if (Page < Total)
+                {
+                    <li><a href="@Href(Page + 1)" data-rc-page="next" rel="next">Next</a></li>
+                }
+            </ul>
+        </nav>
+    </rc-pagination>
+}
+
+@code {
+    [Parameter, EditorRequired] public int Page { get; set; }
+    [Parameter, EditorRequired] public int Total { get; set; }
+    [Parameter, EditorRequired] public Func<int, string> Href { get; set; } = default!;
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// The pages to list, with <c>null</c> for each run of hidden pages.
+    /// A port of paginationRange() from @rcarls/rc-pagination/range.
+    /// </summary>
+    public static IReadOnlyList<int?> Range(int page, int total, int siblings = 1, int boundaries = 1)
+    {
+        var last = Math.Max(0, total);
+
+        if (last == 0)
+        {
+            return [];
+        }
+
+        var current = Math.Clamp(page, 1, last);
+        var shown = new SortedSet<int>();
+
+        void Add(int from, int to)
+        {
+            for (var value = Math.Max(1, from); value <= Math.Min(last, to); value++)
+            {
+                shown.Add(value);
+            }
+        }
+
+        Add(1, boundaries);
+        Add(last - boundaries + 1, last);
+        Add(current - siblings, current + siblings);
+
+        var items = new List<int?>();
+        int? previous = null;
+
+        foreach (var value in shown)
+        {
+            if (previous is int before && value - before == 2)
+            {
+                items.Add(before + 1);
+            }
+            else if (previous is int start && value - start > 2)
+            {
+                items.Add(null);
+            }
+
+            items.Add(value);
+            previous = value;
+        }
+
+        return items;
+    }
+}
+```
+
+Render it from a page or component:
+
+```razor
+<RcPagination Page="page" Total="pageCount" Href="@(n => $"/members?page={n}")" />
+```
+
+Razor drops an attribute whose value is `null`, so `aria-label` and
+`aria-current` appear only when they have a value.
+
+  </TabItem>
+</Tabs>
+
+The visible text, "Previous" and "Next", is the partial's. Translate it with
+your framework's localization helpers. The element translates only the names it
+adds, such as "Page 3", and leaves visible text alone.
+
+## Breadcrumbs
+
+The partial takes the trail as a list of label and URL pairs, ending with the
+current page, which gets `aria-current="page"`. The element names the landmark
+"Breadcrumb" unless you pass a name.
+
+<Tabs groupId="server-framework">
+  <TabItem value="rails" label="Rails">
+
+```erb title="app/views/rc/_breadcrumbs.html.erb"
+<%# locals: (items:, label: nil) -%>
+<rc-breadcrumbs>
+  <nav <%= tag.attributes(aria: { label: label }) %>>
+    <ol>
+<% items.each_with_index do |(text, path), index| -%>
+      <li><a <%= tag.attributes(href: path, aria: { current: ("page" if index == items.size - 1) }) %>><%= text %></a></li>
+<% end -%>
+    </ol>
+  </nav>
+</rc-breadcrumbs>
+```
+
+```erb
+<%= render "rc/breadcrumbs", items: [
+  ["Home", root_path],
+  ["Settings", settings_path],
+  ["Members", settings_members_path],
+] %>
+```
+
+  </TabItem>
+  <TabItem value="laravel" label="Laravel">
+
+```html title="resources/views/components/rc/breadcrumbs.blade.php"
+@props(['items', 'label' => null])
+<rc-breadcrumbs>
+  <nav @if ($label) aria-label="{{ $label }}" @endif>
+    <ol>
+      @foreach ($items as [$text, $url])
+      <li><a href="{{ $url }}" @if ($loop->last) aria-current="page" @endif>{{ $text }}</a></li>
+      @endforeach
+    </ol>
+  </nav>
+</rc-breadcrumbs>
+```
+
+```html
+<x-rc.breadcrumbs
+  :items="[
+  ['Home', route('home')],
+  ['Settings', route('settings')],
+  ['Members', route('settings.members')],
+]"
+/>
+```
+
+  </TabItem>
+  <TabItem value="razor" label="Razor">
+
+```razor title="Components/Rc/RcBreadcrumbs.razor"
+<rc-breadcrumbs>
+    <nav aria-label="@Label">
+        <ol>
+            @for (var index = 0; index < Items.Count; index++)
+            {
+                var (text, href) = Items[index];
+
+                <li><a href="@href" aria-current="@(index == Items.Count - 1 ? "page" : null)">@text</a></li>
+            }
+        </ol>
+    </nav>
+</rc-breadcrumbs>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<(string Text, string Href)> Items { get; set; } = [];
+    [Parameter] public string? Label { get; set; }
+}
+```
+
+```razor
+<RcBreadcrumbs Items="@([("Home", "/"), ("Settings", "/settings"), ("Members", "/settings/members")])" />
+```
+
+  </TabItem>
+</Tabs>
+
+## Sortable tables
+
+The server sorts the rows, so each sortable header is a link to the same page
+with the other sort order. The partial renders one header cell: its
+`data-rc-sort-key`, `aria-sort` when the table is sorted by that column, and a
+link that asks for the next direction. That is the reverse direction on the
+sorted column, and on any other column its first direction, ascending unless
+`first` is `descending`. The page wraps the table in `<rc-data-table>` with the
+current `sort-key` and `sort-direction`.
+
+<Tabs groupId="server-framework">
+  <TabItem value="rails" label="Rails">
+
+```erb title="app/views/rc/_sort_header.html.erb"
+<%# locals: (key:, label:, sort:, direction:, href:, first: "ascending") -%>
+<th scope="col" <%= tag.attributes(data: { rc_sort_key: key, rc_sort_first: (first if first == "descending") }, aria: { sort: (direction if key == sort) }) %>>
+  <a href="<%= href.call(key, rc_next_sort_direction(key, sort, direction, first: first)) %>"><%= label %></a>
+</th>
+```
+
+```erb
+<% sort_href = ->(key, direction) { members_path(sort: key, dir: direction) } %>
+<rc-data-table sort-key="<%= @sort %>" sort-direction="<%= @direction %>">
+  <table>
+    <caption>Members. Column headers with links sort the table.</caption>
+    <thead>
+      <tr>
+        <%= render "rc/sort_header", key: "name", label: "Name",
+          sort: @sort, direction: @direction, href: sort_href %>
+        <%= render "rc/sort_header", key: "joined", label: "Joined", first: "descending",
+          sort: @sort, direction: @direction, href: sort_href %>
+        <th scope="col">Role</th>
+      </tr>
+    </thead>
+    <tbody>
+      <%= render @members %>
+    </tbody>
+  </table>
+</rc-data-table>
+```
+
+  </TabItem>
+  <TabItem value="laravel" label="Laravel">
+
+```html title="resources/views/components/rc/sort-header.blade.php"
+@props(['key', 'label', 'sort', 'direction', 'href', 'first' => 'ascending'])
+<th
+  scope="col"
+  data-rc-sort-key="{{ $key }}"
+  @if
+  ($first=""
+  =""
+  ="descending"
+  )
+  data-rc-sort-first="descending"
+  @endif
+  @if
+  ($key=""
+  =""
+  ="$sort)"
+  aria-sort="{{ $direction }}"
+  @endif
+>
+  <a href="{{ $href($key, \App\Support\Rc::nextSortDirection($key, $sort, $direction, $first)) }}"
+    >{{ $label }}</a
+  >
+</th>
+```
+
+```html
+@php($sortHref = fn (string $key, string $direction) => route('members.index', ['sort' => $key,
+'dir' => $direction]))
+<rc-data-table sort-key="{{ $sort }}" sort-direction="{{ $direction }}">
+  <table>
+    <caption>
+      Members. Column headers with links sort the table.
+    </caption>
+    <thead>
+      <tr>
+        <x-rc.sort-header
+          key="name"
+          label="Name"
+          :sort="$sort"
+          :direction="$direction"
+          :href="$sortHref"
+        />
+        <x-rc.sort-header
+          key="joined"
+          label="Joined"
+          first="descending"
+          :sort="$sort"
+          :direction="$direction"
+          :href="$sortHref"
+        />
+        <th scope="col">Role</th>
+      </tr>
+    </thead>
+    <tbody>
+      @each('members.row', $members, 'member')
+    </tbody>
+  </table>
+</rc-data-table>
+```
+
+  </TabItem>
+  <TabItem value="razor" label="Razor">
+
+```razor title="Components/Rc/RcSortHeader.razor"
+<th scope="col" data-rc-sort-key="@Key" data-rc-sort-first="@(First == "descending" ? First : null)" aria-sort="@(Key == SortKey ? SortDirection : null)">
+    <a href="@Href(Key, NextDirection)">@Label</a>
+</th>
+
+@code {
+    [Parameter, EditorRequired] public string Key { get; set; } = "";
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter, EditorRequired] public string? SortKey { get; set; }
+    [Parameter, EditorRequired] public string SortDirection { get; set; } = "ascending";
+    [Parameter, EditorRequired] public Func<string, string, string> Href { get; set; } = default!;
+    [Parameter] public string First { get; set; } = "ascending";
+
+    /// <summary>
+    /// The direction the link asks for: the reverse of the current direction
+    /// on the sorted column, else the column's first direction.
+    /// </summary>
+    private string NextDirection => Key != SortKey
+        ? First
+        : SortDirection == "ascending" ? "descending" : "ascending";
+}
+```
+
+```razor
+<rc-data-table sort-key="@sort" sort-direction="@direction">
+    <table>
+        <caption>Members. Column headers with links sort the table.</caption>
+        <thead>
+            <tr>
+                <RcSortHeader Key="name" Label="Name" SortKey="@sort" SortDirection="@direction" Href="SortHref" />
+                <RcSortHeader Key="joined" Label="Joined" First="descending" SortKey="@sort" SortDirection="@direction" Href="SortHref" />
+                <th scope="col">Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var member in members)
+            {
+                <MemberRow Member="member" />
+            }
+        </tbody>
+    </table>
+</rc-data-table>
+
+@code {
+    private static string SortHref(string key, string direction) => $"/members?sort={key}&dir={direction}";
+}
+```
+
+  </TabItem>
+</Tabs>
+
+Read the sort key and direction from the query string through an allowlist
+before they reach the database query, and fall back to the default order for
+any other value:
+
+```ruby
+SORTS = { "name" => :name, "joined" => :created_at }.freeze
+
+@sort = SORTS.key?(params[:sort]) ? params[:sort] : "name"
+@direction = params[:dir] == "descending" ? "descending" : "ascending"
+@members = Member.order(SORTS[@sort] => @direction == "ascending" ? :asc : :desc)
+```
+
+## After the page loads
+
+The elements fire `rc-pagination-change` and `rc-data-table-sort` before a link
+navigates. Leave the event alone and the link works as usual, including when
+Turbo or `hx-boost` takes it over. To load the new rows from your own script
+instead, cancel the event; that also cancels the link.

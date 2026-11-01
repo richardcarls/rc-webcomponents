@@ -57,3 +57,22 @@ jobs:
 
       - name: Compile the Blazor event bindings against a Razor fixture
         run: node scripts/test-blazor-bindings.mjs
+
+  server-templates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # Ruby, Bundler, PHP, and Composer come with the runner image.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Imports only the TypeScript range helper, so it needs no install.
+      - name: Render the server templates guide with ActionView, Blade, and Razor
+        run: node scripts/test-server-templates.mjs

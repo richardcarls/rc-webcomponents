@@ -1,0 +1,90 @@
+{
+  "pagination": [
+    {
+      "name": "middle",
+      "page": 6,
+      "total": 12,
+      "href": "?page={page}"
+    },
+    {
+      "name": "first",
+      "page": 1,
+      "total": 3,
+      "href": "?page={page}"
+    },
+    {
+      "name": "last",
+      "page": 3,
+      "total": 3,
+      "href": "/members?page={page}&q=a",
+      "label": "Member pages"
+    },
+    {
+      "name": "single",
+      "page": 1,
+      "total": 1,
+      "href": "?page={page}"
+    }
+  ],
+  "breadcrumbs": [
+    {
+      "name": "docs",
+      "items": [
+        ["Home", "/"],
+        ["Settings", "/settings"],
+        ["Members", "/settings/members"]
+      ]
+    },
+    {
+      "name": "trail",
+      "items": [
+        ["Home", "/"],
+        ["Tom & Jerry <3>", "/shows/1?a=1&b=2"],
+        ["Members", "/settings/members"]
+      ]
+    },
+    {
+      "name": "named",
+      "items": [
+        ["Home", "/"],
+        ["Members", "/members"]
+      ],
+      "label": "You are here"
+    }
+  ],
+  "sortHeaders": [
+    {
+      "name": "sorted",
+      "key": "name",
+      "label": "Name",
+      "sort": "name",
+      "direction": "ascending",
+      "href": "?sort={key}&dir={direction}"
+    },
+    {
+      "name": "sorted-descending",
+      "key": "name",
+      "label": "Name",
+      "sort": "name",
+      "direction": "descending",
+      "href": "?sort={key}&dir={direction}"
+    },
+    {
+      "name": "unsorted",
+      "key": "role",
+      "label": "Role & team",
+      "sort": "name",
+      "direction": "descending",
+      "href": "?sort={key}&dir={direction}"
+    },
+    {
+      "name": "first-descending",
+      "key": "joined",
+      "label": "Joined",
+      "sort": "name",
+      "direction": "ascending",
+      "first": "descending",
+      "href": "?sort={key}&dir={direction}"
+    }
+  ]
+}
