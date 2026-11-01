@@ -5,5 +5,6 @@ export default {
   'rc-bottom-sheet': {
     markup:
       '<rc-bottom-sheet><dialog aria-label="Filters"><p>Options</p><button type="button">Done</button></dialog></rc-bottom-sheet>',
+    morphPending: 'renders into its light DOM, which a morph replaces',
   },
 } satisfies SsrFixtures;

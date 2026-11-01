@@ -5,5 +5,6 @@ export default {
   'rc-segmented-button': {
     markup:
       '<rc-segmented-button><fieldset><legend>Size</legend><label><input type="radio" name="size" value="s" checked> Small</label><label><input type="radio" name="size" value="l"> Large</label></fieldset></rc-segmented-button>',
+    morphPending: 'reflects default property values, which a morph removes',
   },
 } satisfies SsrFixtures;

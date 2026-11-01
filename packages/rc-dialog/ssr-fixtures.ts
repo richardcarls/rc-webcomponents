@@ -5,5 +5,6 @@ export default {
   'rc-dialog': {
     markup:
       '<rc-dialog><dialog aria-label="Hello"><p>Dialog content.</p><button type="button">Close</button></dialog></rc-dialog>',
+    morphPending: 'renders into its light DOM, which a morph replaces',
   },
 } satisfies SsrFixtures;

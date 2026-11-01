@@ -5,5 +5,6 @@ export default {
   'rc-slider': {
     markup:
       '<rc-slider><input type="range" min="0" max="100" value="40" aria-label="Volume"></rc-slider>',
+    morphPending: 'reflects default property values, which a morph removes',
   },
 } satisfies SsrFixtures;

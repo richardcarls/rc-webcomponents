@@ -5,5 +5,6 @@ export default {
   'rc-combobox': {
     markup:
       '<rc-combobox placeholder="Search fruit"><select name="fruit" aria-label="Fruit"><option value="apple">Apple</option><option value="banana">Banana</option></select></rc-combobox>',
+    morphPending: 'reflects default property values, which a morph removes',
   },
 } satisfies SsrFixtures;

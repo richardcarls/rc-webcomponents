@@ -141,6 +141,11 @@ short and tell the tool to read `AGENTS.md` before project work.
   `HydrationController`: render as if the light DOM were absent while
   `serverView` is true. Mark an element that cannot yet pass with a `pending`
   reason; its test then runs as an expected failure.
+- The same fixtures drive `packages/rc-webcomponents/src/ssr-morph.test.ts`,
+  which morphs each upgraded fixture with idiomorph against its own markup,
+  the way Turbo, Livewire, htmx, and Blazor's enhanced navigation update a
+  page, and requires the light DOM to keep every attribute it had. Mark an
+  element that cannot yet recover with a `morphPending` reason.
 - Register light-DOM base styles through `rc-common`'s
   `defineLightDomBaseStyles(tag, css)` at module scope. The package build
   emits the registered CSS as `dist/base.css`, exported as `./base.css`, so

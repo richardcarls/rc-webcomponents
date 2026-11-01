@@ -5,5 +5,7 @@ export default {
   'rc-menu-button': {
     markup:
       '<rc-menu-button><button slot="trigger" type="button">File</button><rc-menu label="File"><button type="button">New</button></rc-menu></rc-menu-button>',
+    morphPending:
+      'reflects default property values and writes state attributes, which a morph removes',
   },
 } satisfies SsrFixtures;

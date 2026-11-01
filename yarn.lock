@@ -5619,6 +5619,7 @@ __metadata:
     "@yarnpkg/types": "npm:^4.0.1"
     axe-core: "npm:^4.11.4"
     husky: "npm:^9.1.7"
+    idiomorph: "npm:0.8.0"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
     prettier: "npm:^3.8.4"
@@ -11005,6 +11006,13 @@ __metadata:
   peerDependencies:
     postcss: ^8.1.0
   checksum: 10c0/39c92936fabd23169c8611d2b5cc39e39d10b19b0d223352f20a7579f75b39d5f786114a6b8fc62bee8c5fed59ba9e0d38f7219a4db383e324fb3061664b043d
+  languageName: node
+  linkType: hard
+
+"idiomorph@npm:0.8.0":
+  version: 0.8.0
+  resolution: "idiomorph@npm:0.8.0"
+  checksum: 10c0/9d4eb98b685ecb801c50af9d41b2a03affc7eb4865d48c277a839185a55f0e297c69ebb0ecc727e78b5568761cc74e533f7f42d13bef56337c0ab5e8a08bbde7
   languageName: node
   linkType: hard
 
