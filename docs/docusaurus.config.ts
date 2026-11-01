@@ -73,7 +73,7 @@ const config: Config = {
       maxHeadingLevel: 3,
     },
     prism: {
-      additionalLanguages: ['bash'],
+      additionalLanguages: ['bash', 'csharp', 'cshtml', 'erb', 'php', 'ruby'],
     },
     ...(variant === 'next' && {
       announcementBar: {

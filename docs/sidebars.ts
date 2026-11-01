@@ -11,6 +11,7 @@ const sidebars: SidebarsConfig = {
         'guide/progressive-enhancement',
         'guide/compatibility',
         'guide/ssr',
+        'guide/server-templates',
         'guide/localization',
         'guide/accessibility-testing',
         'guide/performance',
