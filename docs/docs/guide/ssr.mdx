@@ -126,5 +126,6 @@ render. Every element passes except the internal `rc-editor-toolbar`, which
 `rc-markdown-editor` hydrates correctly; on its own it renders nothing until the editor
 configures it.
 
-Hydration is not yet wired into a React framework. `@lit-labs/nextjs` is a webpack plugin
-for Next.js 13 to 15, so a Next.js 16 app with Turbopack keeps the native-markup path above.
+React apps render shadow roots on the server through `@lit-labs/ssr-react`; the
+[React guide](./react#declarative-shadow-dom-with-react) covers the setup and its limits in
+the Next.js App Router.

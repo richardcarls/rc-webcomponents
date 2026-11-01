@@ -3870,7 +3870,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lit-labs/ssr@npm:^4.1.0":
+"@lit-labs/ssr-react@npm:0.3.4":
+  version: 0.3.4
+  resolution: "@lit-labs/ssr-react@npm:0.3.4"
+  dependencies:
+    "@lit-labs/ssr": "npm:^4.0.0"
+    "@lit-labs/ssr-client": "npm:^1.1.7"
+  peerDependencies:
+    "@types/react": 17 || 18 || 19
+    react: 17 || 18 || 19
+  checksum: 10c0/6af602e1a4f184f31c63640281d26816c934c338afb1d5886e53f76e39cd2e07c7bfa2c43f4c89d7a29722496d54f813c98e2dae03015e6a24969d772eaa7170
+  languageName: node
+  linkType: hard
+
+"@lit-labs/ssr@npm:^4.0.0, @lit-labs/ssr@npm:^4.1.0":
   version: 4.1.0
   resolution: "@lit-labs/ssr@npm:4.1.0"
   dependencies:
@@ -5110,6 +5123,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-react@workspace:packages/rc-react"
   dependencies:
+    "@lit-labs/ssr-react": "npm:0.3.4"
     "@lit/react": "npm:^1.0.8"
     "@rcarls/rc-webcomponents": "workspace:*"
     "@types/react": "npm:^19.2.0"
