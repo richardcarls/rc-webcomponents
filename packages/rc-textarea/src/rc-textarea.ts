@@ -657,6 +657,12 @@ export class RCTextarea extends LitElement {
       this._document = new RCDocument(this._$editor as HTMLDivElement);
       this._bindEditorEvents(this._$editor);
       this._syncLabel();
+
+      const $textarea = this._$textareaRef?.deref();
+
+      if ($textarea) {
+        this._syncPlaceholder($textarea);
+      }
     }
 
     this._resizeObserver = new ResizeObserver(() => {
@@ -895,15 +901,13 @@ export class RCTextarea extends LitElement {
     $textarea.setAttribute('aria-hidden', 'true');
     $textarea.tabIndex = -1;
 
-    // Sync attributes from textarea → editor ARIA / state
-    if (this._$editor) {
+    // Sync attributes from textarea → editor ARIA / state. Before the first
+    // update, firstUpdated() does this once the editor is rendered; a
+    // server-rendered editor already exists then, but must not differ from a
+    // client render.
+    if (this.hasUpdated) {
       this._syncLabel();
-
-      const placeholder = $textarea.getAttribute('placeholder');
-
-      if (placeholder) {
-        this._$editor.setAttribute('aria-placeholder', placeholder);
-      }
+      this._syncPlaceholder($textarea);
     }
 
     // Adopt initial value from textarea after value/defaultValue precedence.
@@ -921,8 +925,10 @@ export class RCTextarea extends LitElement {
     this._syncReadOnly();
     this._syncContentAttributes();
 
-    // Sync typography from textarea's computed style to editor
-    this._syncTypography($textarea);
+    // Sync typography from a textarea that replaces the first one.
+    if (this.hasUpdated) {
+      this._syncTypography($textarea);
+    }
 
     this._scheduleRender();
   }
@@ -2198,6 +2204,17 @@ export class RCTextarea extends LitElement {
     }
 
     this._$editor.removeAttribute('aria-label');
+  }
+
+  /** Mirrors the native placeholder as the editor's `aria-placeholder`. */
+  protected _syncPlaceholder($textarea: HTMLTextAreaElement): void {
+    const placeholder = $textarea.getAttribute('placeholder');
+
+    if (placeholder) {
+      this._$editor?.setAttribute('aria-placeholder', placeholder);
+    } else {
+      this._$editor?.removeAttribute('aria-placeholder');
+    }
   }
 
   protected _syncTypography($textarea: HTMLTextAreaElement): void {

@@ -1772,3 +1772,18 @@ describe('RCTextarea — content language', () => {
     expect(getComputedStyle(getEditor(host).querySelector('.widget')!).unicodeBidi).toBe('isolate');
   });
 });
+
+test('mirrors the native placeholder as the editor aria-placeholder', async () => {
+  const screen = render(html`
+    <rc-textarea>
+      <textarea aria-label="Message" placeholder="Type a message"></textarea>
+    </rc-textarea>
+  `);
+  const host = screen.container.querySelector('rc-textarea')!;
+
+  await host.updateComplete;
+
+  const $editor = host.shadowRoot!.querySelector('#editor')!;
+
+  expect($editor.getAttribute('aria-placeholder')).toBe('Type a message');
+});
