@@ -213,20 +213,20 @@
     "dialog": {
       "initialGzip": 12715,
       "initialBrotli": 11535,
-      "totalGzip": 21175,
-      "totalBrotli": 18982,
+      "totalGzip": 21723,
+      "totalBrotli": 19369,
       "largestLazyGzip": 9484,
       "initialChunks": 2,
       "lazyChunks": 1
     },
     "select": {
-      "initialGzip": 30640,
-      "initialBrotli": 26825,
-      "totalGzip": 52349,
-      "totalBrotli": 45888,
+      "initialGzip": 31068,
+      "initialBrotli": 27256,
+      "totalGzip": 52773,
+      "totalBrotli": 46255,
       "largestLazyGzip": 9182,
       "initialChunks": 2,
-      "lazyChunks": 3
+      "lazyChunks": 4
     },
     "textarea": {
       "initialGzip": 33926,
@@ -283,10 +283,10 @@
       "lazyChunks": 0
     },
     "materialTheme": {
-      "initialGzip": 35605,
-      "initialBrotli": 27598,
-      "totalGzip": 35605,
-      "totalBrotli": 27598,
+      "initialGzip": 36211,
+      "initialBrotli": 27920,
+      "totalGzip": 36211,
+      "totalBrotli": 27920,
       "largestLazyGzip": 1024,
       "initialChunks": 1,
       "lazyChunks": 0
