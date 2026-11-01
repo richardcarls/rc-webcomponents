@@ -193,3 +193,74 @@ Turbopack:
 - React's development build warns that attributes such as `orientation` or `has-title` differ
   from the server HTML: the elements write them on their hosts. Add `suppressHydrationWarning`
   to an element to silence it; production is unaffected.
+
+### React Router
+
+Declarative shadow DOM also works in React Router's framework mode, verified with React
+Router 8.5 and Vite 8. React Router has no server components by default, so every route
+module renders on the server and hydrates in the browser. The setup differs from Next.js in
+three places:
+
+- **Bundle React into the server build.** React Router's server build imports React from
+  `node_modules`, and Node gives a module that names an import from a CommonJS package, such
+  as `jsx` from `react/jsx-runtime`, the value it had when the package loaded. The patch from
+  `enable-lit-ssr.js` replaces that function afterward, so plain tags render without shadow
+  roots; wrappers still get them, because they call `React.createElement` on React's default
+  export. Bundling every dependency into the production server build makes the patch apply to
+  all of them. Bundle all of them rather than a list: a package left out, such as
+  `@lit/react`, loads a second copy of React.
+- **Register the elements on the server in `entry.server.tsx`**, after the patch, and in the
+  browser with `RcRegister`. A `define` import in a route module also runs in the browser
+  before React hydrates, and React's development build then reports the attributes the
+  elements wrote on their native children, such as `role="switch"` or a page link's
+  `aria-label`.
+- **Load hydration support from the root module.** In the browser, `enable-lit-ssr.js` loads
+  Lit's hydration support, which must run before any element definition.
+
+```ts title="vite.config.ts"
+import { reactRouter } from '@react-router/dev/vite';
+import { defineConfig } from 'vite';
+
+export default defineConfig(({ command }) => ({
+  // Bundle React with the server build so the Lit patch reaches the JSX runtime.
+  ssr: command === 'build' ? { noExternal: true } : {},
+  plugins: [reactRouter()],
+}));
+```
+
+```tsx title="app/entry.server.tsx"
+import '@lit-labs/ssr-react/enable-lit-ssr.js';
+import '@rcarls/rc-webcomponents/rc-chip/define';
+import '@rcarls/rc-webcomponents/rc-switch/define';
+
+// ...the rest of the default entry (`npx react-router reveal entry.server`)
+```
+
+```tsx title="app/root.tsx"
+import '@lit-labs/ssr-react/enable-lit-ssr.js';
+import { RcRegister } from '@rcarls/rc-react';
+import { Links, Meta, Scripts, ScrollRestoration } from 'react-router';
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        {children}
+        <RcRegister tags={['rc-chip', 'rc-switch']} />
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+```
+
+The development server keeps its default externals, because it cannot run React's CommonJS
+modules once they are bundled. In development, wrappers still render their shadow roots on the
+server and plain tags render theirs in the browser, so the page is the same after hydration.
+The `@lit-labs/ssr-react` 0.3.4 development-mode bug described above does not appear, since
+the development server never reaches the patched JSX runtime.
