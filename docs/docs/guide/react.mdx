@@ -164,3 +164,32 @@ To keep the native markup laid out before upgrade, load the static base and pre-
 stylesheets. With Tailwind CSS, also import `@rcarls/rc-theme-tailwind/layers.css` first so
 Preflight cannot override component structure. The [server rendering guide](./ssr) covers
 both.
+
+### Declarative shadow DOM with React
+
+By default the server sends each element's light DOM only, and the element renders its shadow
+DOM once its definition loads. To send the shadow DOM in the server HTML as well, use
+[`@lit-labs/ssr-react`](https://www.npmjs.com/package/@lit-labs/ssr-react). This works with
+the `@rcarls/rc-react` wrappers and with plain tags, and was verified with Next.js 16 and
+Turbopack:
+
+- Import `@lit-labs/ssr-react/enable-lit-ssr.js` first in a client component that renders the
+  elements, and import the element definitions there too. On the server it patches React's
+  element creation to add each element's declarative shadow root; in the browser it loads
+  Lit's hydration support.
+- Render the elements from client components only. A server component's output reaches the
+  browser twice, as HTML and as React's server component payload, and the payload still
+  holds the `<template>` the browser has already turned into a shadow root. React then
+  reports a hydration error and renders the whole tree again.
+- Leave `jsxImportSource` at its default. Setting it to `@lit-labs/ssr-react` as well as
+  importing the patch renders each shadow root twice, and the package's JSX runtime declares
+  no JSX types.
+- `@lit-labs/ssr-react` 0.3.4 joins the server output with `join('')` in development mode,
+  which writes Lit's lazy render functions into the HTML as text. Until it is fixed upstream,
+  patch `lib/node/wrap-jsx.js` to use `collectResultSync(shadowContents)`, as its production
+  path does.
+- Put event handlers such as `onClick` on the native child. On a wrapper, the server writes
+  the function's source into an `onclick` attribute.
+- React's development build warns that attributes such as `orientation` or `has-title` differ
+  from the server HTML: the elements write them on their hosts. Add `suppressHydrationWarning`
+  to an element to silence it; production is unaffected.
