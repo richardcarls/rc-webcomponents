@@ -122,13 +122,9 @@ import '@rcarls/rc-webcomponents/rc-card/define';
 
 Each package keeps a server-render fixture for every element it defines, and CI renders it
 on the server, hydrates it in a browser, and checks that the result matches a client
-render. Every element passes except two, which still render correctly but keep a server
-value after hydrating:
-
-- `rc-textarea`: the line-number gutter keeps the line height measured over the server
-  markup until the editor next re-measures.
-- `rc-editor-toolbar`: internal to `rc-markdown-editor`, which hydrates it correctly; on its
-  own it renders nothing until the editor configures it.
+render. Every element passes except the internal `rc-editor-toolbar`, which
+`rc-markdown-editor` hydrates correctly; on its own it renders nothing until the editor
+configures it.
 
 Hydration is not yet wired into a React framework. `@lit-labs/nextjs` is a webpack plugin
 for Next.js 13 to 15, so a Next.js 16 app with Turbopack keeps the native-markup path above.
