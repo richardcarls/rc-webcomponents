@@ -145,7 +145,17 @@ short and tell the tool to read `AGENTS.md` before project work.
   which morphs each upgraded fixture with idiomorph against its own markup,
   the way Turbo, Livewire, htmx, and Blazor's enhanced navigation update a
   page, and requires the light DOM to keep every attribute it had. Mark an
-  element that cannot yet recover with a `morphPending` reason.
+  element that cannot yet recover with a `morphPending` reason. To recover:
+  - Declare reflected properties that have a default with `useDefault: true`,
+    and call `includeDefaults(this, changed)` from `willUpdate()` when
+    first-render logic checks `changed.has()` on one of them.
+  - An element that writes attributes on its host or light DOM (a default
+    `role`, `tabindex`, ARIA state on native children, state attributes, or
+    hiding styles on a native child) uses `rc-common`'s
+    `MorphRecoveryController`. List the non-default attribute names it writes
+    and give it a `resync` that re-runs the connect-time and setup writes.
+  - A light-DOM element that renders nothing extends `ReactiveElement`, not
+    `LitElement`, so no Lit marker comments sit in the author's markup.
 - Register light-DOM base styles through `rc-common`'s
   `defineLightDomBaseStyles(tag, css)` at module scope. The package build
   emits the registered CSS as `dist/base.css`, exported as `./base.css`, so

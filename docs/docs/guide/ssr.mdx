@@ -122,10 +122,27 @@ import '@rcarls/rc-webcomponents/rc-card/define';
 
 Each package keeps a server-render fixture for every element it defines, and CI renders it
 on the server, hydrates it in a browser, and checks that the result matches a client
-render. Every element passes except the internal `rc-editor-toolbar`, which
-`rc-markdown-editor` hydrates correctly; on its own it renders nothing until the editor
-configures it.
+render. Every element passes.
 
 React apps render shadow roots on the server through `@lit-labs/ssr-react`; the
 [React guide](./react#declarative-shadow-dom-with-react) covers the setup and its limits in
 the Next.js App Router.
+
+## Pages updated by DOM morphing
+
+Turbo page refreshes, Livewire, htmx with idiomorph, and Blazor's enhanced navigation
+update a page by diffing the live DOM against new server HTML instead of replacing it. The
+server HTML is your markup, so the diff removes the attributes an element wrote after it
+upgraded, such as `role`, `tabindex`, ARIA state on its native children, and its state
+attributes. The elements keep their identity, so nothing reconnects them.
+
+Every element writes those attributes again after a morph removes them, and none depends
+on markers in its light DOM that a morph would delete. Reflected properties keep their
+default values off the host, so a morph against markup without the attribute leaves the
+default in place. CI morphs each element's server-render fixture against its own markup
+and checks that the light DOM ends up with every attribute it had before.
+
+A morph applies the server's markup as the page's state. An attribute the server markup
+sets, such as `open` or `page`, wins over a value the user changed on the client, as it
+does for a native element. Exclude a subtree whose client state should survive with your
+library's opt-out: `data-turbo-permanent`, `wire:ignore`, or `hx-preserve`.

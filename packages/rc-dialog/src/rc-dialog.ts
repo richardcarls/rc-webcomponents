@@ -1,4 +1,4 @@
-import { LitElement, nothing, type PropertyValues } from 'lit';
+import { ReactiveElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
 import {
@@ -11,6 +11,7 @@ import {
   SoftKeyboardViewport,
   warnMissingDirectChild,
   includeDefaults,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 import { ensureDialogBaseStyles } from './dialogBaseStyles.js';
 import type { DialogGeometry } from './geometry.js';
@@ -150,7 +151,30 @@ declare global {
  * move the dialog, and the component overwrites them on the next viewport change. They are
  * candidates for private `--_rc-dialog-*` names in the next compatible API revision.
  */
-export class RCDialog extends LitElement {
+export class RCDialog extends ReactiveElement {
+  /**
+   * Defaults a subclass changes. Lit keeps a property's first value off the
+   * host as its default, so a subclass sets these instead of initializing the
+   * properties a second time, which would reflect them.
+   */
+  protected static _defaults: {
+    closedBy: 'any' | 'closerequest' | 'none' | '';
+    resize: 'none' | 'both' | 'horizontal' | 'vertical';
+  } = { closedBy: '', resize: 'none' };
+
+  /** Writes the proxied `closedby` again after a DOM morph removes it. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    attributes: ['closedby'],
+    resync: () => {
+      const $dialog = this._$dialog;
+
+      if ($dialog) {
+        this._syncClosedBy($dialog);
+      }
+    },
+  });
+
+  /** Renders nothing: the author's `<dialog>` stays the element's only content. */
   override createRenderRoot() {
     return this;
   }
@@ -187,7 +211,8 @@ export class RCDialog extends LitElement {
    * `'none'` turns resizing off and restores the handles' focusability.
    */
   @property({ type: String, reflect: true, useDefault: true })
-  resize: 'none' | 'both' | 'horizontal' | 'vertical' = 'none';
+  resize: 'none' | 'both' | 'horizontal' | 'vertical' = (this.constructor as typeof RCDialog)
+    ._defaults.resize;
 
   /**
    * Origin for resize edge hit-testing or explicit handles.
@@ -226,7 +251,8 @@ export class RCDialog extends LitElement {
    * - `''`             — Attribute absent; the browser default applies.
    */
   @property({ type: String, attribute: 'closed-by', reflect: true, useDefault: true })
-  closedBy: 'any' | 'closerequest' | 'none' | '' = '';
+  closedBy: 'any' | 'closerequest' | 'none' | '' = (this.constructor as typeof RCDialog)._defaults
+    .closedBy;
 
   /**
    * Surface presentation. Fullscreen geometry follows the visual viewport while open; a side
@@ -374,10 +400,6 @@ export class RCDialog extends LitElement {
         $dialog.close(returnValue);
       }
     }
-  }
-
-  override render() {
-    return nothing;
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {

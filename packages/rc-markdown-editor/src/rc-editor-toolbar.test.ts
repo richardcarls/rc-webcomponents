@@ -15,12 +15,12 @@ describe('RcEditorToolbar', () => {
 
     await host.updateComplete;
 
-    const buttons = host.querySelectorAll('button[data-action]');
+    const buttons = host.shadowRoot!.querySelectorAll('button[data-action]');
 
     expect(buttons).toHaveLength(11);
-    expect(host.querySelectorAll('rc-button')).toHaveLength(11);
-    expect(host.querySelector('rc-toolbar')).toBeTruthy();
-    expect(host.querySelector('select[aria-label="Heading level"]')).toBeTruthy();
+    expect(host.shadowRoot!.querySelectorAll('rc-button')).toHaveLength(11);
+    expect(host.shadowRoot!.querySelector('rc-toolbar')).toBeTruthy();
+    expect(host.shadowRoot!.querySelector('select[aria-label="Heading level"]')).toBeTruthy();
   });
 
   test('all default buttons have a non-empty aria-label', async () => {
@@ -29,7 +29,7 @@ describe('RcEditorToolbar', () => {
 
     await host.updateComplete;
 
-    const buttons = host.querySelectorAll<HTMLButtonElement>('button[data-action]');
+    const buttons = host.shadowRoot!.querySelectorAll<HTMLButtonElement>('button[data-action]');
 
     for (const btn of buttons) {
       expect(btn.getAttribute('aria-label')).toBeTruthy();
@@ -48,7 +48,7 @@ describe('RcEditorToolbar', () => {
       received.push((e as CustomEvent<EditorToolbarActionDetail>).detail);
     });
 
-    const boldBtn = host.querySelector<HTMLButtonElement>('button[data-action="bold"]');
+    const boldBtn = host.shadowRoot!.querySelector<HTMLButtonElement>('button[data-action="bold"]');
 
     expect(boldBtn).toBeTruthy();
     boldBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
@@ -82,7 +82,9 @@ describe('RcEditorToolbar', () => {
       'code-block',
       'source',
     ]) {
-      const btn = host.querySelector<HTMLButtonElement>(`button[data-action="${action}"]`);
+      const btn = host.shadowRoot!.querySelector<HTMLButtonElement>(
+        `button[data-action="${action}"]`,
+      );
 
       expect(btn).toBeTruthy();
       btn?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
@@ -114,7 +116,9 @@ describe('RcEditorToolbar', () => {
 
     await host.updateComplete;
 
-    const $select = host.querySelector<HTMLSelectElement>('select[aria-label="Heading level"]')!;
+    const $select = host.shadowRoot!.querySelector<HTMLSelectElement>(
+      'select[aria-label="Heading level"]',
+    )!;
 
     expect($select.value).toBe('p');
     expect($select.classList.contains('toolbar-active')).toBe(false);
@@ -161,15 +165,25 @@ describe('localization', () => {
 
     await host.updateComplete;
 
-    expect(host.querySelector('rc-toolbar')?.getAttribute('label')).toBe('التنسيق');
-    expect(host.querySelector('[data-action="bold"]')?.getAttribute('aria-label')).toBe('غامق');
-    expect(host.querySelector('[data-action="bold"]')?.getAttribute('title')).toBe('غامق (Ctrl+B)');
-    expect(host.querySelector('option[value="h2"]')?.textContent?.trim()).toBe('عنوان 2');
-    expect(host.querySelector('[data-action="italic"]')?.getAttribute('aria-label')).toBe('Italic');
+    expect(host.shadowRoot!.querySelector('rc-toolbar')?.getAttribute('label')).toBe('التنسيق');
+    expect(host.shadowRoot!.querySelector('[data-action="bold"]')?.getAttribute('aria-label')).toBe(
+      'غامق',
+    );
+    expect(host.shadowRoot!.querySelector('[data-action="bold"]')?.getAttribute('title')).toBe(
+      'غامق (Ctrl+B)',
+    );
+    expect(host.shadowRoot!.querySelector('option[value="h2"]')?.textContent?.trim()).toBe(
+      'عنوان 2',
+    );
+    expect(
+      host.shadowRoot!.querySelector('[data-action="italic"]')?.getAttribute('aria-label'),
+    ).toBe('Italic');
 
     host.messages = { bold: 'Fett' };
     await host.updateComplete;
 
-    expect(host.querySelector('[data-action="bold"]')?.getAttribute('aria-label')).toBe('Fett');
+    expect(host.shadowRoot!.querySelector('[data-action="bold"]')?.getAttribute('aria-label')).toBe(
+      'Fett',
+    );
   });
 });

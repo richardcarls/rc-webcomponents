@@ -195,6 +195,7 @@ export class ResizeController implements ReactiveController {
   private _effectiveMaxH = Infinity;
 
   private _cornerBtn: HTMLButtonElement | null = null;
+  private _cornerObserver: MutationObserver | null = null;
   private readonly _handleEffects = new Map<Element, ControllerEffects>();
   private _targetEffects: ControllerEffects | null = null;
   private _positionEffects: ControllerEffects | null = null;
@@ -448,6 +449,15 @@ export class ResizeController implements ReactiveController {
     btn.addEventListener('focus', this._onFlowInteraction);
     this._targetEffects?.append(target, btn);
     this._cornerBtn = btn;
+
+    // A DOM morph against the author's markup removes the injected grip.
+    this._cornerObserver ??= new MutationObserver(() => {
+      if (this._cornerBtn && !this._cornerBtn.isConnected && this._connected) {
+        this._target().append(this._cornerBtn);
+      }
+    });
+
+    this._cornerObserver.observe(target, { childList: true });
   }
 
   /**
@@ -481,6 +491,8 @@ export class ResizeController implements ReactiveController {
   }
 
   private _removeCornerButton(): void {
+    this._cornerObserver?.disconnect();
+
     if (!this._cornerBtn) {
       return;
     }
