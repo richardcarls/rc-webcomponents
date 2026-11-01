@@ -14,6 +14,8 @@
   "license": "MIT",
   "type": "module",
   "files": [
+    "blazor/*.cs",
+    "blazor/*.js",
     "dist",
     "src/solid.d.ts",
     "src/react.d.ts",
@@ -53,6 +55,8 @@
     "./svelte": {
       "types": "./src/svelte.d.ts"
     },
+    "./blazor/rc-webcomponents.lib.module.js": "./blazor/rc-webcomponents.lib.module.js",
+    "./blazor/RcWebComponents.Events.cs": "./blazor/RcWebComponents.Events.cs",
     "./themes/base.css": "./themes/base.css",
     "./rc-textarea/folding": {
       "import": {

@@ -95,6 +95,22 @@ element its upgraded `display`. See the
 @import '@rcarls/rc-webcomponents/themes/pre-upgrade.css';
 ```
 
+## Framework Typings And Bindings
+
+Generated element typings for React, Solid, Vue, and Svelte, and Blazor event
+bindings, ship with this package:
+
+| Framework | Entry                                                                                     |
+| --------- | ----------------------------------------------------------------------------------------- |
+| React     | `/// <reference types="@rcarls/rc-webcomponents/react" />`                                |
+| Solid     | `/// <reference types="@rcarls/rc-webcomponents/solid" />`                                |
+| Vue       | `/// <reference types="@rcarls/rc-webcomponents/vue" />`                                  |
+| Svelte    | `/// <reference types="@rcarls/rc-webcomponents/svelte" />`                               |
+| Blazor    | `blazor/rc-webcomponents.lib.module.js` and `blazor/RcWebComponents.Events.cs` in the app |
+
+See the framework guides on the
+[docs site](https://richardcarls.github.io/rc-webcomponents/) for setup.
+
 ## Included Packages
 
 | Package               | Purpose                                                               |

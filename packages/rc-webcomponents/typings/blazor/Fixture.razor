@@ -1,0 +1,34 @@
+@* Each handler must compile against its generated EventArgs type. *@
+
+<rc-select @onrc-select-change="OnSelectChange">
+    <select name="status" aria-label="Status"></select>
+</rc-select>
+
+<rc-pagination total="12" @onrc-pagination-change="OnPageChange" @onrc-pagination-change:preventDefault>
+    <nav></nav>
+</rc-pagination>
+
+<rc-dialog @onrc-dialog-open="OnDialogOpen" @onrc-dialog-close="OnDialogClose">
+    <dialog></dialog>
+</rc-dialog>
+
+<rc-range-slider @onrc-range-slider-change="OnRangeChange"></rc-range-slider>
+
+@code {
+    private string[] _values = [];
+    private int _page = 1;
+
+    private void OnSelectChange(RcSelectChangeEventArgs args)
+    {
+        _values = args.SelectedValues;
+        _ = args.SelectedOptions[0].Label;
+    }
+
+    private void OnPageChange(RcPaginationChangeEventArgs args) => _page = (int)args.Page;
+
+    private static void OnDialogOpen(EventArgs args) { }
+
+    private static void OnDialogClose(RcDialogCloseEventArgs args) => _ = args.ReturnValue;
+
+    private static void OnRangeChange(RcRangeSliderChangeEventArgs args) => _ = args.Value[1];
+}

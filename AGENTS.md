@@ -288,11 +288,14 @@ false` `@property` a matching `@attr` line; use bracket form (`@attr [name]`)
   snippets, accessibility notes, events, and at-a-glance summaries.
 - Package README, root README package summary, and aggregate package exports
   when public usage changes.
-- The aggregate React and Solid typings and the `@rcarls/rc-react` wrappers are
-  generated from the manifest: run `yarn codegen:typings` and
-  `yarn codegen:react`, never edit them by hand. They read element classes and
-  `HTMLElementEventMap`, so every dispatched event needs an event map entry with
-  an exported detail type, or `yarn test:typings` fails.
+- The aggregate React, Solid, Vue, and Svelte typings and the `@rcarls/rc-react`
+  wrappers are generated from the manifest, and the Blazor event bindings from
+  the built typings: run `yarn codegen:typings`, `yarn codegen:react`, and,
+  after `yarn build`, `yarn codegen:blazor`. Never edit them by hand. They read
+  element classes and `HTMLElementEventMap`, so every dispatched event needs an
+  event map entry with an exported detail type, or `yarn test:typings` fails.
+  Every `rc-*` event must bubble and be composed, since Blazor listens at the
+  document. `yarn test:blazor` compiles the C# bindings with the .NET SDK.
 
 Until 1.0, replace or remove superseded public API outright. Do not keep old
 names or values working as deprecated aliases. Mark the removal as breaking in
@@ -331,7 +334,7 @@ Use this public API sync walk before finishing any API-facing change:
 ```text
 source/JSDoc -> event/detail/exported types -> tests -> CEM -> package README
 -> docs page/demos -> root README/package catalog -> yarn codegen:typings
--> yarn codegen:react
+-> yarn codegen:react -> yarn build -> yarn codegen:blazor
 ```
 
 When adding a new component package, add it to the `## Packages` table in

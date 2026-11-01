@@ -18,6 +18,7 @@ const sidebars: SidebarsConfig = {
         'guide/angular',
         'guide/vue',
         'guide/svelte',
+        'guide/blazor',
         'guide/styling',
         'guide/motion',
         'guide/theme-previews',
