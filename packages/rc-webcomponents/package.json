@@ -17,6 +17,8 @@
     "dist",
     "src/solid.d.ts",
     "src/react.d.ts",
+    "src/svelte.d.ts",
+    "src/vue.d.ts",
     "themes"
   ],
   "module": "./dist/rc-webcomponents.js",
@@ -44,6 +46,12 @@
     },
     "./react": {
       "types": "./src/react.d.ts"
+    },
+    "./vue": {
+      "types": "./src/vue.d.ts"
+    },
+    "./svelte": {
+      "types": "./src/svelte.d.ts"
     },
     "./themes/base.css": "./themes/base.css",
     "./rc-textarea/folding": {
@@ -592,6 +600,7 @@
     "./dist/hydrate-support.js"
   ],
   "scripts": {
+    "test:typings": "vue-tsc -p typings/tsconfig.vue.json && svelte-check --workspace typings/svelte --tsconfig ./tsconfig.json --fail-on-warnings",
     "build": "tsc && vite build && node ../../scripts/emit-pre-upgrade-css.mjs"
   },
   "dependencies": {
@@ -648,8 +657,12 @@
     "@types/react": "^19.2.0",
     "lit": "^3.0.0",
     "solid-js": "^1.9.0",
+    "svelte": "^5.40.0",
+    "svelte-check": "^4.3.0",
     "typescript": "~5.9.3",
     "vite": "^7.1.7",
-    "vite-plugin-dts": "^4.5.4"
+    "vite-plugin-dts": "^4.5.4",
+    "vue": "^3.5.0",
+    "vue-tsc": "^3.1.0"
   }
 }

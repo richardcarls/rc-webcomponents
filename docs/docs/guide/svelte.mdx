@@ -1,0 +1,53 @@
+---
+title: Using with Svelte
+---
+
+# Using with Svelte
+
+## Setup
+
+Register the elements you use once, in client code. SvelteKit renders the
+native fallback markup on the server, so register from `+layout.svelte` in a
+browser-only import:
+
+```svelte title="+layout.svelte"
+<script lang="ts">
+  import { onMount } from 'svelte';
+
+  let { children } = $props();
+
+  onMount(() => {
+    import('@rcarls/rc-webcomponents/rc-select/define');
+    import('@rcarls/rc-webcomponents/rc-pagination/define');
+  });
+</script>
+
+{@render children()}
+```
+
+## Type-checking
+
+Reference the generated typings once, for example in `src/app.d.ts`:
+
+```ts
+/// <reference types="@rcarls/rc-webcomponents/svelte" />
+```
+
+They add every element to `svelte/elements`, so `svelte-check` and the Svelte
+language tools check attributes, properties, and event payloads. These typings
+target Svelte 5.
+
+```svelte
+<rc-select popup-mode="dialog" value={['a']} onrc-select-change={onChange}>
+  <select name="status" aria-label="Status">...</select>
+</rc-select>
+```
+
+## Properties and events
+
+Svelte 5 sets an attribute as a property when the element has one, so
+`value={['a']}` passes the array. Kebab-case attributes such as `popup-mode`
+stay attributes.
+
+`onrc-select-change` listens for the `rc-select-change` event, and
+`event.detail` is typed. `bind:this` gives the element instance.

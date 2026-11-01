@@ -56,6 +56,8 @@ const rootReadme = read('README.md');
 const docsHomepage = read('docs/src/pages/index.tsx');
 const reactTypes = read('packages/rc-webcomponents/src/react.d.ts');
 const solidTypes = read('packages/rc-webcomponents/src/solid.d.ts');
+const vueTypes = read('packages/rc-webcomponents/src/vue.d.ts');
+const svelteTypes = read('packages/rc-webcomponents/src/svelte.d.ts');
 const rcCommonReadme = read('packages/rc-common/README.md');
 
 for (const name of components) {
@@ -112,7 +114,7 @@ for (const file of readdirSync(join(root, 'docs/docs/components')).filter((name)
 
 // The framework typings are generated (`yarn codegen:typings`) and compiled
 // against fixtures (`yarn test:typings`); here, only check that every element
-// in the manifest has an entry in both.
+// in the manifest has an entry in each.
 for (const tag of tags) {
   assertIncludes(
     reactTypes,
@@ -124,6 +126,14 @@ for (const tag of tags) {
     solidTypes,
     `'${tag}': RCElementProps<`,
     'packages/rc-webcomponents/src/solid.d.ts',
+  );
+
+  assertIncludes(vueTypes, `'${tag}': RCVueElement<`, 'packages/rc-webcomponents/src/vue.d.ts');
+
+  assertIncludes(
+    svelteTypes,
+    `'${tag}': RCElementProps<`,
+    'packages/rc-webcomponents/src/svelte.d.ts',
   );
 }
 

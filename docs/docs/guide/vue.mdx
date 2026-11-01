@@ -1,0 +1,69 @@
+---
+title: Using with Vue
+---
+
+# Using with Vue
+
+## Setup
+
+Tell Vue's template compiler that `rc-*` tags are custom elements, so it
+renders them as elements instead of resolving them as Vue components:
+
+```ts title="vite.config.ts"
+import vue from '@vitejs/plugin-vue';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [
+    vue({
+      template: { compilerOptions: { isCustomElement: (tag) => tag.startsWith('rc-') } },
+    }),
+  ],
+});
+```
+
+In Nuxt, set the same function as `vue.compilerOptions.isCustomElement` in
+`nuxt.config.ts`.
+
+Register the elements you use once, in the client entry. Nuxt renders the
+native fallback markup on the server, so register from a `.client.ts` plugin:
+
+```ts title="main.ts"
+import '@rcarls/rc-webcomponents/rc-select/define';
+import '@rcarls/rc-webcomponents/rc-pagination/define';
+```
+
+## Template type-checking
+
+Reference the generated typings once, for example in `env.d.ts`:
+
+```ts
+/// <reference types="@rcarls/rc-webcomponents/vue" />
+```
+
+They declare every element in Vue's `GlobalComponents`, so `vue-tsc` and the
+Vue language tools check bindings, enumerated attribute values, and event
+payloads:
+
+```vue
+<rc-select popup-mode="dialog" :value="['a']" @rc-select-change="onChange">
+  <select name="status" aria-label="Status">...</select>
+</rc-select>
+```
+
+Each element's own class supplies the types, so import element, detail, and
+value types from its package, such as
+`import type { RCSelectChangeEvent } from '@rcarls/rc-select'`.
+
+## Properties and events
+
+Vue sets a bound value (`:value`) as a property when the element has one, so
+arrays and objects arrive intact. Write a static attribute (`popup-mode="dialog"`)
+for strings and booleans.
+
+`@rc-select-change` listens for the `rc-select-change` event. Event names keep
+their hyphens, and `event.detail` is typed.
+
+`v-model` does not apply to custom elements. Bind the property and update it
+from the element's change event, or leave the element uncontrolled and read its
+native child in a form.

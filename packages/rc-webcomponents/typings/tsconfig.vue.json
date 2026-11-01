@@ -1,0 +1,14 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": [],
+    "skipLibCheck": false,
+    "noUnusedLocals": false,
+    "noEmit": true
+  },
+  "vueCompilerOptions": {
+    "strictTemplates": true
+  },
+  "files": ["../src/vue.d.ts"],
+  "include": ["vue/*.vue"]
+}

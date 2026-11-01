@@ -52,7 +52,7 @@
     "test:architecture-audit": "yarn cem:analyze && node --test scripts/audit-component-architecture.test.mjs",
     "test:design-tokens": "node --test scripts/build-design-tokens.test.mjs",
     "test:design-guide": "node --test scripts/theme-material-design-guide.test.mjs scripts/theme-win31-design-guide.test.mjs",
-    "test:typings": "tsc -p packages/rc-webcomponents/typings/tsconfig.react.json && tsc -p packages/rc-webcomponents/typings/tsconfig.solid.json",
+    "test:typings": "tsc -p packages/rc-webcomponents/typings/tsconfig.react.json && tsc -p packages/rc-webcomponents/typings/tsconfig.solid.json && yarn workspace @rcarls/rc-webcomponents run test:typings",
     "test:react-ssr": "node --test packages/rc-react/test/ssr.test.mjs && node --test packages/rc-react/test/ssr-react.test.mjs",
     "test:ssr": "yarn cem:analyze && node --test scripts/ssr-render.test.mjs",
     "format": "prettier --write .",
