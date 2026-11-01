@@ -399,8 +399,9 @@ export class RCPagination extends ReactiveElement {
 
     if (this.announce) {
       // The live region lives outside the host so it never joins the
-      // consumer's list markup, which a framework may own.
-      this._announcer ??= new LiveAnnouncer(this.ownerDocument.body);
+      // consumer's list markup, which a framework may own. It mounts in the
+      // open dialog around the host, else the current body.
+      this._announcer ??= new LiveAnnouncer(this);
 
       this._announcer.announce(
         this._messages.value.status(page, this._clamp(this.total), this._messages.locale),

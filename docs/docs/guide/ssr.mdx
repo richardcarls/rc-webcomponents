@@ -146,3 +146,9 @@ A morph applies the server's markup as the page's state. An attribute the server
 sets, such as `open` or `page`, wins over a value the user changed on the client, as it
 does for a native element. Exclude a subtree whose client state should survive with your
 library's opt-out: `data-turbo-permanent`, `wire:ignore`, or `hx-preserve`.
+
+Elements that announce changes, such as `rc-pagination` and `rc-data-table` with
+`announce` and reorderable `rc-list` items, keep their live region outside your markup:
+in the open dialog around the element, else the page body. They look that root up again
+before each announcement, so the region survives a morph that removes it and follows a
+`data-turbo-permanent` element into the body Turbo swaps in.

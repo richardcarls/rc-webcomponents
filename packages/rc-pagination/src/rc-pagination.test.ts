@@ -207,6 +207,30 @@ test('announces the new page when announce is set', async () => {
   );
 });
 
+test('announces inside an open modal dialog, where the rest of the page is inert', async () => {
+  const screen = render(html`
+    <dialog data-testid="dialog">
+      <rc-pagination total="3" announce>${buttonList}</rc-pagination>
+    </dialog>
+  `);
+  const $dialog = screen.getByTestId('dialog').element() as HTMLDialogElement;
+
+  $dialog.showModal();
+
+  const $host = $dialog.querySelector('rc-pagination') as RCPagination;
+
+  await $host.updateComplete;
+  $host.querySelector<HTMLButtonElement>('[data-rc-page="2"]')!.click();
+
+  await vi.waitFor(() =>
+    expect($dialog.querySelector(':scope > [data-rc-live-announcer]')?.textContent).toBe(
+      'Page 2 of 3',
+    ),
+  );
+
+  $dialog.close();
+});
+
 test('follows its lang and formats page numbers for it', async () => {
   registerMessages('fr', {
     'rc-pagination': { label: 'Pagination des résultats', page: (page) => `Page ${page}` },

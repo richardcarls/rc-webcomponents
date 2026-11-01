@@ -152,13 +152,14 @@ export class ReorderController implements ReactiveController {
   private _pending: { item: HTMLElement } | null = null;
   private _session: PointerSession | KeyboardSession | null = null;
   private readonly _translated = new Map<HTMLElement, { value: string; priority: string }>();
-  private _announcer: LiveAnnouncer | null = null;
+  private readonly _announcer: LiveAnnouncer;
   private _autoScrollFrame = 0;
   private _restoringFocus = false;
 
   constructor(host: ReactiveControllerHost & HTMLElement, options: ReorderOptions) {
     this._host = host;
     this._options = options;
+    this._announcer = new LiveAnnouncer(host, { root: () => this._options.announcerRoot?.() });
 
     this._gesture = new DragGestureController(host, {
       target: host,
@@ -214,8 +215,7 @@ export class ReorderController implements ReactiveController {
     this._host.removeEventListener('keydown', this._onKeyDown);
     this._host.removeEventListener('focusout', this._onFocusOut);
     this._end();
-    this._announcer?.dispose();
-    this._announcer = null;
+    this._announcer.dispose();
   }
 
   /** Cancels any active reorder, restoring the starting position. */
@@ -281,13 +281,6 @@ export class ReorderController implements ReactiveController {
   }
 
   private _announce(message: string): void {
-    const root = this._options.announcerRoot?.() ?? announcerRootFor(this._host);
-
-    if (this._announcer?.element.parentNode !== root) {
-      this._announcer?.dispose();
-      this._announcer = new LiveAnnouncer(root);
-    }
-
     this._announcer.announce(message);
   }
 
@@ -882,24 +875,4 @@ function stepFor(slots: readonly Slot[], index: number): number {
   }
 
   return slot.size;
-}
-
-/** The nearest open dialog or popover around `$host`, across shadow roots, else the body. */
-function announcerRootFor($host: HTMLElement): ParentNode & Node {
-  let $node: Element | null = $host;
-
-  while ($node) {
-    if (
-      ($node.localName === 'dialog' && $node.hasAttribute('open')) ||
-      ($node.hasAttribute('popover') && $node.matches(':popover-open'))
-    ) {
-      return $node;
-    }
-
-    const root = $node.getRootNode();
-
-    $node = $node.parentElement ?? (root instanceof ShadowRoot ? root.host : null);
-  }
-
-  return $host.ownerDocument.body;
 }

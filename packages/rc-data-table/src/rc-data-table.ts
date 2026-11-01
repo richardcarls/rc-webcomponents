@@ -385,8 +385,9 @@ export class RCDataTable extends ReactiveElement {
       const column = $control.textContent?.replace(/\s+/g, ' ').trim() || key;
 
       // The live region lives outside the host so it never joins the
-      // consumer's table markup, which a framework may own.
-      this._announcer ??= new LiveAnnouncer(this.ownerDocument.body);
+      // consumer's table markup, which a framework may own. It mounts in the
+      // open dialog around the host, else the current body.
+      this._announcer ??= new LiveAnnouncer(this);
       this._announcer.announce(this._messages.value.sorted(column, direction));
     }
   };
