@@ -10,6 +10,7 @@ import {
   MessagesController,
   NativeChildController,
   warnMissingDirectChild,
+  includeDefaults,
 } from '@rcarls/rc-common';
 
 import searchBarStyles from './rc-search-bar.styles.js';
@@ -204,7 +205,7 @@ export class RCSearchBar extends LitElement {
   }
 
   /** Presentation mode: docked search bar or expandable search view. */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: true, useDefault: true })
   variant: RCSearchBarVariant = 'bar';
 
   /** Debounce window in ms for `rc-search-bar-input`; `0` dispatches synchronously. */
@@ -484,6 +485,10 @@ export class RCSearchBar extends LitElement {
 
     this._disabledObserver.disconnect();
     this._dataListObserver.disconnect();
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    includeDefaults(this, changed);
   }
 
   protected override updated(changed: PropertyValues<this>): void {

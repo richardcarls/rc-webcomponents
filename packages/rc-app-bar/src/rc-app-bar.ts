@@ -8,6 +8,7 @@ import {
   RafScheduler,
   ScrollObserverController,
   type ScrollObserverTarget,
+  includeDefaults,
 } from '@rcarls/rc-common';
 
 import appBarStyles from './rc-app-bar.styles.js';
@@ -123,7 +124,7 @@ export class RCAppBar extends LitElement {
   static styles = [appBarStyles];
 
   /** Structural variant. `expanded` adds a flexible title row. */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: true, useDefault: true })
   variant: RCAppBarVariant = 'compact';
 
   /**
@@ -138,7 +139,7 @@ export class RCAppBar extends LitElement {
   centerSymmetric = false;
 
   /** Visual response to observed scrolling. */
-  @property({ type: String, attribute: 'scroll-behavior', reflect: true })
+  @property({ type: String, attribute: 'scroll-behavior', reflect: true, useDefault: true })
   scrollBehavior: RCAppBarScrollBehavior = 'pinned';
 
   /**
@@ -266,6 +267,8 @@ export class RCAppBar extends LitElement {
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
+    includeDefaults(this, changed);
+
     if (
       changed.has('scrollTarget') ||
       changed.has('scrollThreshold') ||

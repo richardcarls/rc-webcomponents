@@ -111,7 +111,7 @@ export class RCCard extends LitElement {
   static override styles = cardStyles;
 
   /** Structural layout direction. */
-  @property({ reflect: true })
+  @property({ reflect: true, useDefault: true })
   orientation: RCCardOrientation = 'vertical';
 
   /** Declarative selected state for theme styling. */

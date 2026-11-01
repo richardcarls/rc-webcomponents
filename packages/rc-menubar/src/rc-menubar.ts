@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
 import {
@@ -8,6 +8,7 @@ import {
   renderedOrientation,
   resolveFlow,
   type KeyboardNavigationAction,
+  includeDefaults,
 } from '@rcarls/rc-common';
 import type { RCMenuButton, RCMenuButtonToggleEvent } from '@rcarls/rc-menu-button';
 
@@ -110,7 +111,7 @@ export class RCMenubar extends LitElement {
   label: string | undefined;
 
   /** Orientation of the menubar, controls which arrow keys move between items. */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: true, useDefault: true })
   orientation: 'horizontal' | 'vertical' = 'horizontal';
 
   /** Weak reference to the currently open child `rc-menu-button`. */
@@ -156,6 +157,10 @@ export class RCMenubar extends LitElement {
    * through the flow controller rather than a property, and child orientation
    * when `orientation` changes.
    */
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    includeDefaults(this, changed);
+  }
+
   protected override updated(changedProperties: Map<PropertyKey, unknown>) {
     super.updated(changedProperties);
 

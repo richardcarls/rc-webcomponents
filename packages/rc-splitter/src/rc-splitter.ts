@@ -187,7 +187,7 @@ export class RCSplitter extends LitElement {
   label: string | undefined;
 
   /** Splitter orientation, for keyboard navigation and initial sizing. */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: true, useDefault: true })
   orientation: SplitterOrientation = 'horizontal';
 
   /**
@@ -197,7 +197,7 @@ export class RCSplitter extends LitElement {
    * - `percent` uses percentage points.
    * - `fixed` uses px for a clampable fixed primary pane while the secondary pane flexes.
    */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: true, useDefault: true })
   mode: SplitterMode = 'length';
 
   /** The step size for resizing, in either pixels or percentage points depending on `mode`. */

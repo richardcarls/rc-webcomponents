@@ -502,7 +502,8 @@ export class RCRangeSlider extends LitElement {
   display: DisplayValue = null;
 
   /** Orientation; reflected as an attribute and forwarded to custom thumbs. */
-  @property({ reflect: true }) orientation: 'horizontal' | 'vertical' = 'horizontal';
+  @property({ reflect: true, useDefault: true }) orientation: 'horizontal' | 'vertical' =
+    'horizontal';
 
   /** Keeps the thumbs' aria-orientation on the orientation actually rendered. */
   protected readonly _flow = new FlowController(this);

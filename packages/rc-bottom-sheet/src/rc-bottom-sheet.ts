@@ -354,11 +354,11 @@ export class RCBottomSheet extends RCDialog {
    * Set `closed-by="closerequest"` when a backdrop click must not close the
    * sheet, or `closed-by="none"` when only explicit actions may close it.
    */
-  @property({ type: String, attribute: 'closed-by', reflect: true })
+  @property({ type: String, attribute: 'closed-by', reflect: true, useDefault: true })
   override closedBy: 'any' | 'closerequest' | 'none' | '' = 'any';
 
   /** Bottom sheets resize vertically from the top edge by default. */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: true, useDefault: true })
   override resize: ResizeDirection = 'vertical';
 
   /** Top-origin resizing keeps the sheet docked to the viewport bottom. */

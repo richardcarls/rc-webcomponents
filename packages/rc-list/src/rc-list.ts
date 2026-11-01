@@ -1,7 +1,12 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
-import { ReorderController, observeLocale, type ReorderMessages } from '@rcarls/rc-common';
+import {
+  ReorderController,
+  observeLocale,
+  type ReorderMessages,
+  includeDefaults,
+} from '@rcarls/rc-common';
 import type { RCListItem } from './rc-list-item.js';
 import { ensureListBaseStyles } from './listBaseStyles.js';
 
@@ -146,11 +151,11 @@ export class RCList extends LitElement {
   private _unobserveLocale: (() => void) | null = null;
 
   /** Appearance hint. */
-  @property({ reflect: true })
+  @property({ reflect: true, useDefault: true })
   variant: RCListVariant = 'standard';
 
   /** Native selection coordination mode. */
-  @property({ reflect: true })
+  @property({ reflect: true, useDefault: true })
   selection: RCListSelection = 'none';
 
   /** Whether item order is meaningful; positions are exposed without rendered counters. */
@@ -238,6 +243,10 @@ export class RCList extends LitElement {
     this._unobserveLocale?.();
     this._unobserveLocale = null;
     this._restoreAllItems();
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    includeDefaults(this, changed);
   }
 
   protected override firstUpdated(): void {

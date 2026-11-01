@@ -5,6 +5,5 @@ export default {
   'rc-app-bar': {
     markup:
       '<rc-app-bar><button slot="leading" type="button" aria-label="Back">&larr;</button><h1>Inbox</h1><button slot="trailing" type="button">Edit</button></rc-app-bar>',
-    morphPending: 'reflects default property values, which a morph removes',
   },
 } satisfies SsrFixtures;

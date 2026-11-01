@@ -229,7 +229,7 @@ export class RCMenuButton extends LitElement {
    *
    * @default 'block-end-start'
    */
-  @property({ reflect: true })
+  @property()
   get placement(): AnchorPlacement {
     return this._placement ?? this._defaultPlacement;
   }
@@ -279,7 +279,11 @@ export class RCMenuButton extends LitElement {
     const $menubar = this.closest('rc-menubar, [role="menubar"]');
 
     if ($menubar) {
-      const orientation = $menubar.getAttribute('orientation');
+      // An rc-menubar keeps its default orientation off the attribute.
+      const orientation =
+        $menubar.localName === 'rc-menubar'
+          ? ($menubar as HTMLElement & { orientation?: string }).orientation
+          : $menubar.getAttribute('orientation');
 
       if (orientation === 'vertical' || orientation === 'horizontal') {
         return orientation;

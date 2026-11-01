@@ -5,7 +5,6 @@ export default {
   'rc-toolbar': {
     markup:
       '<rc-toolbar label="Formatting"><button type="button">Bold</button><button type="button">Italic</button></rc-toolbar>',
-    morphPending:
-      'reflects default property values and writes state attributes, which a morph removes',
+    morphPending: 'writes state attributes on its host or children, which a morph removes',
   },
 } satisfies SsrFixtures;

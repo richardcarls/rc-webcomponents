@@ -5,6 +5,5 @@ export default {
   'rc-select': {
     markup:
       '<rc-select><select aria-label="Status"><option>Draft</option><option>Published</option></select></rc-select>',
-    morphPending: 'reflects default property values, which a morph removes',
   },
 } satisfies SsrFixtures;

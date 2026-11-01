@@ -148,11 +148,11 @@ export class RCSnackbar extends LitElement {
   }
 
   /** Visible message text. */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: true, useDefault: true })
   message = '';
 
   /** Optional action button label. */
-  @property({ type: String, attribute: 'action-label', reflect: true })
+  @property({ type: String, attribute: 'action-label', reflect: true, useDefault: true })
   actionLabel = '';
 
   /** Auto-close duration in milliseconds. Set to 0 to keep open. */

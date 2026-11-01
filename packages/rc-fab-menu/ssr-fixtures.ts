@@ -5,7 +5,6 @@ export default {
   'rc-fab-menu': {
     markup:
       '<rc-fab-menu><button slot="trigger" type="button" aria-label="Create"><span aria-hidden="true">+</span></button><rc-menu label="Create"><button type="button">Recipe</button></rc-menu></rc-fab-menu>',
-    morphPending:
-      'reflects default property values and writes state attributes, which a morph removes',
+    morphPending: 'writes state attributes on its host or children, which a morph removes',
   },
 } satisfies SsrFixtures;

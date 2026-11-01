@@ -53,7 +53,7 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
   label = 'Toolbar';
 
   /** Toolbar layout along the inline (`horizontal`) or block (`vertical`) axis. */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: true, useDefault: true })
   orientation: 'horizontal' | 'vertical' = 'horizontal';
 
   /** Keeps the exposed aria-orientation on the orientation actually rendered. */

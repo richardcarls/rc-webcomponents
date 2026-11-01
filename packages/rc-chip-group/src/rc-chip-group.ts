@@ -11,6 +11,7 @@ import {
   resolveFlow,
   RovingTabIndexMixin,
   setScrollOffset,
+  includeDefaults,
 } from '@rcarls/rc-common';
 import type { RCChip } from '@rcarls/rc-chip';
 
@@ -173,19 +174,19 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
   private readonly _authoredVariants = new Map<RCChip, RCChip['variant']>();
 
   /** Layout strategy. */
-  @property({ reflect: true })
+  @property({ reflect: true, useDefault: true })
   layout: RCChipGroupLayout = 'auto';
 
   /** Maximum natural rows before auto layout collapses to horizontal scrolling. */
-  @property({ type: Number, attribute: 'max-rows', reflect: true })
+  @property({ type: Number, attribute: 'max-rows', reflect: true, useDefault: true })
   maxRows = 2;
 
   /** Child coordination mode. */
-  @property({ reflect: true })
+  @property({ reflect: true, useDefault: true })
   kind: RCChipGroupKind = 'generic';
 
   /** Native filter selection hint. */
-  @property({ reflect: true })
+  @property({ reflect: true, useDefault: true })
   selection: RCChipGroupSelection = 'none';
 
   /**
@@ -272,6 +273,10 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
     this._pendingScrollTarget = undefined;
     this._revealTarget = undefined;
     this._restoreAuthoredVariants();
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    includeDefaults(this, changed);
   }
 
   protected override firstUpdated(): void {

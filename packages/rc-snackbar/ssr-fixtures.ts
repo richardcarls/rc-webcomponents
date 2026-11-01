@@ -4,6 +4,5 @@ import type { SsrFixtures } from '../../test-helpers/ssr-fixtures.js';
 export default {
   'rc-snackbar': {
     markup: '<rc-snackbar></rc-snackbar>',
-    morphPending: 'reflects default property values, which a morph removes',
   },
 } satisfies SsrFixtures;

@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
 import {
@@ -12,6 +12,7 @@ import {
   PopoverController,
   renderedOrientation,
   defineLightDomBaseStyles,
+  includeDefaults,
 } from '@rcarls/rc-common';
 
 import adaptiveMenuStyles from './rc-adaptive-menu.styles.js';
@@ -344,7 +345,7 @@ export class RCAdaptiveMenu extends LitElement {
   }
 
   /** Toolbar layout and arrow-key navigation axis. */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: true, useDefault: true })
   orientation: 'horizontal' | 'vertical' = 'horizontal';
 
   /** Keeps the exposed aria-orientation on the orientation actually rendered. */
@@ -415,6 +416,10 @@ export class RCAdaptiveMenu extends LitElement {
 
     this._authored.clear();
     super.disconnectedCallback();
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    includeDefaults(this, changed);
   }
 
   protected override firstUpdated(): void {

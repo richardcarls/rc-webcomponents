@@ -10,6 +10,7 @@ import {
   type ResizeOrigin,
   SoftKeyboardViewport,
   warnMissingDirectChild,
+  includeDefaults,
 } from '@rcarls/rc-common';
 import { ensureDialogBaseStyles } from './dialogBaseStyles.js';
 import type { DialogGeometry } from './geometry.js';
@@ -185,7 +186,7 @@ export class RCDialog extends LitElement {
    * rebuilds the resize behavior and re-queries `resize-handle` matches, so
    * `'none'` turns resizing off and restores the handles' focusability.
    */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: true, useDefault: true })
   resize: 'none' | 'both' | 'horizontal' | 'vertical' = 'none';
 
   /**
@@ -224,14 +225,14 @@ export class RCDialog extends LitElement {
    * - `'none'`         — Only programmatic `close()` / `requestClose()`.
    * - `''`             — Attribute absent; the browser default applies.
    */
-  @property({ type: String, attribute: 'closed-by', reflect: true })
+  @property({ type: String, attribute: 'closed-by', reflect: true, useDefault: true })
   closedBy: 'any' | 'closerequest' | 'none' | '' = '';
 
   /**
    * Surface presentation. Fullscreen geometry follows the visual viewport while open; a side
    * sheet docks to the inline end at full block size.
    */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: true, useDefault: true })
   variant: RCDialogVariant = 'standard';
 
   /**
@@ -377,6 +378,10 @@ export class RCDialog extends LitElement {
 
   override render() {
     return nothing;
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    includeDefaults(this, changed);
   }
 
   override firstUpdated() {

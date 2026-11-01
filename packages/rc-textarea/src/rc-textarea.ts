@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, type PropertyValues } from 'lit';
 import type { CSSResultGroup } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
@@ -11,6 +11,7 @@ import {
   numberFormat,
   resolveFlow,
   warnMissingDirectChild,
+  includeDefaults,
 } from '@rcarls/rc-common';
 import { RCDocument, getText } from './document.js';
 import {
@@ -384,7 +385,7 @@ export class RCTextarea extends LitElement {
    * direction of its first strong character, for prose that mixes scripts, and
    * holds lines without one (empty, digits, punctuation) to the base direction.
    */
-  @property({ attribute: 'line-direction', reflect: true })
+  @property({ attribute: 'line-direction', reflect: true, useDefault: true })
   lineDirection: 'auto' | 'base' = 'base';
 
   /**
@@ -652,6 +653,10 @@ export class RCTextarea extends LitElement {
 
       this._rafHandle = null;
     }
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    includeDefaults(this, changed);
   }
 
   override firstUpdated(): void {

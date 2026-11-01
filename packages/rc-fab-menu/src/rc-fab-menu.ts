@@ -136,7 +136,7 @@ export class RCFabMenu extends RCMenuButton {
   static override styles = [fabMenuStyles];
 
   /** Viewport corner where the floating action menu trigger is anchored. */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: true, useDefault: true })
   position: RCFabMenuPosition = 'block-end-inline-end';
 
   /**

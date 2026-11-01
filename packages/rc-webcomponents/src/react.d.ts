@@ -496,14 +496,15 @@ declare module 'react' {
         {
           'default-source-mode'?: RCAttribute<RcMarkdownEditor['defaultSourceMode']>;
           'default-value'?: RCAttribute<RcMarkdownEditor['defaultValue']>;
+          'hide-toolbar'?: RCAttribute<RcMarkdownEditor['hideToolbar']>;
           'read-only'?: RCAttribute<RcMarkdownEditor['readOnly']>;
           'source-mode'?: RCAttribute<RcMarkdownEditor['sourceMode']>;
           defaultSourceMode?: RcMarkdownEditor['defaultSourceMode'];
           defaultValue?: RcMarkdownEditor['defaultValue'];
+          hideToolbar?: RcMarkdownEditor['hideToolbar'];
           messages?: RcMarkdownEditor['messages'];
           readOnly?: RcMarkdownEditor['readOnly'];
           sourceMode?: RcMarkdownEditor['sourceMode'];
-          toolbar?: RcMarkdownEditor['toolbar'];
           value?: RcMarkdownEditor['value'];
         },
         'rc-change' | 'rc-formatting-change' | 'rc-mode-change'

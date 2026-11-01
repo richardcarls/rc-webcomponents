@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
@@ -14,6 +14,7 @@ import {
   resolveFlow,
   type Flow,
   type LogicalAxis,
+  includeDefaults,
 } from '@rcarls/rc-common';
 import { calculateWindow, positive, whole, type Geometry } from './range.js';
 import { sampleLayout } from './sample.js';
@@ -121,7 +122,7 @@ export class RCVirtualScroller extends LitElement {
   );
 
   /** Logical axis to window along. */
-  @property({ reflect: true })
+  @property({ reflect: true, useDefault: true })
   axis: RCVirtualScrollerAxis = 'block';
 
   private _count = 0;
@@ -293,6 +294,10 @@ export class RCVirtualScroller extends LitElement {
     this._unobserveLocale = null;
 
     super.disconnectedCallback();
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    includeDefaults(this, changed);
   }
 
   protected override firstUpdated(): void {
