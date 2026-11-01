@@ -3,6 +3,7 @@ import { property, query, state } from 'lit/decorators.js';
 
 import {
   arrowKeys,
+  HydrationController,
   MessagesController,
   MutationObserverController,
   NativeChildController,
@@ -127,6 +128,9 @@ declare global {
  * @csspart move-down-button - Moves highlighted selected options down.
  */
 export class RCTransferList extends LitElement {
+  // Re-syncs slot state after hydrating a server-rendered shadow root.
+  protected readonly _hydration = new HydrationController(this);
+
   static override styles = transferListStyles;
 
   /** Enable multi-selection in both lists. */
@@ -328,8 +332,10 @@ export class RCTransferList extends LitElement {
   }
 
   override render() {
-    const available = this.available; // reads <select> directly; requestUpdate() always precedes render
-    const selected = this.selected;
+    // The server cannot see the native <select>, so hydrate with no options first.
+    const serverView = this._hydration.serverView;
+    const available = serverView ? [] : this.available; // reads <select> directly; requestUpdate() always precedes render
+    const selected = serverView ? [] : this.selected;
     const selectedValues = new Set(this._selectedSelection);
     const noAvailable = available.length === 0;
     const noSelected = selected.length === 0;

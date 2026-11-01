@@ -9,6 +9,7 @@ import {
   findNextSnapIndex,
   HORIZONTAL_LTR_FLOW,
   MessagesController,
+  HydrationController,
   RafScheduler,
   clientSize,
   getScrollOffset,
@@ -183,6 +184,8 @@ const SETTLE_DEBOUNCE_MS = 120;
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-carousel rc-carousel documentation}
  */
 export class RCCarousel extends LitElement {
+  protected readonly _hydration = new HydrationController(this);
+
   static override styles = carouselStyles;
 
   private readonly _internals: ElementInternals;
@@ -1013,8 +1016,11 @@ export class RCCarousel extends LitElement {
   }
 
   protected override render() {
-    const canPrev = this._canStep(-1);
-    const canNext = this._canStep(1);
+    // The server cannot see the slides, so hydrate as if there were none first.
+    const serverView = this._hydration.serverView;
+    const items: RCCarouselItem[] = serverView ? [] : this._items;
+    const canPrev = !serverView && this._canStep(-1);
+    const canNext = !serverView && this._canStep(1);
     const messages = this._messages.value;
 
     return html`
@@ -1104,7 +1110,7 @@ export class RCCarousel extends LitElement {
               @focusin=${this._onPaginationFocus}
               ${keyNavigation(this._onPaginationNavigate, { navigationAxis: 'horizontal' })}
             >
-              ${this._items.map(
+              ${items.map(
                 (_item, index) => html`
                   <button
                     type="button"
@@ -1112,11 +1118,7 @@ export class RCCarousel extends LitElement {
                     part="pagination-item${index === this.activeIndex
                       ? ' pagination-item-active'
                       : ''}"
-                    aria-label=${messages.goToSlide(
-                      index + 1,
-                      this._items.length,
-                      this._messages.locale,
-                    )}
+                    aria-label=${messages.goToSlide(index + 1, items.length, this._messages.locale)}
                     aria-current=${index === this.activeIndex ? 'true' : 'false'}
                     aria-disabled=${index === this.activeIndex ? 'true' : 'false'}
                     @click=${() => this._setActiveIndex(index, 'button')}

@@ -862,3 +862,26 @@ test('has no accessibility violations at rest or mid-turn', async () => {
   await turner.updateComplete;
   await expectNoA11yViolations(turner);
 });
+
+test('describes pages that upgrade after the turner, as inserted markup does', async () => {
+  const errors: unknown[] = [];
+  const onError = (event: ErrorEvent) => errors.push(event.error);
+  const template = document.createElement('template');
+
+  window.addEventListener('error', onError);
+
+  // Template content is inert, so appending it connects the turner before its pages upgrade.
+  template.innerHTML =
+    '<rc-page-turner aria-label="Steps"><rc-page-turner-page>One</rc-page-turner-page>' +
+    '<rc-page-turner-page>Two</rc-page-turner-page></rc-page-turner>';
+
+  document.body.append(template.content);
+
+  const $pages = [...document.querySelectorAll('rc-page-turner-page')];
+
+  await vi.waitFor(() => expect($pages[1]?.getAttribute('aria-label')).toBe('2 of 2'));
+  expect(errors).toEqual([]);
+
+  window.removeEventListener('error', onError);
+  document.querySelector('rc-page-turner')?.remove();
+});

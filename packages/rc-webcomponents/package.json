@@ -33,6 +33,12 @@
         "default": "./dist/rc-webcomponents-define.js"
       }
     },
+    "./hydrate-support": {
+      "import": {
+        "types": "./dist/types/hydrate-support.d.ts",
+        "default": "./dist/hydrate-support.js"
+      }
+    },
     "./solid": {
       "types": "./src/solid.d.ts"
     },
@@ -582,12 +588,14 @@
     "./dist/rc-webcomponents-define.js",
     "./dist/*/define.js",
     "./themes/*.css",
-    "./dist/pre-upgrade.css"
+    "./dist/pre-upgrade.css",
+    "./dist/hydrate-support.js"
   ],
   "scripts": {
     "build": "tsc && vite build && node ../../scripts/emit-pre-upgrade-css.mjs"
   },
   "dependencies": {
+    "@lit-labs/ssr-client": "^1.1.8",
     "@rcarls/rc-accordion": "workspace:*",
     "@rcarls/rc-adaptive-menu": "workspace:*",
     "@rcarls/rc-app-bar": "workspace:*",

@@ -4,6 +4,7 @@ import { property, state } from 'lit/decorators.js';
 
 import {
   FlowController,
+  HydrationController,
   MessagesController,
   NativeChildController,
   arrowKeys,
@@ -185,6 +186,8 @@ declare module '@rcarls/rc-common' {
  * @csspart high-value-display - Rendered high value text.
  */
 export class RCRangeSlider extends LitElement {
+  protected readonly _hydration = new HydrationController(this);
+
   static override styles = css`
     :host {
       --rc-range-slider-accent: var(--rc-accent, Highlight);
@@ -551,7 +554,8 @@ export class RCRangeSlider extends LitElement {
     const $lo = this._$lowInput;
     const $hi = this._$highInput;
 
-    if (!$lo || !$hi) {
+    // The server cannot see the native inputs, so hydrate without them first.
+    if (!$lo || !$hi || this._hydration.serverView) {
       return nothing;
     }
 

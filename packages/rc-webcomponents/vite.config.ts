@@ -31,6 +31,7 @@ export default defineConfig({
         'rc-webcomponents-define': resolve(__dirname, 'src/define.ts'),
         ...componentEntries,
         'rc-textarea/folding': resolve(__dirname, 'src/rc-textarea/folding.ts'),
+        'hydrate-support': resolve(__dirname, 'src/hydrate-support.ts'),
       },
       formats: ['es'],
     },

@@ -3,34 +3,35 @@ import { commands } from 'vitest/browser';
 
 // Type-only: declares the renderOnServer browser command.
 import type {} from '../../../test-helpers/ssr-command.js';
+import type { SsrFixtures } from '../../../test-helpers/ssr-fixtures.js';
 
 /*
- * Each fixture is rendered by Lit's server renderer in Node, then loaded as a
- * page in its own iframe: the browser parses the declarative shadow roots,
- * and only afterwards does a module script load Lit's hydration support and
- * the element definitions, the order a server-rendered page uses. An element
- * that renders differently in the browser than on the server fails hydration,
- * which Lit reports as an error. A real document parse matters: Chromium does
- * not upgrade elements nested in a declarative shadow root parsed by
- * element.setHTMLUnsafe().
+ * The per-package server-render hydration audit. Every element has a fixture
+ * in its package's ssr-fixtures.ts. Each fixture is rendered by Lit's server
+ * renderer in Node, then loaded as a page in its own iframe: the browser
+ * parses the declarative shadow roots, and only afterwards does a module
+ * script load Lit's hydration support and the package's definitions, the
+ * order a server-rendered page uses. The element must hydrate without errors
+ * and end with the same shadow DOM a client render produces. A real document
+ * parse matters: Chromium does not upgrade elements nested in a declarative
+ * shadow root parsed by element.setHTMLUnsafe().
  */
-// Each element listed here is verified to hydrate to the same shadow DOM a
-// client render produces. rc-field is not yet: it derives slot and value state
-// from its native child before its first update.
-const fixtures: Record<string, string> = {
-  'rc-button': '<rc-button><button type="button">Save</button></rc-button>',
-  'rc-card': '<rc-card><h2 slot="title">Plan</h2><p>Details</p></rc-card>',
-  'rc-chip': '<rc-chip><button type="button">Tag</button></rc-chip>',
-  'rc-progress':
-    '<rc-progress><progress value="40" max="100" aria-label="Upload"></progress></rc-progress>',
-  'rc-switch':
-    '<rc-switch><input type="checkbox" role="switch" aria-label="Notifications"></rc-switch>',
-  'rc-navigation-rail':
-    '<rc-navigation-rail><nav aria-label="Main"><a href="/" aria-current="page">Home</a></nav></rc-navigation-rail>',
-  'rc-app-bar': '<rc-app-bar><h1>Title</h1></rc-app-bar>',
-  'rc-select':
-    '<rc-select><select aria-label="Status"><option>Draft</option><option>Published</option></select></rc-select>',
-};
+const fixtureModules = import.meta.glob<{ default: SsrFixtures }>('../../*/ssr-fixtures.ts', {
+  eager: true,
+});
+const manifests = import.meta.glob<{
+  modules: { declarations?: { customElement?: boolean; tagName?: string }[] }[];
+}>('../../*/dist/custom-elements.json', { eager: true, import: 'default' });
+
+const packageOf = (path: string) => /\/(rc-[^/]+)\//.exec(path)?.[1] ?? '';
+
+const fixtures = Object.entries(fixtureModules).flatMap(([path, module]) =>
+  Object.entries(module.default).map(([tag, fixture]) => ({
+    tag,
+    pkg: packageOf(path),
+    ...fixture,
+  })),
+);
 
 // The page loads modules through the test server's /@fs route by absolute path.
 const ROOT = new URL(import.meta.url).pathname.replace(/packages\/rc-webcomponents\/src\/.*$/, '');
@@ -53,8 +54,13 @@ afterEach(() => {
   $frame = undefined;
 });
 
-async function loadPage(tag: string, markup: string, html: string): Promise<{ page: PageResult }> {
-  const define = moduleUrl(`packages/rc-webcomponents/dist/${tag}/define.js`);
+async function loadPage(
+  tag: string,
+  pkg: string,
+  markup: string,
+  html: string,
+): Promise<PageResult> {
+  const define = moduleUrl(`packages/rc-webcomponents/dist/${pkg}/define.js`);
 
   $frame = document.createElement('iframe');
 
@@ -70,21 +76,50 @@ async function loadPage(tag: string, markup: string, html: string): Promise<{ pa
     const definedBeforeScript = host.matches(':defined');
     let hydrated = '';
     let rendered = '';
+    // Serializes a shadow tree with sorted attributes. Generated ids, the
+    // server's inline styles, and Lit's markers differ by design.
+    const serialize = (node) => {
+      if (node.nodeType === Node.TEXT_NODE) return node.textContent.replace(/\\s+/g, ' ');
+      if (node.nodeType !== Node.ELEMENT_NODE || node.localName === 'style') return '';
+      const attributes = [...node.attributes]
+        .map(({ name, value }) => [
+          name,
+          /^(id|for|aria-[a-z]+)$/.test(name) && /\\d/.test(value)
+            ? 'id'
+            : name === 'style'
+              ? value.replace(/;\\s*$/, '').replace(/;\\s*/g, '; ')
+              : name === 'class'
+                ? value.split(/\\s+/).filter(Boolean).sort().join(' ')
+                : value,
+        ])
+        // The server writes an input's empty .value binding as value="".
+        .filter(([name, value]) => !(node.localName === 'input' && name === 'value' && value === ''))
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([name, value]) => ' ' + name + '="' + value + '"')
+        .join('');
+      const children = [...node.childNodes].map(serialize).join('');
+      return '<' + node.localName + attributes + '>' + children + '</' + node.localName + '>';
+    };
+    const normalize = (root) =>
+      root ? [...root.childNodes].map(serialize).join('').replace(/\\s+/g, ' ').trim() : '';
+    const settle = async (element) => {
+      await element.updateComplete;
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      await element.updateComplete;
+    };
     try {
       await import('${HYDRATE_SUPPORT}');
       await import('${define}');
-      await host.updateComplete;
-      // A client-rendered copy of the same markup, to compare against.
+      await settle(host);
+      hydrated = normalize(host.shadowRoot);
+      // A client render of the same markup, in the same place, to compare against.
       const fresh = document.createElement('template');
       fresh.innerHTML = ${JSON.stringify(markup)};
       const copy = fresh.content.firstElementChild;
-      document.body.append(copy);
-      await copy.updateComplete;
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-      const normalize = (root) => root.innerHTML.replace(/<!--[^]*?-->/g, '').replace(/<style>[^]*?<\\/style>/g, '').replace(/\\bid="rc-[a-z]+-\\d+/g, 'id="rc-id').replace(/\\s+/g, ' ').trim();
-      hydrated = normalize(host.shadowRoot);
-      rendered = normalize(copy.shadowRoot);
-      copy.remove();
+      document.body.firstElementChild.replaceWith(copy);
+      const copyHost = copy.matches('${tag}') ? copy : copy.querySelector('${tag}');
+      await settle(copyHost);
+      rendered = normalize(copyHost.shadowRoot);
     } catch (error) {
       report(error);
     }
@@ -103,20 +138,40 @@ async function loadPage(tag: string, markup: string, html: string): Promise<{ pa
     throw new Error(`${tag}: the page script did not finish.`);
   }
 
-  return { page: win.__page };
+  return win.__page;
 }
 
-for (const [tag, markup] of Object.entries(fixtures)) {
-  test(`${tag} hydrates its server-rendered shadow root`, async () => {
-    const html = await commands.renderOnServer(markup);
-    const { page } = await loadPage(tag, markup, html);
+test('every element has a server-render hydration fixture', () => {
+  const tags = Object.values(manifests).flatMap((manifest) =>
+    manifest.modules
+      .flatMap((module) => module.declarations ?? [])
+      .filter((declaration) => declaration.customElement && declaration.tagName)
+      .map((declaration) => declaration.tagName!),
+  );
+  const covered = new Set(fixtures.map((fixture) => fixture.tag));
 
-    expect(page.serverShadow, 'the server output attaches a declarative shadow root').toBe(true);
-    expect(page.definedBeforeScript).toBe(false);
-    // Hydration reuses the server shadow root instead of rendering a new one.
-    expect(page.sameShadow).toBe(true);
-    expect(page.errors).toEqual([]);
-    // Hydration keeps the server's values, so they must match a client render.
-    expect(page.hydrated).toBe(page.rendered);
-  });
+  expect(tags.length).toBeGreaterThan(40);
+  expect(tags.filter((tag) => !covered.has(tag))).toEqual([]);
+});
+
+for (const { tag, pkg, markup, pending } of fixtures) {
+  const run = pending ? test.fails : test;
+
+  run(
+    `${tag} hydrates its server-rendered markup${pending ? ` (pending: ${pending})` : ''}`,
+    async () => {
+      const html = await commands.renderOnServer(markup);
+      const page = await loadPage(tag, pkg, markup, html);
+
+      expect(page.definedBeforeScript).toBe(false);
+      expect(page.errors).toEqual([]);
+
+      if (page.serverShadow) {
+        // Hydration reuses the server shadow root instead of rendering a new one.
+        expect(page.sameShadow).toBe(true);
+        // Hydration keeps the server's values, so they must match a client render.
+        expect(page.hydrated).toBe(page.rendered);
+      }
+    },
+  );
 }

@@ -132,10 +132,15 @@ short and tell the tool to read `AGENTS.md` before project work.
   output contains the native fallback markup and registration belongs in a
   client entry. Every element must also render under `@lit-labs/ssr`
   (`yarn test:ssr`): guard render-path DOM reads, such as `closest()`, inline
-  styles, or native-child state, with `isServer` from `lit`. Do not claim
-  hydration support beyond the elements `ssr-hydration.test.ts` verifies; an
-  element that reads its light DOM while rendering hydrates through
-  `rc-common`'s `HydrationController`.
+  styles, or ancestors, with `isServer` from `lit`.
+- Every element needs a fixture in its package's `ssr-fixtures.ts`.
+  `packages/rc-webcomponents/src/ssr-hydration.test.ts` renders each on the
+  server, hydrates it in an iframe, and requires the same shadow DOM as a
+  client render. An element whose render reads its light DOM, such as a
+  native child, slotted content, or slot-derived state, uses `rc-common`'s
+  `HydrationController`: render as if the light DOM were absent while
+  `serverView` is true. Mark an element that cannot yet pass with a `pending`
+  reason; its test then runs as an expected failure.
 - Register light-DOM base styles through `rc-common`'s
   `defineLightDomBaseStyles(tag, css)` at module scope. The package build
   emits the registered CSS as `dist/base.css`, exported as `./base.css`, so

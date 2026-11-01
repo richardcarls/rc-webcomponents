@@ -4,11 +4,12 @@ import { classMap } from 'lit/directives/class-map.js';
 
 import {
   cssText,
+  defineLightDomBaseStyles,
+  HydrationController,
   keyInteraction,
   MessagesController,
   NativeChildController,
   warnMissingDirectChild,
-  defineLightDomBaseStyles,
 } from '@rcarls/rc-common';
 
 import searchBarStyles from './rc-search-bar.styles.js';
@@ -180,6 +181,9 @@ declare module '@rcarls/rc-common' {
  * @csspart suggestion - Datalist-derived suggestion button
  */
 export class RCSearchBar extends LitElement {
+  // Re-syncs slot state after hydrating a server-rendered shadow root.
+  protected readonly _hydration = new HydrationController(this);
+
   static styles = [searchBarStyles];
 
   /** Built-in text overrides; unset keys fall back to registered text, then English. */
@@ -764,17 +768,20 @@ export class RCSearchBar extends LitElement {
   }
 
   protected override render() {
+    // The server cannot see the native input, so hydrate as if it were absent first.
+    const hasInput = this._hasInput && !this._hydration.serverView;
+
     return html`
       <div
         id="root"
         part="root"
-        class=${classMap({ empty: !this._hasInput })}
+        class=${classMap({ empty: !hasInput })}
         ${keyInteraction({ attributeTarget: this })}
       >
         <span
           id="leading"
           part="leading"
-          class=${classMap({ empty: !this._hasLeading || !this._hasInput })}
+          class=${classMap({ empty: !this._hasLeading || !hasInput })}
         >
           <slot name="leading" @slotchange=${this._onLeadingSlotChange}></slot>
         </span>
@@ -786,8 +793,8 @@ export class RCSearchBar extends LitElement {
           part="clear"
           type="button"
           aria-label=${this._messages.value.clear}
-          ?hidden=${!this._hasInput}
-          ?inert=${this._hasInput && !this._hasValue && !(this.showClearOnFocus && this._focused)}
+          ?hidden=${!hasInput}
+          ?inert=${hasInput && !this._hasValue && !(this.showClearOnFocus && this._focused)}
           ?disabled=${this._inputDisabled}
           @click=${this._handleClear}
         >
