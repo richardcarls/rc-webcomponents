@@ -647,7 +647,13 @@ export class RCCarousel extends LitElement {
     this._directItems().forEach((item, itemIndex) => {
       const hidden = itemIndex !== index;
 
-      item.toggleAttribute('aria-hidden', hidden);
+      // An empty aria-hidden is not "true"; ARIA treats it as undefined.
+      if (hidden) {
+        item.setAttribute('aria-hidden', 'true');
+      } else {
+        item.removeAttribute('aria-hidden');
+      }
+
       item.toggleAttribute('inert', hidden);
     });
   }

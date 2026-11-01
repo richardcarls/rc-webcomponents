@@ -92,7 +92,13 @@ export class RCPageTurnerPage extends LitElement {
     const shown = presentation !== 'hidden' && presentation !== 'adjacent';
 
     this.toggleAttribute('inert', !current);
-    this.toggleAttribute('aria-hidden', !current);
+
+    // An empty aria-hidden is not "true"; ARIA treats it as undefined.
+    if (current) {
+      this.removeAttribute('aria-hidden');
+    } else {
+      this.setAttribute('aria-hidden', 'true');
+    }
 
     const states = this._internals.states;
 
