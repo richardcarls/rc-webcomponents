@@ -2,6 +2,8 @@ import { LitElement, html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
+import { MorphRecoveryController } from '@rcarls/rc-common';
+
 import virtualCanvasStyles from './rc-virtual-canvas.styles.js';
 
 declare global {
@@ -158,6 +160,13 @@ function createRectSnapshot(rect: RCVirtualCanvasViewRect) {
  *   slotted canvas; kept in sync with the `imageRendering` property.
  */
 export class RCVirtualCanvas extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    attributes: ['style'],
+    resync: () =>
+      this.style.setProperty('--rc-virtual-canvas-image-rendering', this.imageRendering),
+  });
+
   static styles = [virtualCanvasStyles];
 
   protected _rafHandle: number = 0;

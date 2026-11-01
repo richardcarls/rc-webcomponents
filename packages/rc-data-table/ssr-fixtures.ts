@@ -5,6 +5,5 @@ export default {
   'rc-data-table': {
     markup:
       '<rc-data-table sort-key="name"><table><caption>Plants</caption><thead><tr><th scope="col" data-rc-sort-key="name"><button type="button">Name</button></th></tr></thead><tbody><tr><td>Aster</td></tr></tbody></table></rc-data-table>',
-    morphPending: 'writes state attributes on its host or children, which a morph removes',
   },
 } satisfies SsrFixtures;

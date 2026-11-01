@@ -5,6 +5,5 @@ export default {
   'rc-transfer-list': {
     markup:
       '<rc-transfer-list><select multiple aria-label="Planets"><option value="venus" selected>Venus</option><option value="mars">Mars</option></select></rc-transfer-list>',
-    morphPending: 'writes state attributes on its host or children, which a morph removes',
   },
 } satisfies SsrFixtures;

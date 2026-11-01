@@ -1,7 +1,7 @@
 import { ReactiveElement } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { LiveAnnouncer, MessagesController } from '@rcarls/rc-common';
+import { LiveAnnouncer, MessagesController, MorphRecoveryController } from '@rcarls/rc-common';
 import { ensureDataTableBaseStyles } from './dataTableBaseStyles.js';
 
 const TABLE_SELECTOR = ':scope > table';
@@ -98,6 +98,9 @@ const isDirection = (value: unknown): value is RCDataTableSortDirection =>
  * @cssprop [--rc-data-table-sort-descending='\25BC'] - Indicator for a descending column.
  */
 export class RCDataTable extends ReactiveElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this);
+
   /** Announces each user sort through a polite live region. */
   @property({ type: Boolean })
   announce = false;

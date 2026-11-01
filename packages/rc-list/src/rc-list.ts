@@ -6,6 +6,7 @@ import {
   observeLocale,
   type ReorderMessages,
   includeDefaults,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 import type { RCListItem } from './rc-list-item.js';
 import { ensureListBaseStyles } from './listBaseStyles.js';
@@ -136,6 +137,12 @@ type RCListPosition = 'only' | 'first' | 'middle' | 'last';
  * @see {@link https://m3.material.io/components/lists/overview Material Design lists}
  */
 export class RCList extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    role: 'list',
+    attributes: ['has-leading', 'has-trailing', 'data-rc-list-position'],
+  });
+
   static override styles = listStyles;
 
   private readonly _internals: ElementInternals;
@@ -202,10 +209,6 @@ export class RCList extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
-
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'list');
-    }
 
     this.addEventListener('change', this._handleChange);
     // Handle hints are written into light DOM, so a new locale or registered text must rewrite them.

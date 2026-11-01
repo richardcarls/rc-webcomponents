@@ -6,6 +6,7 @@ import {
   cssText,
   isFocusable,
   defineLightDomBaseStyles,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 
 import menuStyles from './rc-menu.styles.js';
@@ -261,6 +262,15 @@ const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-menu', LIGHT_DOM_C
  * @cssprop [--rc-item-icon-size=inherit] - Size of icons marked with `data-rc-icon`, `data-rc-menu-leading`, or `data-rc-menu-icon`.
  */
 export class RCMenu extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    role: 'menu',
+    resync: () => {
+      this.setAttribute('tabindex', '0');
+      this._syncAriaLabel();
+    },
+  });
+
   static styles = [menuStyles];
 
   private static _ensureBaseStyles($root: Document | ShadowRoot): void {
@@ -284,10 +294,6 @@ export class RCMenu extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
-
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'menu');
-    }
 
     this.setAttribute('tabindex', '0');
     this._syncAriaLabel();

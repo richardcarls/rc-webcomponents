@@ -10,6 +10,7 @@ import {
   type KeyboardNavigationAction,
   renderedOrientation,
   RovingTabIndexMixin,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 
 import toolbarStyles from './rc-toolbar.styles.js';
@@ -43,6 +44,9 @@ declare global {
  * @csspart root - The toolbar container element
  */
 export class RCToolbar extends RovingTabIndexMixin(LitElement) {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this);
+
   // Re-syncs the roving tab stop after hydrating a server-rendered shadow root.
   protected readonly _hydration = new HydrationController(this);
 

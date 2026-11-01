@@ -11,6 +11,7 @@ import {
   NativeChildController,
   warnMissingDirectChild,
   includeDefaults,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 
 import searchBarStyles from './rc-search-bar.styles.js';
@@ -182,6 +183,18 @@ declare module '@rcarls/rc-common' {
  * @csspart suggestion - Datalist-derived suggestion button
  */
 export class RCSearchBar extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    attributes: ['placeholder'],
+    resync: () => {
+      const $input = this._$inputRef?.deref();
+
+      if ($input) {
+        this._applyPlaceholder($input);
+      }
+    },
+  });
+
   // Re-syncs slot state after hydrating a server-rendered shadow root.
   protected readonly _hydration = new HydrationController(this);
 

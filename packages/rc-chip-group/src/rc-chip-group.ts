@@ -12,6 +12,7 @@ import {
   RovingTabIndexMixin,
   setScrollOffset,
   includeDefaults,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 import type { RCChip } from '@rcarls/rc-chip';
 
@@ -106,6 +107,11 @@ declare module '@rcarls/rc-common' {
  * @cssprop [--rc-chip-group-toggle-separator-color=currentColor] - Separator color.
  */
 export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    attributes: ['variant'],
+  });
+
   static override styles = chipGroupStyles;
 
   /** Built-in text overrides; unset keys fall back to registered text, then English. */

@@ -5,6 +5,5 @@ export default {
   'rc-search-bar': {
     markup:
       '<rc-search-bar placeholder="Search"><input type="search" aria-label="Search recipes"></rc-search-bar>',
-    morphPending: 'writes state attributes on its host or children, which a morph removes',
   },
 } satisfies SsrFixtures;

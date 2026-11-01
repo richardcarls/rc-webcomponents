@@ -18,6 +18,7 @@ import {
   warnMissingDirectChild,
   type DragGestureDetail,
   type Flow,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 import type { RCPageTurnerPage } from './rc-page-turner-page.js';
 
@@ -208,6 +209,12 @@ interface DragTurn {
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-page-turner rc-page-turner documentation}
  */
 export class RCPageTurner extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    role: 'group',
+    resync: () => this._syncText(),
+  });
+
   protected readonly _hydration = new HydrationController(this);
 
   static override styles = pageTurnerStyles;
@@ -315,10 +322,6 @@ export class RCPageTurner extends LitElement {
     super.connectedCallback();
 
     this._observeAncestorStyles();
-
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'group');
-    }
 
     this._pages = this._directPages();
     this._syncText();

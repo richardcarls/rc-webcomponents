@@ -5,11 +5,9 @@ export default {
   'rc-carousel': {
     markup:
       '<rc-carousel navigation pagination aria-label="Photos"><rc-carousel-item>One</rc-carousel-item><rc-carousel-item>Two</rc-carousel-item></rc-carousel>',
-    morphPending: 'writes state attributes on its host or children, which a morph removes',
   },
   'rc-carousel-item': {
     markup:
       '<rc-carousel aria-label="Photos"><rc-carousel-item>One</rc-carousel-item></rc-carousel>',
-    morphPending: 'writes state attributes on its host or children, which a morph removes',
   },
 } satisfies SsrFixtures;

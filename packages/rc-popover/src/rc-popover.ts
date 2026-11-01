@@ -7,6 +7,7 @@ import {
   cssText,
   PopoverController,
   defineLightDomBaseStyles,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 
 import popoverStyles from './rc-popover.styles.js';
@@ -126,6 +127,11 @@ const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-popover', LIGHT_DO
  * @cssprop [--rc-popover-z-index=1] - Fallback stacking order.
  */
 export class RCPopover extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    attributes: ['popover', 'popovertarget'],
+  });
+
   static override styles = popoverStyles;
 
   /** Preferred logical placement. */

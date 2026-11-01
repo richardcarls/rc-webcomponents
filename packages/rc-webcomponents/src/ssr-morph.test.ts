@@ -1,4 +1,5 @@
 import { Idiomorph } from 'idiomorph';
+import type { ReactiveElement } from 'lit';
 import { afterEach, expect, test } from 'vitest';
 
 import type { SsrFixtures } from '../../../test-helpers/ssr-fixtures.js';
@@ -37,20 +38,38 @@ afterEach(() => {
   $container = undefined;
 });
 
-async function settle(): Promise<void> {
+async function settle(rerender = false): Promise<void> {
   const hosts = [...($container?.querySelectorAll('*') ?? [])].filter(
-    (element): element is HTMLElement & { updateComplete: Promise<unknown> } =>
-      'updateComplete' in element,
+    (element): element is ReactiveElement => 'updateComplete' in element,
   );
+
+  if (rerender) {
+    // A later update must still work, which it cannot if the morph removed
+    // the markers Lit renders into an element's light DOM.
+    hosts.forEach((host) => host.requestUpdate());
+  }
 
   await Promise.all(hosts.map((host) => host.updateComplete));
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   await Promise.all(hosts.map((host) => host.updateComplete));
 }
 
-/** Generated ids differ between renders by design; a missing id still shows. */
-const normalizeValue = (name: string, value: string) =>
-  /^(id|for|aria-[a-z]+)$/.test(name) && /\d/.test(value) ? 'id' : value;
+/**
+ * Generated ids differ between renders by design, but a missing id still
+ * shows. Inline declarations are sorted, since their order carries no meaning.
+ */
+const normalizeValue = (name: string, value: string) => {
+  if (name === 'style') {
+    return value
+      .split(';')
+      .map((declaration) => declaration.trim())
+      .filter(Boolean)
+      .sort()
+      .join('; ');
+  }
+
+  return /^(id|for|aria-[a-z]+)$/.test(name) && /\d/.test(value) ? 'id' : value;
+};
 
 /**
  * Lists the light DOM of the container as `path name="value"` entries, one per
@@ -64,9 +83,9 @@ function lightDom($root: Element, path = ''): string[] {
     }
 
     const childPath = `${path}/${$child.localName}[${index}]`;
-    const attributes = [...$child.attributes]
-      .filter(({ name }) => name !== 'style')
-      .map(({ name, value }) => `${childPath} ${name}="${normalizeValue(name, value)}"`);
+    const attributes = [...$child.attributes].map(
+      ({ name, value }) => `${childPath} ${name}="${normalizeValue(name, value)}"`,
+    );
 
     return [childPath, ...attributes, ...lightDom($child, childPath)];
   });
@@ -95,7 +114,7 @@ for (const { tag, pkg, markup, morphPending } of fixtures) {
         const before = lightDom($container);
 
         await Idiomorph.morph($container, markup, { morphStyle: 'innerHTML' });
-        await settle();
+        await settle(true);
 
         const after = lightDom($container);
         const differences = [

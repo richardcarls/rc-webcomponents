@@ -1,7 +1,7 @@
 import { LitElement, html, type PropertyValues } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
-import { ClickDelegateController } from '@rcarls/rc-common';
+import { ClickDelegateController, MorphRecoveryController } from '@rcarls/rc-common';
 
 import cardStyles from './rc-card.styles.js';
 
@@ -108,6 +108,11 @@ type SlotName = (typeof SLOT_NAMES)[number];
  * @cssprop [--rc-card-footer-padding-inline=var(--rc-card-padding-inline, 0)] - Footer inline-axis padding.
  */
 export class RCCard extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    attributes: ['has-title', 'has-media'],
+  });
+
   static override styles = cardStyles;
 
   /** Structural layout direction. */

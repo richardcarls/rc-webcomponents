@@ -9,6 +9,7 @@ import {
   ScrollObserverController,
   type ScrollObserverTarget,
   includeDefaults,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 
 import appBarStyles from './rc-app-bar.styles.js';
@@ -118,6 +119,15 @@ export interface RCAppBarScrollDetail {
  * @csspart scroll-shadow - Scrolled-state separator
  */
 export class RCAppBar extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    attributes: ['data-scrolled', 'data-collapsed', 'data-hidden'],
+    resync: () => {
+      this._setCollapseProgress(this._collapseProgress);
+      this._syncStateOutputs();
+    },
+  });
+
   // Re-syncs slot state after hydrating a server-rendered shadow root.
   protected readonly _hydration = new HydrationController(this);
 

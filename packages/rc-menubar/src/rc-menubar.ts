@@ -9,6 +9,7 @@ import {
   resolveFlow,
   type KeyboardNavigationAction,
   includeDefaults,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 import type { RCMenuButton, RCMenuButtonToggleEvent } from '@rcarls/rc-menu-button';
 
@@ -91,6 +92,11 @@ declare module '@rcarls/rc-common' {
  * @cssprop [--rc-menubar-item-open-border-color=transparent] - Child trigger border color when its menu is open
  */
 export class RCMenubar extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    attributes: ['orientation'],
+  });
+
   static styles = [menubarStyles];
 
   /** Built-in text overrides; unset keys fall back to registered text, then English. */

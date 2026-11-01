@@ -34,4 +34,5 @@ export * from './LiveAnnouncer.js';
 export * from './lightDomBaseStyles.js';
 export * from './HydrationController.js';
 export * from './propertyDefaults.js';
+export * from './MorphRecoveryController.js';
 export * from './ReorderController.js';

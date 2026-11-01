@@ -17,6 +17,7 @@ import {
   snapToStep,
   valueToPercent,
   warnMissingDirectChild,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 
 export interface RCRangeSliderValueEvent {
@@ -186,6 +187,12 @@ declare module '@rcarls/rc-common' {
  * @csspart high-value-display - Rendered high value text.
  */
 export class RCRangeSlider extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    attributes: ['data-rc-range-slider-reflector'],
+    resync: () => this._syncHostRole(),
+  });
+
   protected readonly _hydration = new HydrationController(this);
 
   static override styles = css`

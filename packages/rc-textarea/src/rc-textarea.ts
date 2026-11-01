@@ -12,6 +12,7 @@ import {
   resolveFlow,
   warnMissingDirectChild,
   includeDefaults,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 import { RCDocument, getText } from './document.js';
 import {
@@ -352,6 +353,18 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-line-action-shadow=0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)] - Line-action popover shadow
  */
 export class RCTextarea extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    attributes: ['style'],
+    resync: () => {
+      const $textarea = this._$textareaRef?.deref();
+
+      if ($textarea) {
+        this._hideTextarea($textarea);
+      }
+    },
+  });
+
   static override styles: CSSResultGroup = styles;
   static override shadowRootOptions = {
     ...LitElement.shadowRootOptions,
@@ -891,23 +904,7 @@ export class RCTextarea extends LitElement {
 
     this._$textareaRef = new WeakRef($textarea);
 
-    // Visually hide — keep in DOM for form submission
-    Object.assign($textarea.style, {
-      position: 'absolute',
-      width: '1px',
-      height: '1px',
-      padding: '0',
-      margin: '-1px',
-      overflow: 'hidden',
-      clip: 'rect(0,0,0,0)',
-      border: '0',
-      opacity: '0',
-      pointerEvents: 'none',
-      tabIndex: '-1',
-    });
-
-    $textarea.setAttribute('aria-hidden', 'true');
-    $textarea.tabIndex = -1;
+    this._hideTextarea($textarea);
 
     // Sync attributes from textarea → editor ARIA / state. Before the first
     // update, firstUpdated() does this once the editor is rendered; a
@@ -940,6 +937,27 @@ export class RCTextarea extends LitElement {
     }
 
     this._scheduleRender();
+  }
+
+  /** Keeps the native textarea in the form while the editor stands in for it. */
+  private _hideTextarea($textarea: HTMLTextAreaElement): void {
+    // Visually hide — keep in DOM for form submission
+    Object.assign($textarea.style, {
+      position: 'absolute',
+      width: '1px',
+      height: '1px',
+      padding: '0',
+      margin: '-1px',
+      overflow: 'hidden',
+      clip: 'rect(0,0,0,0)',
+      border: '0',
+      opacity: '0',
+      pointerEvents: 'none',
+      tabIndex: '-1',
+    });
+
+    $textarea.setAttribute('aria-hidden', 'true');
+    $textarea.tabIndex = -1;
   }
 
   protected _onTextareaInvalid = (): void => {
