@@ -82,6 +82,7 @@
     "@yarnpkg/types": "^4.0.1",
     "axe-core": "^4.11.4",
     "husky": "^9.1.7",
+    "idiomorph": "0.8.0",
     "lit": "^3.0.0",
     "playwright": "^1.56.0",
     "prettier": "^3.8.4",

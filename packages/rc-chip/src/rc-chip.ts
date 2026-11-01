@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { cssText, defineLightDomBaseStyles } from '@rcarls/rc-common';
+import { cssText, defineLightDomBaseStyles, includeDefaults } from '@rcarls/rc-common';
 
 import chipStyles from './rc-chip.styles.js';
 
@@ -237,7 +237,7 @@ export class RCChip extends LitElement {
   private _lastChildWarning: string | null = null;
 
   /** Chip variant. */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: true, useDefault: true })
   variant: RCChipVariant = 'assist';
 
   /** Current selected state. Host writes are silent. */
@@ -308,6 +308,10 @@ export class RCChip extends LitElement {
   /** Synchronizes uncontrolled filter state from the direct native input. @internal */
   syncNativeSelection(): void {
     this._syncCheckedFromNative();
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    includeDefaults(this, changed);
   }
 
   protected override firstUpdated(): void {

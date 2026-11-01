@@ -284,7 +284,7 @@ export class RCSegmentedButton extends LitElement {
   private _slotMicrotaskQueued = false;
 
   /** Current selected radio value. Host writes are silent. */
-  @property({ type: String, reflect: true })
+  @property({ type: String })
   get value(): string {
     return this._value || this._defaultValue;
   }
@@ -322,7 +322,7 @@ export class RCSegmentedButton extends LitElement {
   disabled = false;
 
   /** Keyboard orientation. */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: true, useDefault: true })
   orientation: 'horizontal' | 'vertical' = 'horizontal';
 
   override connectedCallback(): void {

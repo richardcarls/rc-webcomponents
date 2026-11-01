@@ -322,7 +322,8 @@ export class RCSlider extends LitElement {
   @property({ attribute: 'value-text' }) valueText = '';
 
   /** Orientation; reflected as an attribute and forwarded to `aria-orientation`. */
-  @property({ reflect: true }) orientation: 'horizontal' | 'vertical' = 'horizontal';
+  @property({ reflect: true, useDefault: true }) orientation: 'horizontal' | 'vertical' =
+    'horizontal';
 
   private _$nativeInput: HTMLInputElement | null = null;
 

@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { syncDefaultAttribute } from '@rcarls/rc-common';
+import { syncDefaultAttribute, MorphRecoveryController } from '@rcarls/rc-common';
 import type { RCCarousel } from './rc-carousel.js';
 
 import carouselItemStyles from './rc-carousel-item.styles.js';
@@ -43,11 +43,25 @@ declare global {
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-carousel rc-carousel documentation}
  */
 export class RCCarouselItem extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    role: 'group',
+    resync: () => {
+      this._syncDefaultLabel();
+      this._syncRoleDescription();
+
+      if (this._hidden !== undefined) {
+        this.setHidden(this._hidden);
+      }
+    },
+  });
+
   static override styles = carouselItemStyles;
 
   private readonly _internals: ElementInternals;
 
   private _intersectionObserver: IntersectionObserver | null = null;
+  private _hidden: boolean | undefined;
 
   /**
    * "N of M" position assigned by the parent `rc-carousel`. Internal
@@ -74,10 +88,6 @@ export class RCCarouselItem extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
-
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'group');
-    }
 
     this._syncRoleDescription();
 
@@ -137,8 +147,7 @@ export class RCCarouselItem extends LitElement {
    */
   private async _observeIntersection(): Promise<void> {
     if (this.hasAttribute('data-clone')) {
-      this.setAttribute('aria-hidden', 'true');
-      this.setAttribute('inert', '');
+      this.setHidden(true);
 
       return;
     }
@@ -152,8 +161,7 @@ export class RCCarouselItem extends LitElement {
     this._intersectionObserver?.disconnect();
 
     if (typeof IntersectionObserver !== 'function' || !$root) {
-      this.removeAttribute('aria-hidden');
-      this.removeAttribute('inert');
+      this.setHidden(false);
 
       return;
     }
@@ -162,17 +170,11 @@ export class RCCarouselItem extends LitElement {
       ([entry]) => {
         const hidden = entry !== undefined && !entry.isIntersecting;
 
-        if (hidden) {
-          if (this.contains(this.ownerDocument.activeElement)) {
-            $carousel?.trackElement?.focus();
-          }
-
-          this.setAttribute('aria-hidden', 'true');
-        } else {
-          this.removeAttribute('aria-hidden');
+        if (hidden && this.contains(this.ownerDocument.activeElement)) {
+          $carousel?.trackElement?.focus();
         }
 
-        this.toggleAttribute('inert', hidden);
+        this.setHidden(hidden);
       },
       // A low/zero threshold would count a peeking neighbor's own sliver
       // of visible pixels as "intersecting", never hiding it — a peek is
@@ -183,6 +185,23 @@ export class RCCarouselItem extends LitElement {
     );
 
     this._intersectionObserver.observe(this);
+  }
+
+  /**
+   * Hides the slide from assistive technology and interaction, or reveals it.
+   * Internal integration point for `rc-carousel`, not a public API.
+   */
+  setHidden(hidden: boolean): void {
+    this._hidden = hidden;
+
+    // An empty aria-hidden is not "true"; ARIA treats it as undefined.
+    if (hidden) {
+      this.setAttribute('aria-hidden', 'true');
+    } else {
+      this.removeAttribute('aria-hidden');
+    }
+
+    this.toggleAttribute('inert', hidden);
   }
 
   protected override render() {

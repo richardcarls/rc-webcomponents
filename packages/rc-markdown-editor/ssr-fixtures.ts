@@ -8,8 +8,5 @@ export default {
   },
   'rc-editor-toolbar': {
     markup: '<rc-editor-toolbar></rc-editor-toolbar>',
-    pending:
-      'internal to rc-markdown-editor, which hydrates it; standalone, the client renders ' +
-      'nothing until the editor configures it, while the server renders the default toolbar',
   },
 } satisfies SsrFixtures;

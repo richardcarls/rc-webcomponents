@@ -1,7 +1,7 @@
 import { LitElement, html, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { ClickDelegateController } from '@rcarls/rc-common';
+import { ClickDelegateController, MorphRecoveryController } from '@rcarls/rc-common';
 
 import listItemStyles from './rc-list-item.styles.js';
 
@@ -126,6 +126,12 @@ let detailsIdCounter = 0;
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-list rc-list documentation}
  */
 export class RCListItem extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    role: 'listitem',
+    attributes: ['has-leading', 'has-trailing'],
+  });
+
   static override styles = listItemStyles;
 
   private readonly _internals: ElementInternals;
@@ -187,14 +193,6 @@ export class RCListItem extends LitElement {
       target: () => this._resolveActionTarget() ?? this._nativeInput(),
       disabled: () => !this.interactive || this.disabled,
     });
-  }
-
-  override connectedCallback(): void {
-    super.connectedCallback();
-
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'listitem');
-    }
   }
 
   protected override updated(changed: PropertyValues<this>): void {

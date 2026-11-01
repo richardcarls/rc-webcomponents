@@ -1,7 +1,13 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
-import { ReorderController, observeLocale, type ReorderMessages } from '@rcarls/rc-common';
+import {
+  ReorderController,
+  observeLocale,
+  type ReorderMessages,
+  includeDefaults,
+  MorphRecoveryController,
+} from '@rcarls/rc-common';
 import type { RCListItem } from './rc-list-item.js';
 import { ensureListBaseStyles } from './listBaseStyles.js';
 
@@ -131,6 +137,12 @@ type RCListPosition = 'only' | 'first' | 'middle' | 'last';
  * @see {@link https://m3.material.io/components/lists/overview Material Design lists}
  */
 export class RCList extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    role: 'list',
+    attributes: ['has-leading', 'has-trailing', 'data-rc-list-position'],
+  });
+
   static override styles = listStyles;
 
   private readonly _internals: ElementInternals;
@@ -146,11 +158,11 @@ export class RCList extends LitElement {
   private _unobserveLocale: (() => void) | null = null;
 
   /** Appearance hint. */
-  @property({ reflect: true })
+  @property({ reflect: true, useDefault: true })
   variant: RCListVariant = 'standard';
 
   /** Native selection coordination mode. */
-  @property({ reflect: true })
+  @property({ reflect: true, useDefault: true })
   selection: RCListSelection = 'none';
 
   /** Whether item order is meaningful; positions are exposed without rendered counters. */
@@ -198,10 +210,6 @@ export class RCList extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
 
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'list');
-    }
-
     this.addEventListener('change', this._handleChange);
     // Handle hints are written into light DOM, so a new locale or registered text must rewrite them.
     this._unobserveLocale ??= observeLocale(() => this._queueSync(), this);
@@ -238,6 +246,10 @@ export class RCList extends LitElement {
     this._unobserveLocale?.();
     this._unobserveLocale = null;
     this._restoreAllItems();
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    includeDefaults(this, changed);
   }
 
   protected override firstUpdated(): void {

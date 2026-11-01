@@ -9,6 +9,7 @@ import {
   NativeChildController,
   resolveFlow,
   warnMissingDirectChild,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 import type { ListboxOption, RCListbox, RCListboxChangeEvent } from '@rcarls/rc-listbox';
 import '@rcarls/rc-listbox/define';
@@ -128,6 +129,16 @@ declare global {
  * @csspart move-down-button - Moves highlighted selected options down.
  */
 export class RCTransferList extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    attributes: ['style'],
+    resync: () => {
+      if (this._$select) {
+        this._hideSelect(this._$select);
+      }
+    },
+  });
+
   // Re-syncs slot state after hydrating a server-rendered shadow root.
   protected readonly _hydration = new HydrationController(this);
 
@@ -707,11 +718,7 @@ export class RCTransferList extends LitElement {
       return;
     }
 
-    // Remove from visual display, AT, and tab order — the rc-listbox UI is the
-    // accessible interface; the <select> is only present for form serialisation.
-    $select.style.display = 'none';
-    $select.setAttribute('aria-hidden', 'true');
-    $select.tabIndex = -1;
+    this._hideSelect($select);
 
     // Watch for external option additions/removals (attribute-level opt.selected
     // changes via IDL are not observable; use the component API instead).
@@ -726,6 +733,17 @@ export class RCTransferList extends LitElement {
     }
 
     this.requestUpdate();
+  }
+
+  /**
+   * Removes the native select from display, assistive technology, and the tab
+   * order: the rc-listbox UI is the accessible interface, and the select is
+   * present only for form serialization.
+   */
+  private _hideSelect($select: HTMLSelectElement): void {
+    $select.style.display = 'none';
+    $select.setAttribute('aria-hidden', 'true');
+    $select.tabIndex = -1;
   }
 
   private _teardownSelect(): void {

@@ -109,7 +109,7 @@ test('shows only the current page; its neighbor is laid out unpainted, the rest 
 
   for (const page of pages.slice(1)) {
     expect(page.hasAttribute('inert')).toBe(true);
-    expect(page.getAttribute('aria-hidden')).not.toBeNull();
+    expect(page.getAttribute('aria-hidden')).toBe('true');
     expect(getComputedStyle(page).visibility).toBe('hidden');
   }
 

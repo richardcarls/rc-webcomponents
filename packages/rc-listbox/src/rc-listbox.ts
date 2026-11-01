@@ -12,6 +12,7 @@ import {
   type ItemsCollectionOption,
   type ItemsCollectionSelectableOption,
   defineLightDomBaseStyles,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 
 declare global {
@@ -236,6 +237,9 @@ declare module '@rcarls/rc-common' {
  * @cssprop [--rc-item-letter-spacing=inherit] - Option letter spacing; shared with menu and adaptive-menu items.
  */
 export class RCListbox extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, { role: 'listbox' });
+
   static override styles = css`
     :host {
       display: block;
@@ -313,10 +317,6 @@ export class RCListbox extends LitElement {
     super.connectedCallback();
 
     RCListbox._ensureBaseStyles(this.getRootNode() as Document | ShadowRoot);
-
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'listbox');
-    }
 
     this.addEventListener('keydown', this._onKeydown);
     this.addEventListener('blur', this._onBlur);

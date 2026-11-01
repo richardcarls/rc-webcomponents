@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
 import {
@@ -9,6 +9,7 @@ import {
   scrollSize,
   type Flow,
   type LogicalAxis,
+  includeDefaults,
 } from '@rcarls/rc-common';
 
 import scrollerStyles from './rc-scroller.styles.js';
@@ -81,11 +82,11 @@ export class RCScroller extends LitElement {
   );
 
   /** Scroll axis. */
-  @property({ reflect: true })
+  @property({ reflect: true, useDefault: true })
   axis: RCScrollerAxis = 'block';
 
   /** Optional child layout. */
-  @property({ reflect: true })
+  @property({ reflect: true, useDefault: true })
   layout: RCScrollerLayout = 'none';
 
   /** Reflected, computed. See the class doc comment. */
@@ -117,6 +118,10 @@ export class RCScroller extends LitElement {
       this._resizeObserver = new ResizeObserver(this._onScroll);
       this._resizeObserver.observe(this);
     }
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    includeDefaults(this, changed);
   }
 
   override firstUpdated(): void {

@@ -127,7 +127,7 @@ export class RCFab extends LitElement {
   private _scrollCtrl?: ScrollObserverController;
 
   /** Viewport corner where the FAB is anchored. Uses logical inline/block directions. */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: true, useDefault: true })
   position:
     | 'block-end-inline-end'
     | 'block-end-inline-start'

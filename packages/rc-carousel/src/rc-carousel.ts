@@ -24,6 +24,7 @@ import {
   type DragGestureDetail,
   type Flow,
   type KeyboardNavigationAction,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 import type { RCCarouselItem } from './rc-carousel-item.js';
 
@@ -184,6 +185,12 @@ const SETTLE_DEBOUNCE_MS = 120;
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-carousel rc-carousel documentation}
  */
 export class RCCarousel extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    role: 'group',
+    resync: () => this._syncText(),
+  });
+
   protected readonly _hydration = new HydrationController(this);
 
   static override styles = carouselStyles;
@@ -350,10 +357,6 @@ export class RCCarousel extends LitElement {
 
     this._items = this._directItems();
     this._setItemPositions();
-
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'group');
-    }
 
     this._syncText();
 
@@ -647,8 +650,18 @@ export class RCCarousel extends LitElement {
     this._directItems().forEach((item, itemIndex) => {
       const hidden = itemIndex !== index;
 
-      item.toggleAttribute('aria-hidden', hidden);
-      item.toggleAttribute('inert', hidden);
+      // A slide in inserted markup may not have upgraded yet.
+      if (typeof item.setHidden === 'function') {
+        item.setHidden(hidden);
+      } else {
+        item.toggleAttribute('inert', hidden);
+
+        if (hidden) {
+          item.setAttribute('aria-hidden', 'true');
+        } else {
+          item.removeAttribute('aria-hidden');
+        }
+      }
     });
   }
 

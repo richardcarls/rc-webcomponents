@@ -560,16 +560,16 @@ declare module 'solid-js' {
         {
           'default-source-mode'?: RCAttribute<RcMarkdownEditor['defaultSourceMode']>;
           'default-value'?: RCAttribute<RcMarkdownEditor['defaultValue']>;
+          'hide-toolbar'?: RCAttribute<RcMarkdownEditor['hideToolbar']>;
           'read-only'?: RCAttribute<RcMarkdownEditor['readOnly']>;
           'source-mode'?: RCAttribute<RcMarkdownEditor['sourceMode']>;
-          toolbar?: RCAttribute<RcMarkdownEditor['toolbar']>;
           value?: RCAttribute<RcMarkdownEditor['value']>;
           'prop:defaultSourceMode'?: RcMarkdownEditor['defaultSourceMode'];
           'prop:defaultValue'?: RcMarkdownEditor['defaultValue'];
+          'prop:hideToolbar'?: RcMarkdownEditor['hideToolbar'];
           'prop:messages'?: RcMarkdownEditor['messages'];
           'prop:readOnly'?: RcMarkdownEditor['readOnly'];
           'prop:sourceMode'?: RcMarkdownEditor['sourceMode'];
-          'prop:toolbar'?: RcMarkdownEditor['toolbar'];
           'prop:value'?: RcMarkdownEditor['value'];
         },
         'rc-change' | 'rc-formatting-change' | 'rc-mode-change'

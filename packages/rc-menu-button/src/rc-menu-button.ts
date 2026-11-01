@@ -12,6 +12,7 @@ import {
   PopoverController,
   resolveFlow,
   defineLightDomBaseStyles,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 import type { RCMenu } from '@rcarls/rc-menu';
 
@@ -141,6 +142,9 @@ export interface RCMenuButtonToggleEvent {
  *   or derive it — set it whenever the trigger is rendered icon-only.
  */
 export class RCMenuButton extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this);
+
   static styles = [menuButtonStyles];
 
   /**
@@ -229,7 +233,7 @@ export class RCMenuButton extends LitElement {
    *
    * @default 'block-end-start'
    */
-  @property({ reflect: true })
+  @property()
   get placement(): AnchorPlacement {
     return this._placement ?? this._defaultPlacement;
   }
@@ -279,7 +283,11 @@ export class RCMenuButton extends LitElement {
     const $menubar = this.closest('rc-menubar, [role="menubar"]');
 
     if ($menubar) {
-      const orientation = $menubar.getAttribute('orientation');
+      // An rc-menubar keeps its default orientation off the attribute.
+      const orientation =
+        $menubar.localName === 'rc-menubar'
+          ? ($menubar as HTMLElement & { orientation?: string }).orientation
+          : $menubar.getAttribute('orientation');
 
       if (orientation === 'vertical' || orientation === 'horizontal') {
         return orientation;

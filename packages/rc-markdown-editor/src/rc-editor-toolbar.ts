@@ -7,6 +7,8 @@ import '@rcarls/rc-toolbar/define';
 import { icons } from './icons.js';
 import type { EditorToolbarAction, EditorToolbarActionDetail, HeadingLevel } from './types.js';
 
+import { editorToolbarStyles } from './rc-editor-toolbar.styles.js';
+
 const HEADING_LEVELS: readonly HeadingLevel[] = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
 
 /** Built-in text of `rc-editor-toolbar`. */
@@ -69,9 +71,9 @@ declare module '@rcarls/rc-common' {
 }
 
 /**
- * Formatting toolbar for `<rc-markdown-editor>`. Renders themed `rc-button` and
- * `rc-toolbar` controls into its own light DOM so the parent editor can provide
- * their shared appearance.
+ * Formatting toolbar for `<rc-markdown-editor>`. Renders `rc-button` and
+ * `rc-toolbar` controls into its shadow root; the editor's
+ * `--rc-markdown-editor-toolbar-*` tokens inherit into it.
  *
  * Active-format properties are set by the parent editor and reflected as
  * `aria-pressed` on the corresponding buttons. Heading level is shown via a
@@ -170,13 +172,19 @@ export class RcEditorToolbar extends LitElement {
   @state()
   protected _langInputValue = '';
 
-  override createRenderRoot(): HTMLElement {
-    return this;
-  }
+  static override styles = editorToolbarStyles;
 
   override updated(changed: Map<string, unknown>): void {
     if (changed.has('codeLanguage') && this.codeLanguage !== null) {
       this._langInputValue = this.codeLanguage;
+    }
+
+    // Once the user picks an option, `selected` attributes no longer move the
+    // selection, so the select's value follows the active heading directly.
+    const $select = this.renderRoot.querySelector<HTMLSelectElement>('.heading-select');
+
+    if ($select) {
+      $select.value = this.activeHeading ?? 'p';
     }
   }
 
@@ -309,7 +317,7 @@ export class RcEditorToolbar extends LitElement {
         >
           ${headingOptions.map(
             ({ value, label }) => html`
-              <option value=${value} .selected=${value === (this.activeHeading ?? 'p')}>
+              <option value=${value} ?selected=${value === (this.activeHeading ?? 'p')}>
                 ${label}
               </option>
             `,

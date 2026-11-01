@@ -279,7 +279,7 @@ declare module '@rcarls/rc-common' {
  * @csspart toolbar - The `<rc-editor-toolbar>` element.
  * @csspart rich-view - The contenteditable rich-text view.
  *
- * @attr toolbar - Show the formatting toolbar.
+ * @attr hide-toolbar - Hides the formatting toolbar.
  * @attr source-mode - Controlled: show the markdown source editor.
  * @attr default-source-mode - Uncontrolled initial source-mode state.
  * @attr read-only - Make the editor read-only.
@@ -420,8 +420,8 @@ export class RcMarkdownEditor extends LitElement {
     this.requestUpdate('sourceMode', old);
   }
 
-  /** Show the formatting toolbar. */
-  @property({ type: Boolean, reflect: true }) toolbar = true;
+  /** Hides the formatting toolbar. */
+  @property({ type: Boolean, attribute: 'hide-toolbar', reflect: true }) hideToolbar = false;
 
   /** Make the editor read-only. */
   @property({ type: Boolean, reflect: true, attribute: 'read-only' }) readOnly = false;
@@ -560,7 +560,7 @@ export class RcMarkdownEditor extends LitElement {
     return html`
       <slot></slot>
 
-      ${this.toolbar
+      ${!this.hideToolbar
         ? html`<rc-editor-toolbar
             part="toolbar"
             lang=${this.getAttribute('lang') ?? nothing}

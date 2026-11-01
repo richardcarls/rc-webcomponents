@@ -200,11 +200,11 @@ test('a controlled activeIndex overrides uncontrolled state and does not self-ad
   const items = Array.from(carousel.querySelectorAll('rc-carousel-item'));
 
   expect(items[0]?.hasAttribute('aria-hidden')).toBe(false);
-  expect(items[1]?.hasAttribute('aria-hidden')).toBe(true);
+  expect(items[1]?.getAttribute('aria-hidden')).toBe('true');
 
   carousel.activeIndex = 2;
   await settle(carousel);
-  expect(items[0]?.hasAttribute('aria-hidden')).toBe(true);
+  expect(items[0]?.getAttribute('aria-hidden')).toBe('true');
   expect(items[2]?.hasAttribute('aria-hidden')).toBe(false);
 
   carousel.activeIndex = 0;

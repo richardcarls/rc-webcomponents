@@ -12,6 +12,11 @@ export interface SsrFixture {
    * failing test until this note is removed.
    */
   pending?: string;
+  /**
+   * Why the element does not recover its state after a DOM morph yet. Its
+   * morph test then runs as an expected failure.
+   */
+  morphPending?: string;
 }
 
 export type SsrFixtures = Record<string, SsrFixture>;

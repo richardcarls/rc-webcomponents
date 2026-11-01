@@ -8,6 +8,7 @@ import {
   logicalRect,
   resolveFlow,
   defineLightDomBaseStyles,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 
 import buttonStyles from './rc-button.styles.js';
@@ -167,6 +168,11 @@ export interface RCButtonToggleDetail {
  *   active arc color.
  */
 export class RCButton extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    attributes: ['has-icon', 'has-selected-icon', 'has-label'],
+  });
+
   static override styles = buttonStyles;
 
   protected static _ensureBaseStyles(root: Document | ShadowRoot): void {

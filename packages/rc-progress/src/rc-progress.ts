@@ -361,7 +361,8 @@ export class RCProgress extends LitElement {
   private readonly _hydration = new HydrationController(this);
 
   /** Orientation; reflected as an attribute and forwarded to `aria-orientation`. */
-  @property({ reflect: true }) orientation: 'horizontal' | 'vertical' = 'horizontal';
+  @property({ reflect: true, useDefault: true }) orientation: 'horizontal' | 'vertical' =
+    'horizontal';
 
   private _$nativeProgress: HTMLProgressElement | null = null;
   private _completedDispatched = false;

@@ -17,6 +17,7 @@ import {
   snapToStep,
   valueToPercent,
   warnMissingDirectChild,
+  MorphRecoveryController,
 } from '@rcarls/rc-common';
 
 export interface RCRangeSliderValueEvent {
@@ -186,6 +187,12 @@ declare module '@rcarls/rc-common' {
  * @csspart high-value-display - Rendered high value text.
  */
 export class RCRangeSlider extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    attributes: ['data-rc-range-slider-reflector'],
+    resync: () => this._syncHostRole(),
+  });
+
   protected readonly _hydration = new HydrationController(this);
 
   static override styles = css`
@@ -502,7 +509,8 @@ export class RCRangeSlider extends LitElement {
   display: DisplayValue = null;
 
   /** Orientation; reflected as an attribute and forwarded to custom thumbs. */
-  @property({ reflect: true }) orientation: 'horizontal' | 'vertical' = 'horizontal';
+  @property({ reflect: true, useDefault: true }) orientation: 'horizontal' | 'vertical' =
+    'horizontal';
 
   /** Keeps the thumbs' aria-orientation on the orientation actually rendered. */
   protected readonly _flow = new FlowController(this);

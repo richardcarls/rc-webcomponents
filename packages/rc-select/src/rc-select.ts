@@ -245,11 +245,11 @@ export class RCSelect extends LitElement {
   display: 'auto' | 'chips' | 'compact' = 'auto';
 
   /** Presents options in an anchored popover or transactional modal dialog. */
-  @property({ attribute: 'popup-mode', reflect: true })
+  @property({ attribute: 'popup-mode', reflect: true, useDefault: true })
   popupMode: RCSelectPopupMode = 'popover';
 
   /** Whether the leading dialog cancel action is visible. */
-  @property({ attribute: 'dialog-cancel-button', reflect: true })
+  @property({ attribute: 'dialog-cancel-button', reflect: true, useDefault: true })
   dialogCancelButton: 'visible' | 'hidden' = 'visible';
 
   /** Flex container used by `_anchorCtrl` as the positioning reference for the popup. */

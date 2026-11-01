@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 
-import { syncDefaultAttribute } from '@rcarls/rc-common';
+import { syncDefaultAttribute, MorphRecoveryController } from '@rcarls/rc-common';
 
 import pageTurnerPageStyles from './rc-page-turner-page.styles.js';
 
@@ -48,10 +48,20 @@ const PRESENTATION_STATES = ['adjacent', 'active', 'revealed', 'turning'] as con
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-page-turner rc-page-turner documentation}
  */
 export class RCPageTurnerPage extends LitElement {
+  /** Writes the element's attributes again after a DOM morph removes them. */
+  protected readonly _morphRecovery = new MorphRecoveryController(this, {
+    role: 'group',
+    resync: () => {
+      this._syncTabIndex();
+      this.present(this._presentation, this._current);
+    },
+  });
+
   static override styles = pageTurnerPageStyles;
 
   private readonly _internals: ElementInternals;
   private _presentation: RCPageTurnerPagePresentation = 'hidden';
+  private _current = false;
   private _writtenLabel: string | null = null;
   private _writtenRoleDescription: string | null = null;
   private _writtenTabIndex: string | null = null;
@@ -65,11 +75,11 @@ export class RCPageTurnerPage extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
 
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'group');
-    }
+    this._syncTabIndex();
+  }
 
-    // A focus target when a turn moves focus out of the departing page.
+  /** A focus target when a turn moves focus out of the departing page. */
+  private _syncTabIndex(): void {
     this._writtenTabIndex = syncDefaultAttribute(this, 'tabindex', '-1', this._writtenTabIndex);
   }
 
@@ -88,11 +98,18 @@ export class RCPageTurnerPage extends LitElement {
    */
   present(presentation: RCPageTurnerPagePresentation, current = presentation === 'active'): void {
     this._presentation = presentation;
+    this._current = current;
 
     const shown = presentation !== 'hidden' && presentation !== 'adjacent';
 
     this.toggleAttribute('inert', !current);
-    this.toggleAttribute('aria-hidden', !current);
+
+    // An empty aria-hidden is not "true"; ARIA treats it as undefined.
+    if (current) {
+      this.removeAttribute('aria-hidden');
+    } else {
+      this.setAttribute('aria-hidden', 'true');
+    }
 
     const states = this._internals.states;
 
