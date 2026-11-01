@@ -20,6 +20,7 @@ export const aggregateSideEffects = [
   './dist/*/define.js',
   './themes/*.css',
   './dist/pre-upgrade.css',
+  './dist/hydrate-support.js',
 ];
 
 /** Export conditions mirror the per-package `.` and `./define` shape. */

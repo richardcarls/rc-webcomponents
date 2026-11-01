@@ -2,6 +2,7 @@ import { LitElement, html, nothing } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
 import {
+  HydrationController,
   ControlledIndexController,
   DragGestureController,
   FlowController,
@@ -207,6 +208,8 @@ interface DragTurn {
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-page-turner rc-page-turner documentation}
  */
 export class RCPageTurner extends LitElement {
+  protected readonly _hydration = new HydrationController(this);
+
   static override styles = pageTurnerStyles;
 
   private readonly _internals: ElementInternals;
@@ -902,9 +905,23 @@ export class RCPageTurner extends LitElement {
       this._writtenRoleDescription,
     );
 
+    let pending = false;
+
     this._pages.forEach((page, index) => {
+      // Inserted markup connects the turner before its pages upgrade; describe
+      // those pages once their upgrade finishes.
+      if (typeof page.describe !== 'function') {
+        pending = true;
+
+        return;
+      }
+
       page.describe(messages.position(index + 1, this._pages.length, locale), messages.page);
     });
+
+    if (pending) {
+      queueMicrotask(() => this._syncText());
+    }
   }
 
   private _directPages(): RCPageTurnerPage[] {
@@ -972,8 +989,10 @@ export class RCPageTurner extends LitElement {
 
   protected override render() {
     const messages = this._messages.value;
-    const canPrev = this._canStep(-1);
-    const canNext = this._canStep(1);
+    // The server cannot see the pages, so hydrate as if there were none first.
+    const serverView = this._hydration.serverView;
+    const canPrev = !serverView && this._canStep(-1);
+    const canNext = !serverView && this._canStep(1);
 
     return html`
       <div

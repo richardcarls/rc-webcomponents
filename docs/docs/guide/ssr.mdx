@@ -109,10 +109,26 @@ before any script runs. The CI build renders every element this way.
   copy for `lit` beside the one `@lit-labs/ssr` brings, nested elements fail to render with
   `getRootNode is not a function`; deduplicate it (`yarn dedupe @lit-labs/ssr-dom-shim`).
 
-## Not yet supported
+## Hydration
 
-Hydrating server-rendered shadow roots with Lit's hydration support is not yet part of the
-contract. Several elements hydrate correctly, but an element that derives state from its
-native children before its first update can keep the server's values after hydrating.
-Until every element is verified, render the native markup on the server and let the
-elements render on the client, as the sections above describe.
+To have the elements adopt their server-rendered shadow roots rather than render new ones,
+load Lit's hydration support before any element definition:
+
+```js
+// Client entry, before any define import
+import '@rcarls/rc-webcomponents/hydrate-support';
+import '@rcarls/rc-webcomponents/rc-card/define';
+```
+
+Each package keeps a server-render fixture for every element it defines, and CI renders it
+on the server, hydrates it in a browser, and checks that the result matches a client
+render. Every element passes except two, which still render correctly but keep a server
+value after hydrating:
+
+- `rc-textarea`: the line-number gutter keeps the line height measured over the server
+  markup until the editor next re-measures.
+- `rc-editor-toolbar`: internal to `rc-markdown-editor`, which hydrates it correctly; on its
+  own it renders nothing until the editor configures it.
+
+Hydration is not yet wired into a React framework. `@lit-labs/nextjs` is a webpack plugin
+for Next.js 13 to 15, so a Next.js 16 app with Turbopack keeps the native-markup path above.

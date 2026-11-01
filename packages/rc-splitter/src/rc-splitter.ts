@@ -10,6 +10,7 @@ import {
   FlowController,
   findNearestSnapIndex,
   findNextSnapIndex,
+  HydrationController,
   isReversed,
   keyInteraction,
   keyNavigation,
@@ -164,6 +165,8 @@ declare module '@rcarls/rc-common' {
  * @csspart collapse-button - The collapse/expand toggle button (only rendered when `collapsible` is set)
  */
 export class RCSplitter extends LitElement {
+  protected readonly _hydration = new HydrationController(this);
+
   static styles = [splitterStyles];
 
   /** Built-in text overrides; unset keys fall back to registered text, then English. */
@@ -769,6 +772,9 @@ export class RCSplitter extends LitElement {
   }
 
   render() {
+    // The server cannot see slotted panes, so hydrate as if there were none first.
+    const hasSecondary = !this._hydration.serverView && this._$secondaryElements.length > 0;
+
     // The separator bar's rendered direction, which turns with the text. The
     // grip dots and resize cursor are physical, so they key off this rather
     // than the orientation attribute, which names a layout.
@@ -792,7 +798,7 @@ export class RCSplitter extends LitElement {
       </div>
 
       <div id="separator" part="separator">
-        ${this.collapsible && this._$secondaryElements.length && !this.fixed
+        ${this.collapsible && hasSecondary && !this.fixed
           ? html`<button
               id="collapse-button"
               part="collapse-button"
@@ -820,14 +826,14 @@ export class RCSplitter extends LitElement {
           @keydown=${this._onCollapseKeydown}
           ${keyNavigation(this._onKeyboardResize)}
           ${keyInteraction()}
-          ?hidden=${!this._$secondaryElements.length}
+          ?hidden=${!hasSecondary}
         ></div>
       </div>
 
       <aside
         id="secondary"
         part="secondary"
-        ?hidden=${!this._$secondaryElements.length || this.value === this._maxValue}
+        ?hidden=${!hasSecondary || this.value === this._maxValue}
       >
         <slot name="secondary" @slotchange=${this._onSecondaryChange}></slot>
       </aside>

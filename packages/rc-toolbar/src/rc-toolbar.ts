@@ -3,6 +3,7 @@ import { property, query } from 'lit/decorators.js';
 
 import {
   FlowController,
+  HydrationController,
   isFocusable,
   keyInteraction,
   keyNavigation,
@@ -42,6 +43,9 @@ declare global {
  * @csspart root - The toolbar container element
  */
 export class RCToolbar extends RovingTabIndexMixin(LitElement) {
+  // Re-syncs the roving tab stop after hydrating a server-rendered shadow root.
+  protected readonly _hydration = new HydrationController(this);
+
   static styles = [toolbarStyles];
 
   /** Accessible label for this toolbar. Default label is 'Toolbar'. */

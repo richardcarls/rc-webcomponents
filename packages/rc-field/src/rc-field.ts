@@ -4,6 +4,7 @@ import { property, state } from 'lit/decorators.js';
 import {
   cssText,
   getDirectChildren,
+  HydrationController,
   NativeChildController,
   warnMissingDirectChild,
   defineLightDomBaseStyles,
@@ -199,6 +200,8 @@ function groupControls($group: HTMLFieldSetElement): RCFieldControl[] {
  */
 export class RCField extends LitElement {
   static styles = [fieldStyles];
+
+  protected readonly _hydration = new HydrationController(this);
 
   private static _ensureBaseStyles(root: Node): void {
     ensureLightDomBaseStyles(root);
@@ -943,41 +946,56 @@ export class RCField extends LitElement {
   }
 
   protected override render() {
-    const invalid = this._effectiveInvalid();
-    // The native control is only readable in a browser.
-    const $control = isServer ? null : this.control;
+    // The server cannot see the native control or slotted content, so hydrate as
+    // if they were absent first.
+    const serverView = this._hydration.serverView;
+    const invalid = !serverView && this._effectiveInvalid();
+    const $control = serverView ? null : this.control;
     const length = $control?.value.length ?? 0;
     const maxLength =
       !$control || $control instanceof HTMLSelectElement ? -1 : ($control.maxLength ?? -1);
     const counterText = maxLength >= 0 ? `${length} / ${maxLength}` : String(length);
-    const hasError = invalid && (this._hasError || this._validationMessage);
-    const hasSupporting = this._hasHint || hasError || this.counter;
+    const hasError =
+      invalid && ((!serverView && this._hasError) || (serverView ? '' : this._validationMessage));
+    const hasSupporting = (!serverView && this._hasHint) || hasError || this.counter;
 
     return html`
       <div
         id="field"
         part="field"
-        class=${this._hasControl ? '' : 'empty'}
+        class=${!serverView && this._hasControl ? '' : 'empty'}
         @click=${this._handleSurfaceClick}
       >
-        <span id="leading" part="leading" class=${this._slotClass(this._hasLeading)}>
+        <span id="leading" part="leading" class=${this._slotClass(!serverView && this._hasLeading)}>
           <slot name="leading" @slotchange=${this._queueSync}></slot>
         </span>
         <span id="content" part="content">
-          <span id="label" part="label" class=${this._slotClass(this._hasLabel)}>
+          <span id="label" part="label" class=${this._slotClass(!serverView && this._hasLabel)}>
             <slot name="label" @slotchange=${this._queueSync}></slot>
           </span>
           <span id="control" part="control">
-            <span id="prefix" part="prefix" class=${this._slotClass(this._hasPrefix)}>
+            <span
+              id="prefix"
+              part="prefix"
+              class=${this._slotClass(!serverView && this._hasPrefix)}
+            >
               <slot name="prefix" @slotchange=${this._queueSync}></slot>
             </span>
             <slot @slotchange=${this._queueSync}></slot>
-            <span id="suffix" part="suffix" class=${this._slotClass(this._hasSuffix)}>
+            <span
+              id="suffix"
+              part="suffix"
+              class=${this._slotClass(!serverView && this._hasSuffix)}
+            >
               <slot name="suffix" @slotchange=${this._queueSync}></slot>
             </span>
           </span>
         </span>
-        <span id="trailing" part="trailing" class=${this._slotClass(this._hasTrailing)}>
+        <span
+          id="trailing"
+          part="trailing"
+          class=${this._slotClass(!serverView && this._hasTrailing)}
+        >
           <slot name="trailing" @slotchange=${this._queueSync}></slot>
         </span>
       </div>
@@ -986,7 +1004,9 @@ export class RCField extends LitElement {
           <slot name="hint" @slotchange=${this._queueSync}></slot>
         </span>
         <span id="error" part="error" ?hidden=${!hasError}>
-          <slot name="error" @slotchange=${this._queueSync}>${this._validationMessage}</slot>
+          <slot name="error" @slotchange=${this._queueSync}
+            >${serverView ? '' : this._validationMessage}</slot
+          >
         </span>
         <span id="counter" part="counter" ?hidden=${!this.counter}>${counterText}</span>
       </div>

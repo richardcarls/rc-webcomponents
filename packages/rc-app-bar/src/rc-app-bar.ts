@@ -4,6 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 
 import {
   cssZoom,
+  HydrationController,
   RafScheduler,
   ScrollObserverController,
   type ScrollObserverTarget,
@@ -116,6 +117,9 @@ export interface RCAppBarScrollDetail {
  * @csspart scroll-shadow - Scrolled-state separator
  */
 export class RCAppBar extends LitElement {
+  // Re-syncs slot state after hydrating a server-rendered shadow root.
+  protected readonly _hydration = new HydrationController(this);
+
   static styles = [appBarStyles];
 
   /** Structural variant. `expanded` adds a flexible title row. */

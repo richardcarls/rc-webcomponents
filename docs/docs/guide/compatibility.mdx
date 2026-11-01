@@ -42,8 +42,8 @@ has no other effect.
 Rendering components on the server is a separate contract. The supported path
 is native fallback markup from the server, with the elements upgrading once the
 client loads their definitions. Every element also renders with Lit's server
-renderer, including declarative shadow roots, and CI checks that; hydrating
-that output is not yet a support contract. The
+renderer, including declarative shadow roots, and hydrates that output; CI
+checks both for every element. The
 [server rendering guide](./ssr) covers the stylesheets that keep the native
 markup laid out before upgrade, and the current state of Lit server rendering.
 

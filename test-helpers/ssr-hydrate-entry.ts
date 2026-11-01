@@ -1,4 +1,3 @@
-// Loaded by server-rendered test pages before any element definition. Going
-// through the test server's module graph keeps one copy of Lit, the same copy
-// the element packages import.
-import '@lit-labs/ssr-client/lit-element-hydrate-support.js';
+// Loaded by server-rendered test pages before any element definition, through
+// the test server's module graph so it shares the elements' copy of Lit.
+import '@rcarls/rc-webcomponents/hydrate-support';

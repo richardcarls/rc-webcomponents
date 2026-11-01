@@ -3,7 +3,12 @@ import type { ComplexAttributeConverter } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { NativeChildController, valueToPercent, warnMissingDirectChild } from '@rcarls/rc-common';
+import {
+  HydrationController,
+  NativeChildController,
+  valueToPercent,
+  warnMissingDirectChild,
+} from '@rcarls/rc-common';
 
 export interface RCSliderValueEvent {
   /** Current numeric slider value. */
@@ -124,6 +129,8 @@ function parseAttr(s: string, defaultVal: number): number {
  * @csspart value-display - Rendered value text.
  */
 export class RCSlider extends LitElement {
+  protected readonly _hydration = new HydrationController(this);
+
   static override styles = css`
     :host {
       display: block;
@@ -350,7 +357,8 @@ export class RCSlider extends LitElement {
   }
 
   override render() {
-    const $input = this._$nativeInput;
+    // The server cannot see the native input, so hydrate without it first.
+    const $input = this._hydration.serverView ? null : this._$nativeInput;
 
     if (!$input) {
       return nothing;
