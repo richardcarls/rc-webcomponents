@@ -318,7 +318,9 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-textarea-border-radius=2px] - Border radius of the field
  * @cssprop [--rc-textarea-background=Field] - Background color of the field
  * @cssprop [--rc-textarea-color=var(--rc-field-text, FieldText)] - Text color
- * @cssprop [--rc-textarea-font-family=monospace] - Font family
+ * @cssprop [--rc-textarea-font-family=monospace] - Font family. While it is unset on the host, the
+ *   editor copies the native `<textarea>`'s font, line height, and spacing as inline styles, so
+ *   the enhanced editor matches the native control's typography.
  * @cssprop [--rc-textarea-font-size=1em] - Font size
  * @cssprop [--rc-textarea-line-height=1.5] - Line height
  * @cssprop [--rc-textarea-padding-block=0.5em] - Block padding of the editor and gutter; any `padding-block` value
@@ -662,6 +664,7 @@ export class RCTextarea extends LitElement {
 
       if ($textarea) {
         this._syncPlaceholder($textarea);
+        this._syncTypography($textarea);
       }
     }
 
@@ -925,7 +928,8 @@ export class RCTextarea extends LitElement {
     this._syncReadOnly();
     this._syncContentAttributes();
 
-    // Sync typography from a textarea that replaces the first one.
+    // Sync typography from a textarea that replaces the first one;
+    // firstUpdated() syncs the first.
     if (this.hasUpdated) {
       this._syncTypography($textarea);
     }

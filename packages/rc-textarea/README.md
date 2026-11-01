@@ -258,7 +258,7 @@ The component reads inherited tokens where possible:
 
 | Token                                     | Default                                     | Use                                                                                                                      |
 | ----------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `--rc-textarea-font-family`               | `monospace`                                 | Editor font family.                                                                                                      |
+| `--rc-textarea-font-family`               | `monospace`                                 | Editor font family. While unset, the editor copies the native `<textarea>`'s font, line height, and spacing.             |
 | `--rc-textarea-font-size`                 | `1em`                                       | Editor and gutter font size.                                                                                             |
 | `--rc-textarea-line-height`               | `1.5`                                       | Editor and gutter line height.                                                                                           |
 | `--rc-textarea-padding-block`             | `0.5em`                                     | Editor and gutter block padding; any `padding-block` value.                                                              |

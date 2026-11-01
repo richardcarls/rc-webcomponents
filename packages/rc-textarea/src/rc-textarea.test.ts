@@ -1787,3 +1787,34 @@ test('mirrors the native placeholder as the editor aria-placeholder', async () =
 
   expect($editor.getAttribute('aria-placeholder')).toBe('Type a message');
 });
+
+test('mirrors the native textarea typography when no theme sets the font family', async () => {
+  const screen = render(html`
+    <rc-textarea>
+      <textarea aria-label="Notes" style="font: 600 20px / 30px serif; letter-spacing: 2px"></textarea>
+    </rc-textarea>
+  `);
+  const host = screen.container.querySelector('rc-textarea')!;
+
+  await host.updateComplete;
+
+  const editor = host.shadowRoot!.querySelector<HTMLElement>('#editor')!;
+
+  expect(editor.style.fontFamily).toBe('serif');
+  expect(editor.style.fontSize).toBe('20px');
+  expect(editor.style.lineHeight).toBe('30px');
+  expect(editor.style.letterSpacing).toBe('2px');
+});
+
+test('leaves editor typography to the theme when it sets the font family', async () => {
+  const screen = render(html`
+    <rc-textarea style="--rc-textarea-font-family: monospace">
+      <textarea aria-label="Notes" style="font-family: serif"></textarea>
+    </rc-textarea>
+  `);
+  const host = screen.container.querySelector('rc-textarea')!;
+
+  await host.updateComplete;
+
+  expect(host.shadowRoot!.querySelector<HTMLElement>('#editor')!.style.fontFamily).toBe('');
+});
