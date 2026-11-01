@@ -1,0 +1,15 @@
+<!-- Compiles the generated Blazor event bindings against a Razor component: `yarn test:blazor`. -->
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Distribution SDK builds can lack the pruning data for shared frameworks. -->
+    <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <Compile Include="../../blazor/RcWebComponents.Events.cs" Link="RcWebComponents.Events.cs" />
+  </ItemGroup>
+</Project>

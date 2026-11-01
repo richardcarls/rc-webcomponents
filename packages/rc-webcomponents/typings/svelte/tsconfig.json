@@ -1,0 +1,12 @@
+{
+  "extends": "../../../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": [],
+    "skipLibCheck": false,
+    "noUnusedLocals": false,
+    "noEmit": true,
+    "verbatimModuleSyntax": true
+  },
+  "files": ["../../src/svelte.d.ts"],
+  "include": ["*.svelte"]
+}

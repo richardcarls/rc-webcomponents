@@ -1,5 +1,5 @@
 /**
- * Generates the aggregate's React and Solid JSX typings from the Custom
+ * Generates the aggregate's React, Solid, Vue, and Svelte typings from the Custom
  * Elements Manifest (`yarn cem:analyze` writes `dist/custom-elements.json`).
  *
  * The typings reference each element's real class and the global
@@ -140,22 +140,34 @@ function cssPropertyLines(elements) {
   return names.map((name) => `    '${name}'?: string | number;`).join('\n');
 }
 
+/**
+ * Props for a framework that writes a prop as a property when the element has
+ * one, else as an attribute (React 19, Svelte 5): every writable property,
+ * plus the attributes whose name differs from their property or that have no
+ * property at all.
+ */
+function propertyFirstProps(element) {
+  const own = [];
+
+  for (const { name, field } of element.attributes) {
+    if (!field) {
+      own.push(`        ${quote(name)}?: string;`);
+    } else if (name !== field) {
+      own.push(`        ${quote(name)}?: RCAttribute<${element.className}['${field}']>;`);
+    }
+  }
+
+  for (const field of element.properties) {
+    own.push(`        ${quote(field)}?: ${element.className}['${field}'];`);
+  }
+
+  return own;
+}
+
 /** React 19 sets a prop as a property when the element has it, else as an attribute. */
 export function reactTypings(elements) {
   const entries = elements.map((element) => {
-    const own = [];
-
-    for (const { name, field } of element.attributes) {
-      if (!field) {
-        own.push(`        ${quote(name)}?: string;`);
-      } else if (name !== field) {
-        own.push(`        ${quote(name)}?: RCAttribute<${element.className}['${field}']>;`);
-      }
-    }
-
-    for (const field of element.properties) {
-      own.push(`        ${quote(field)}?: ${element.className}['${field}'];`);
-    }
+    const own = propertyFirstProps(element);
 
     return `      '${element.tag}': RCElementProps<
         ${element.className},
@@ -268,6 +280,102 @@ ${cssPropertyLines(elements)}
 `;
 }
 
+/**
+ * Vue sets a bound prop as a property when the element has it. Its template
+ * checker matches a kebab-case attribute to the camelCase property, so the
+ * props are the writable properties plus the attributes with no property.
+ * The \`DefineCustomElement\` shape follows the Vue guide's custom element typings.
+ */
+export function vueTypings(elements) {
+  const entries = elements.map((element) => {
+    const own = element.attributes
+      .filter(({ field }) => !field)
+      .map(({ name }) => `        ${quote(name)}?: string;`);
+
+    for (const field of element.properties) {
+      own.push(`        ${quote(field)}?: ${element.className}['${field}'];`);
+    }
+
+    return `    '${element.tag}': RCVueElement<
+      ${element.className},
+      {
+${own.join('\n')}
+      },
+      ${eventUnion(element.events)}
+    >;`;
+  });
+
+  return `${header('Vue', '@rcarls/rc-webcomponents/vue').replace('JSX typings', 'template typings')}
+import type { EmitFn, HTMLAttributes } from 'vue';
+
+${imports(elements)}
+
+/** Template events: \`@rc-select-change\` listens for the \`rc-select-change\` event. */
+type RCVueEmit<Events extends keyof HTMLElementEventMap> = EmitFn<{
+  [Event in Events]: (event: HTMLElementEventMap[Event]) => void;
+}>;
+
+type RCVueElement<
+  Element extends HTMLElement,
+  Own extends object,
+  Events extends keyof HTMLElementEventMap,
+> = new () => Element & {
+  /** @deprecated Template prop types only; the element has no \`$props\`. */
+  $props: Omit<HTMLAttributes, keyof Own> & Own;
+  /** @deprecated Template event types only; the element has no \`$emit\`. */
+  $emit: RCVueEmit<Events>;
+};
+
+declare module 'vue' {
+  interface GlobalComponents {
+${entries.join('\n\n')}
+  }
+}
+`;
+}
+
+/** Svelte 5 sets a prop as a property when the element has it; \`on<event-name>\` adds a listener. */
+export function svelteTypings(elements) {
+  const entries = elements.map((element) => {
+    const own = propertyFirstProps(element);
+
+    return `    '${element.tag}': RCElementProps<
+      ${element.className},
+      {
+${own.join('\n')}
+      },
+      ${eventUnion(element.events)}
+    >;`;
+  });
+
+  return `${header('Svelte', '@rcarls/rc-webcomponents/svelte').replace('JSX typings', 'element typings')}
+import type { HTMLAttributes } from 'svelte/elements';
+
+${imports(elements)}
+
+/** Attribute values are strings, so a numeric attribute also takes a numeric string. */
+type RCAttribute<Value> = Value extends number ? Value | \`\${number}\` : Value;
+
+type RCEventProps<Element extends HTMLElement, Events extends keyof HTMLElementEventMap> = {
+  [Event in Events as \`on\${Event}\`]?: (
+    event: HTMLElementEventMap[Event] & { currentTarget: EventTarget & Element },
+  ) => void;
+};
+
+type RCElementProps<
+  Element extends HTMLElement,
+  Own extends object,
+  Events extends keyof HTMLElementEventMap,
+> = Omit<HTMLAttributes<Element>, keyof Own> & Own & RCEventProps<Element, Events>;
+
+declare module 'svelte/elements' {
+  interface SvelteHTMLElements {
+${entries.join('\n\n')}
+  }
+}
+`;
+}
+
 async function format(path, source) {
   const options = (await prettier.resolveConfig(path)) ?? {};
 
@@ -279,6 +387,8 @@ export async function generateFrameworkTypings({ check = false } = {}) {
   const files = new Map([
     [join(OUTPUT, 'react.d.ts'), reactTypings(elements)],
     [join(OUTPUT, 'solid.d.ts'), solidTypings(elements)],
+    [join(OUTPUT, 'vue.d.ts'), vueTypings(elements)],
+    [join(OUTPUT, 'svelte.d.ts'), svelteTypings(elements)],
   ]);
   const stale = [];
 

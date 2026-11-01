@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { collectElements, reactTypings, solidTypings } from './generate-framework-typings.mjs';
+import {
+  collectElements,
+  reactTypings,
+  solidTypings,
+  svelteTypings,
+  vueTypings,
+} from './generate-framework-typings.mjs';
 
 const manifest = {
   modules: [
@@ -62,4 +68,20 @@ test('writes typed props, event handlers, and CSS properties for each framework'
   assert.match(react, /'--rc-thing-gap'\?: string \| number;/);
   assert.match(solid, /'prop:options'\?: RCThing\['options'\];/);
   assert.match(solid, /\[Event in Events as `on:\$\{Event\}`\]/);
+});
+
+test('types Vue props by property and Svelte props like React', () => {
+  const elements = collectElements(manifest);
+  const vue = vueTypings(elements);
+  const svelte = svelteTypings(elements);
+
+  assert.match(vue, /'rc-thing': RCVueElement</);
+  assert.match(vue, /popupMode\?: RCThing\['popupMode'\];/);
+  // The template checker maps popup-mode to popupMode itself.
+  assert.doesNotMatch(vue, /'popup-mode'\?:/);
+  assert.match(vue, /'group-name'\?: string;/);
+  assert.match(vue, /'rc-thing-change'/);
+  assert.match(svelte, /interface SvelteHTMLElements/);
+  assert.match(svelte, /'popup-mode'\?: RCAttribute<RCThing\['popupMode'\]>;/);
+  assert.match(svelte, /\[Event in Events as `on\$\{Event\}`\]/);
 });

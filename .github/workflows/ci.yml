@@ -43,3 +43,17 @@ jobs:
           name: visual-test-diffs
           path: .vitest-attachments/
           if-no-files-found: ignore
+
+  blazor-bindings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # The fixture compiles the committed C# bindings; validate checks they
+      # match the element typings.
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Compile the Blazor event bindings against a Razor fixture
+        run: node scripts/test-blazor-bindings.mjs

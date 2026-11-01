@@ -1,0 +1,74 @@
+---
+title: Using with Blazor
+---
+
+# Using with Blazor
+
+## Setup
+
+Load the elements you use in the app's host page, such as `App.razor` or
+`index.html`. Without a JavaScript bundler, load each component's define
+module from a CDN, as in the [installation guide](./installation#cdn-no-bundler):
+
+```html
+<script type="module" src="https://esm.sh/@rcarls/rc-webcomponents/rc-select/define"></script>
+<script type="module" src="https://esm.sh/@rcarls/rc-webcomponents/rc-pagination/define"></script>
+```
+
+Blazor renders the elements and their native children like any other markup,
+and the server-rendered page works before the elements upgrade.
+
+## Events
+
+Blazor listens for DOM events at the document and needs every custom event
+registered before Razor can bind it. The aggregate package ships two generated
+files that do this for every `rc-*` event:
+
+- `blazor/rc-webcomponents.lib.module.js`, a JavaScript initializer that
+  registers each event and passes its `detail` to .NET;
+- `blazor/RcWebComponents.Events.cs`, an `EventArgs` class per event and the
+  `[EventHandler]` attributes that make `@onrc-*` handlers typed.
+
+Copy the initializer into your app's `wwwroot` as
+`{AssemblyName}.lib.module.js`, which Blazor loads at startup. If the app
+already has an initializer, import `registerRcEvents` from the copied module
+and call it from `afterWebStarted` instead. Add the C# file to the project, by
+copying it or by linking it from `node_modules`:
+
+```xml
+<ItemGroup>
+  <Compile Include="node_modules/@rcarls/rc-webcomponents/blazor/RcWebComponents.Events.cs" />
+</ItemGroup>
+```
+
+Then import the namespace, for example in `_Imports.razor`, and bind the events:
+
+```razor
+@using RcWebComponents
+
+<rc-pagination total="12" @onrc-pagination-change="OnPageChange">
+    <nav>...</nav>
+</rc-pagination>
+
+@code {
+    private void OnPageChange(RcPaginationChangeEventArgs args)
+    {
+        var page = (int)args.Page;
+    }
+}
+```
+
+Each handler also supports `:preventDefault` and `:stopPropagation`, such as
+`@onrc-pagination-change:preventDefault` to cancel a cancelable event.
+
+Event arguments carry the serializable part of each `detail`. Element
+references, such as the removed chip in `rc-chip-remove`, and DOM events, such
+as `sourceEvent` in `rc-virtual-canvas-pointer`, stay in the browser. Numbers
+arrive as `double`, and values with more than one shape, such as a select's
+`string | string[]` value, arrive as `JsonElement`.
+
+## Pages updated by enhanced navigation
+
+Enhanced navigation updates the page by morphing the DOM, so the elements
+restore the attributes it removes. The [SSR guide](./ssr#pages-updated-by-dom-morphing)
+covers what persists across an update.
