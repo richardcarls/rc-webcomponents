@@ -240,6 +240,7 @@ export class RCPageTurner extends LitElement {
   /** Lays out the current page's neighbors a frame after a page settles. */
   private readonly _adjacentFrame = new RafScheduler(this);
   private _writtenRoleDescription: string | null = null;
+  private _waitingForPageDefinition = false;
 
   private readonly _messages = new MessagesController(
     this,
@@ -900,6 +901,24 @@ export class RCPageTurner extends LitElement {
   private _syncText(): void {
     const messages = this._messages.value;
     const locale = this._messages.locale;
+    const registry = this.ownerDocument.defaultView?.customElements;
+
+    if (this._pages.some((page) => typeof page.describe !== 'function')) {
+      if (registry?.get('rc-page-turner-page')) {
+        // A definition can exist before its connected children have upgraded.
+        registry.upgrade(this);
+      } else if (registry && !this._waitingForPageDefinition) {
+        this._waitingForPageDefinition = true;
+
+        void registry.whenDefined('rc-page-turner-page').then(() => {
+          this._waitingForPageDefinition = false;
+
+          if (this.isConnected) {
+            this._syncText();
+          }
+        });
+      }
+    }
 
     this._writtenRoleDescription = syncDefaultAttribute(
       this,
@@ -908,23 +927,13 @@ export class RCPageTurner extends LitElement {
       this._writtenRoleDescription,
     );
 
-    let pending = false;
-
     this._pages.forEach((page, index) => {
-      // Inserted markup connects the turner before its pages upgrade; describe
-      // those pages once their upgrade finishes.
       if (typeof page.describe !== 'function') {
-        pending = true;
-
         return;
       }
 
       page.describe(messages.position(index + 1, this._pages.length, locale), messages.page);
     });
-
-    if (pending) {
-      queueMicrotask(() => this._syncText());
-    }
   }
 
   private _directPages(): RCPageTurnerPage[] {

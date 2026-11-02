@@ -98,6 +98,19 @@ test('renders APG carousel roles, page positions, and keeps authored attributes'
   expect(pages[0].id).toBe('first');
 });
 
+test('does not keep retrying an unupgraded page in microtasks', async () => {
+  const { turner, pages } = await setup();
+
+  // Simulate a page whose definition has not supplied the parent API yet.
+  Object.defineProperty(pages[0], 'describe', { value: undefined, configurable: true });
+  turner.requestUpdate();
+
+  await turner.updateComplete;
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  expect(pages[1].getAttribute('aria-label')).toBe('2 of 3');
+});
+
 test('shows only the current page; its neighbor is laid out unpainted, the rest skip rendering', async () => {
   const { pages } = await setup();
 
