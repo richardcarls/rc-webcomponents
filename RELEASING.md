@@ -225,6 +225,10 @@ real package's source even exists in the repository.
 
 Never use a bypass-2FA token for the bootstrap publish.
 
+To list the names that need it, run `yarn publish:packages:dry-run`; it logs `npm package requires
+bootstrap` for each one and stops. The `@next` snapshot job runs the same check before it
+publishes, so a package that still needs it stops the snapshot too.
+
 ```bash
 yarn bootstrap:trusted-publisher @rcarls/<package-name>
 ```
@@ -238,11 +242,26 @@ This writes a placeholder `package.json` (version `0.0.0` by default; override w
 directory and prints the exact `npm publish` command. It never authenticates to npm or publishes
 anything itself.
 
-Run the printed command interactively and complete its 2FA prompt. Then:
+Run the printed command in a terminal and complete its 2FA prompt. npm waits for web approval
+only when it has a terminal; run from a script or CI, it fails at once with `EOTP`. One approval
+can cover several publishes in a row if you allow it to skip challenges for a few minutes. Then:
 
-1. Confirm the placeholder version is visible on npmjs.com.
+1. Confirm the placeholder is published. `npm access list packages @rcarls` shows the name as soon
+   as it is claimed; its public page and `npm view` can take several minutes to show it.
 1. Configure the trusted publisher with GitHub Actions, `richardcarls/rc-webcomponents`,
-   `release.yml`, the `npm` environment, and permission to run `npm publish`.
+   `release.yml`, the `npm` environment, and permission to publish and stage-publish, matching
+   the existing packages. Use the package's settings page on npmjs.com, or the CLI once the
+   package page is public:
+
+   ```bash
+   npm trust github @rcarls/<package-name> --file release.yml \
+     --repository richardcarls/rc-webcomponents --environment npm \
+     --allow-publish --allow-stage-publish --yes
+   ```
+
+   It asks for 2FA approval like the publish. `npm trust list @rcarls/<package-name>` should then
+   match `npm trust list @rcarls/rc-button` apart from the `id`.
+
 1. Leave the placeholder version published; do not `npm unpublish` it. Its `package.json` and README
    make its purpose clear to anyone who finds it, and it never satisfies the fixed group's version
    pattern, so it can never be mistaken for a real release by the tooling.
