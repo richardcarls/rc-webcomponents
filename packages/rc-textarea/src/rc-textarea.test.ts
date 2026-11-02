@@ -1791,7 +1791,10 @@ test('mirrors the native placeholder as the editor aria-placeholder', async () =
 test('mirrors the native textarea typography when no theme sets the font family', async () => {
   const screen = render(html`
     <rc-textarea>
-      <textarea aria-label="Notes" style="font: 600 20px / 30px serif; letter-spacing: 2px"></textarea>
+      <textarea
+        aria-label="Notes"
+        style="font: 600 20px / 30px serif; letter-spacing: 2px"
+      ></textarea>
     </rc-textarea>
   `);
   const host = screen.container.querySelector('rc-textarea')!;

@@ -22,7 +22,12 @@
     text-decoration: underline;
   }
 
-  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-breadcrumbs > nav > ol > li > a:focus-visible {
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
+    rc-breadcrumbs
+    > nav
+    > ol
+    > li
+    > a:focus-visible {
     outline: var(--tailwind-focus-ring, 2px solid Highlight);
     outline-offset: var(--tailwind-focus-ring-offset, 2px);
   }

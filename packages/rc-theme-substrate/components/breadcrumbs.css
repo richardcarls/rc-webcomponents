@@ -22,7 +22,12 @@
     text-decoration: underline;
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-breadcrumbs > nav > ol > li > a:focus-visible {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-breadcrumbs
+    > nav
+    > ol
+    > li
+    > a:focus-visible {
     outline: var(--substrate-focus-ring, 2px solid Highlight);
     outline-offset: var(--substrate-focus-ring-offset, 2px);
   }
