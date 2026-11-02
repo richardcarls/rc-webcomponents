@@ -31,8 +31,9 @@ Place a native `<textarea>` inside the element. Its content is the initial Markd
 the value for form submission.
 
 ```html
+<label for="notes">Notes</label>
 <rc-markdown-editor>
-  <textarea name="notes"># Shopping list</textarea>
+  <textarea id="notes" name="notes"># Shopping list</textarea>
 </rc-markdown-editor>
 ```
 
@@ -46,7 +47,8 @@ the controls consistently with the rest of an application.
 
 ## Accessibility
 
-The rich editing surface is a `role="textbox"` with `aria-multiline="true"`, and source mode is
+The rich editing surface is a `role="textbox"` with `aria-multiline="true"`, named by the native
+textarea's labels or `aria-label`; clicking a label focuses the active editing surface. Source mode is
 an [`rc-textarea`](./rc-textarea.mdx#accessibility) named by the `source` message. The formatting
 toolbar is an [`rc-toolbar`](./rc-toolbar.mdx#accessibility) of native buttons that report active
 formats with `aria-pressed`, and the link editor is a labeled `role="dialog"` popover.
