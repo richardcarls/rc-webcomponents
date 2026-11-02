@@ -42,6 +42,22 @@ function cemDeclarations() {
   return declarations;
 }
 
+/** Reads a single-line scalar from YAML front matter: plain, 'single', or "double" quoted. */
+function frontMatterValue(text, key) {
+  const frontMatter = text.match(/^---\n([\s\S]*?)\n---\n/)?.[1] ?? '';
+  const raw = frontMatter.match(new RegExp(`^${key}:\\s*(.*)$`, 'm'))?.[1]?.trim();
+
+  if (raw === undefined) {
+    return undefined;
+  }
+
+  if (raw.startsWith("'") && raw.endsWith("'")) {
+    return raw.slice(1, -1).replaceAll("''", "'");
+  }
+
+  return raw.startsWith('"') ? JSON.parse(raw) : raw;
+}
+
 function assertIncludes(text, needle, label) {
   if (!text.includes(needle)) {
     errors.push(`${label}: missing ${needle}`);
@@ -106,6 +122,16 @@ for (const file of readdirSync(join(root, 'docs/docs/components')).filter((name)
 
   assertIncludes(content, `<ApiTable tag="${tag}" />`, page);
   assertIncludes(sidebar, `components/${tag}`, 'docs/sidebars.ts');
+
+  // The page description feeds overview cards and the meta description; Docusaurus's fallback
+  // excerpt drops inline code such as `<select>`, so keep it equal to the package description.
+  if (has(`packages/${tag}/package.json`)) {
+    const { description } = readJson(`packages/${tag}/package.json`);
+
+    if (frontMatterValue(content, 'description') !== description) {
+      errors.push(`${page}: description front matter must equal the package description`);
+    }
+  }
 
   if (!tags.has(tag)) {
     errors.push(`${page}: ApiTable tag has no custom-elements manifest declaration`);
