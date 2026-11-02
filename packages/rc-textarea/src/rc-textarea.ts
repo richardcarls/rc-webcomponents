@@ -13,6 +13,7 @@ import {
   warnMissingDirectChild,
   includeDefaults,
   MorphRecoveryController,
+  nativeLabelText,
 } from '@rcarls/rc-common';
 import { RCDocument, getText } from './document.js';
 import {
@@ -2207,30 +2208,13 @@ export class RCTextarea extends LitElement {
       return;
     }
 
-    const $textarea = this._$textareaRef?.deref();
+    const label = nativeLabelText(this._$textareaRef?.deref());
 
-    const ariaLabel = $textarea?.getAttribute('aria-label');
-
-    if (ariaLabel) {
-      this._$editor.setAttribute('aria-label', ariaLabel);
-
-      return;
+    if (label) {
+      this._$editor.setAttribute('aria-label', label);
+    } else {
+      this._$editor.removeAttribute('aria-label');
     }
-
-    if ($textarea) {
-      const labelText = Array.from($textarea.labels ?? [])
-        .map(($l) => $l.textContent?.trim())
-        .filter(Boolean)
-        .join(' ');
-
-      if (labelText) {
-        this._$editor.setAttribute('aria-label', labelText);
-
-        return;
-      }
-    }
-
-    this._$editor.removeAttribute('aria-label');
   }
 
   /** Mirrors the native placeholder as the editor's `aria-placeholder`. */

@@ -25,6 +25,7 @@ export * from './observeLocale.js';
 export * from './messages.js';
 export * from './localeFormat.js';
 export * from './isFocusable.js';
+export * from './nativeLabelText.js';
 export * from './nativeChild.js';
 export * from './RovingTabIndexMixin.js';
 export * from './sliderUtils.js';

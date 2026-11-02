@@ -7,7 +7,13 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
 import { visit } from 'unist-util-visit';
 
-import { MessagesController, cssZoom, isPhysicalReversed, resolveFlow } from '@rcarls/rc-common';
+import {
+  MessagesController,
+  cssZoom,
+  isPhysicalReversed,
+  nativeLabelText,
+  resolveFlow,
+} from '@rcarls/rc-common';
 import type { RCTextarea, RCTextareaPluginAPI, DecorationInput } from '@rcarls/rc-textarea';
 import type {
   ActiveFormats,
@@ -1416,24 +1422,28 @@ export class RcMarkdownEditor extends LitElement {
       return;
     }
 
-    // Mirror label text to the rich view for accessibility
-    const $label = $textarea.id
-      ? this.querySelector<HTMLLabelElement>(`label[for="${CSS.escape($textarea.id)}"]`)
-      : null;
+    // Name the rich view from every label of the native textarea, wherever the label sits.
+    const label = nativeLabelText($textarea);
 
-    if ($label && this._$richView) {
-      this._$richView.setAttribute('aria-label', $label.textContent?.trim() ?? '');
+    if (label) {
+      this._$richView?.setAttribute('aria-label', label);
+    } else {
+      this._$richView?.removeAttribute('aria-label');
     }
 
-    // Forward label click to the active editor surface
-    $label?.addEventListener('click', () => {
-      if (this.sourceMode) {
-        this._$sourceEditor?.focus();
-      } else {
-        this._$richView?.focus();
-      }
-    });
+    // Forward label clicks to the active editor surface
+    for (const $label of $textarea.labels ?? []) {
+      $label.addEventListener('click', this._onLabelClick);
+    }
   }
+
+  protected _onLabelClick = () => {
+    if (this.sourceMode) {
+      this._$sourceEditor?.focus();
+    } else {
+      this._$richView?.focus();
+    }
+  };
 
   protected _onRichViewClick = (e: MouseEvent) => {
     if (!e.ctrlKey && !e.metaKey) {

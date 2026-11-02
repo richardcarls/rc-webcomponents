@@ -203,3 +203,39 @@ describe('RcMarkdownEditor source mode', () => {
     expect(received).toEqual(['source']);
   });
 });
+
+test('names the rich view from a label outside the element and forwards its clicks', async () => {
+  const screen = render(html`
+    <label for="outside-notes">Recipe Notes</label>
+    <rc-markdown-editor data-testid="host">
+      <textarea id="outside-notes" name="notes"></textarea>
+    </rc-markdown-editor>
+  `);
+  const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+
+  await host.updateComplete;
+
+  const richView = host.shadowRoot!.querySelector<HTMLElement>('#rich-view')!;
+
+  expect(richView).toHaveAttribute('aria-label', 'Recipe Notes');
+
+  document.querySelector<HTMLLabelElement>('label[for="outside-notes"]')!.click();
+
+  expect(host.shadowRoot!.activeElement).toBe(richView);
+});
+
+test('names the rich view from the textarea aria-label', async () => {
+  const screen = render(html`
+    <rc-markdown-editor data-testid="host">
+      <textarea name="notes" aria-label="Shopping list"></textarea>
+    </rc-markdown-editor>
+  `);
+  const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+
+  await host.updateComplete;
+
+  expect(host.shadowRoot!.querySelector('#rich-view')).toHaveAttribute(
+    'aria-label',
+    'Shopping list',
+  );
+});

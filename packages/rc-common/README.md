@@ -40,6 +40,7 @@ import {
   findNextSnapIndex,
   getDirectChildren,
   isFocusable,
+  nativeLabelText,
   pinElementBox,
   snapToStep,
   valueToPercent,
@@ -82,6 +83,7 @@ Check this inventory before adding package-local interaction or DOM utility code
 | `parseCssTime`                                                         | Reading a CSS `<time>` custom property (`300ms`, `.3s`) as milliseconds for Web Animations                                  |
 | `cssText`                                                              | Tagging light-DOM structural CSS strings so package builds minify them                                                      |
 | `isFocusable`                                                          | Filtering focusable items for keyboard navigation                                                                           |
+| `nativeLabelText`                                                      | Copying a native control's label text onto a shadow-DOM surface that stands in for it                                       |
 | `pinElementBox`                                                        | Converting an element's rendered box into explicit inline geometry for resize interactions                                  |
 | `snapToStep`, `valueToPercent`                                         | Slider and range-slider numeric helpers                                                                                     |
 
@@ -406,6 +408,25 @@ It does **not** check whether `tabindex` is at least zero because rc-common comp
 tabindex values during roving-tabindex management. Any `tabindex` attribute is the correct signal.
 
 ---
+
+### `nativeLabelText`
+
+Returns the text that names a native control: its `aria-label`, else the joined text of its
+`<label>` elements, else `undefined`. An ID reference cannot cross into a shadow root, so a
+component whose shadow-DOM surface stands in for a light-DOM control copies this text as the
+surface's `aria-label`.
+
+```ts
+import { nativeLabelText } from '@rcarls/rc-common';
+
+const label = nativeLabelText($textarea);
+
+if (label) {
+  $editor.setAttribute('aria-label', label);
+} else {
+  $editor.removeAttribute('aria-label');
+}
+```
 
 ## Browser support
 
