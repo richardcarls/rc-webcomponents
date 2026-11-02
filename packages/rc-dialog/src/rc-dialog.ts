@@ -91,7 +91,8 @@ declare global {
  * @attr default-open - Initial uncontrolled open state.
  * @attr movable - Allow the dialog to be moved by dragging.
  * @attr move-handle - CSS selector (within the inner `<dialog>`) for the drag handle element.
- * @attr move-bounds - Bounds constraint for movement: `viewport` or `parent`.
+ * @attr move-bounds - Area that moving and resizing stay inside: `viewport`, or `parent` for the
+ *   element that contains `<rc-dialog>`.
  * @attr move-step - Keyboard arrow-key step in px for moving.
  * @attr resize - Enable resizing, mirroring the CSS `resize` property values.
  * @attr resize-origin - Origin for resize edge hit-testing or explicit handles.
@@ -195,7 +196,10 @@ export class RCDialog extends ReactiveElement {
   @property({ type: String, attribute: 'move-handle' })
   moveHandle = '';
 
-  /** Bounds constraint for movement. */
+  /**
+   * Area that moving and resizing stay inside: `viewport`, or `parent` for the element that
+   * contains `<rc-dialog>`.
+   */
   @property({ type: String, attribute: 'move-bounds' })
   moveBounds: 'viewport' | 'parent' = 'viewport';
 

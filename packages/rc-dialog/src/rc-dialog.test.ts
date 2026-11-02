@@ -1445,3 +1445,101 @@ test('side variant never exceeds the viewport and stays modal', async () => {
 
   await expectNoA11yViolations(host);
 });
+
+test('move-bounds="parent" keeps moves inside the element that contains the dialog', async () => {
+  const screen = render(html`
+    <div data-testid="box" style="position: relative; width: 320px; height: 240px; margin: 40px;">
+      <div style="block-size: 50px"></div>
+      <rc-dialog data-testid="host" movable move-bounds="parent">
+        <dialog
+          aria-labelledby="t"
+          style="position: fixed; left: 60px; top: 60px; width: 160px; height: 100px; margin: 0;"
+        >
+          <span id="t">Title</span>
+        </dialog>
+      </rc-dialog>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+  const box = (await screen.getByTestId('box').element()).getBoundingClientRect();
+
+  await host.updateComplete;
+  host.show();
+
+  const dialog = host.querySelector('dialog') as HTMLDialogElement;
+
+  await vi.waitFor(() => expect(dialog.getAttribute('tabindex')).toBe('0'));
+
+  const press = (key: string, times: number) => {
+    for (let index = 0; index < times; index += 1) {
+      dialog.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+    }
+  };
+
+  press('ArrowLeft', 40);
+  press('ArrowUp', 40);
+
+  let rect = dialog.getBoundingClientRect();
+
+  expect(Math.round(rect.left)).toBe(Math.round(box.left));
+  expect(Math.round(rect.top)).toBe(Math.round(box.top));
+
+  press('ArrowRight', 80);
+  press('ArrowDown', 80);
+  rect = dialog.getBoundingClientRect();
+
+  expect(Math.round(rect.right)).toBe(Math.round(box.right));
+  expect(Math.round(rect.bottom)).toBe(Math.round(box.bottom));
+
+  host.close();
+});
+
+test('move-bounds="parent" also limits resizing to the containing element', async () => {
+  const screen = render(html`
+    <div data-testid="box" style="position: relative; width: 320px; height: 240px; margin: 40px;">
+      <div style="block-size: 50px"></div>
+      <rc-dialog
+        data-testid="host"
+        move-bounds="parent"
+        resize="vertical"
+        resize-origin="top"
+        resize-handle="#resize-handle"
+      >
+        <dialog
+          aria-labelledby="t"
+          style="position: fixed; left: 60px; top: 100px; width: 160px; height: 100px; margin: 0;"
+        >
+          <span id="t">Title</span>
+          <button
+            id="resize-handle"
+            type="button"
+            data-rc-dialog-resize-axis="y"
+            data-rc-dialog-resize-origin="top"
+          >
+            Resize
+          </button>
+        </dialog>
+      </rc-dialog>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+  const box = (await screen.getByTestId('box').element()).getBoundingClientRect();
+
+  await host.updateComplete;
+  host.show();
+
+  const dialog = host.querySelector('dialog') as HTMLDialogElement;
+  const handle = host.querySelector('#resize-handle') as HTMLButtonElement;
+  const start = dialog.getBoundingClientRect();
+
+  firePointerEvent(handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
+  firePointerEvent(handle, 'pointermove', { clientX: start.left + 20, clientY: start.top - 400 });
+  firePointerEvent(handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 400 });
+
+  const resized = dialog.getBoundingClientRect();
+
+  expect(Math.round(resized.top)).toBe(Math.round(box.top));
+  expect(Math.round(resized.bottom)).toBe(Math.round(start.bottom));
+
+  host.close();
+});
