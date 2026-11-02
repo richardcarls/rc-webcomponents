@@ -72,7 +72,7 @@ the first and last page, the pages beside the current one, and an ellipsis for
 each hidden run of two or more pages. Each framework gets a port of that
 function, tested against the original.
 
-<Tabs groupId="server-framework">
+<Tabs groupId="server-framework" queryString>
   <TabItem value="rails" label="Rails">
 
 ```ruby title="app/helpers/rc_helper.rb"
@@ -378,7 +378,7 @@ The partial takes the trail as a list of label and URL pairs, ending with the
 current page, which gets `aria-current="page"`. The element names the landmark
 "Breadcrumb" unless you pass a name.
 
-<Tabs groupId="server-framework">
+<Tabs groupId="server-framework" queryString>
   <TabItem value="rails" label="Rails">
 
 ```erb title="app/views/rc/_breadcrumbs.html.erb"
@@ -468,7 +468,7 @@ sorted column, and on any other column its first direction, ascending unless
 `first` is `descending`. The page wraps the table in `<rc-data-table>` with the
 current `sort-key` and `sort-direction`.
 
-<Tabs groupId="server-framework">
+<Tabs groupId="server-framework" queryString>
   <TabItem value="rails" label="Rails">
 
 ```erb title="app/views/rc/_sort_header.html.erb"
