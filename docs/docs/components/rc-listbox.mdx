@@ -31,10 +31,6 @@ directly when an application or component controls option data and selection sta
 
 <Install tag="rc-listbox" />
 
-## Live demo
-
-<ListboxDemo />
-
 ## Usage
 
 `rc-listbox` is usually an infrastructure component inside composite controls. Use
@@ -93,6 +89,27 @@ JavaScript runs.
 
 Once the `options` property is set at any point, it becomes the authoritative
 source and the pre-rendered markup is replaced.
+
+## Live demo
+
+<ListboxDemo />
+
+## Accessibility
+
+The host has `role="listbox"`, with `aria-multiselectable="true"` when `multiple` is set. Options
+render with `role="option"` and `aria-selected`; disabled options have `aria-disabled="true"` and
+are skipped. Focus stays on the listbox, which tracks the active option with
+`aria-activedescendant`. Name the listbox with `aria-label` or `aria-labelledby`.
+
+| Key          | Action                                                                                 |
+| ------------ | -------------------------------------------------------------------------------------- |
+| Down Arrow   | Moves to the next option. A single-select listbox also selects it.                     |
+| Up Arrow     | Moves to the previous option. A single-select listbox also selects it.                 |
+| Home, End    | Moves to the first or last option. A single-select listbox also selects it.            |
+| Enter, Space | Selects the active option, toggles it in a multiple listbox, or runs an action option. |
+
+Key presses with Alt, Ctrl, or Meta pass through to the surrounding component, such as
+`rc-transfer-list`. See the [WAI-ARIA Listbox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/).
 
 ## Theming
 

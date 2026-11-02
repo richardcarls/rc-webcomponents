@@ -37,9 +37,41 @@ automatically at viewport breakpoints.
 
 <Install tag="rc-transfer-list" />
 
+## Usage
+
+Wrap a native `<select multiple>`. Its selected options form the selected list, in order, so form
+submission sends the values shown there.
+
+```html
+<rc-transfer-list available-label="Available planets" selected-label="Mission route">
+  <select name="planets" multiple>
+    <option value="mercury">Mercury</option>
+    <option value="venus" selected>Venus</option>
+    <option value="earth">Earth</option>
+  </select>
+</rc-transfer-list>
+```
+
 ## Live demo
 
 <TransferListDemo />
+
+## Accessibility
+
+Each side is an [`rc-listbox`](./rc-listbox.mdx#accessibility), named by `available-label` and
+`selected-label`, with its own list navigation and selection. The action buttons are native
+buttons in an [`rc-toolbar`](./rc-toolbar.mdx#accessibility), so arrow keys move between them.
+These shortcuts also work while focus is in either list:
+
+| Key                          | Action                                                          |
+| ---------------------------- | --------------------------------------------------------------- |
+| Alt+Right Arrow              | Adds the highlighted available options.                         |
+| Alt+Left Arrow               | Removes the highlighted selected options.                       |
+| Alt+Up Arrow, Alt+Down Arrow | Moves the highlighted selected options up or down.              |
+| Enter                        | In a single-select available list, adds the highlighted option. |
+| Delete                       | In the selected list, removes the highlighted options.          |
+
+Alt+Left and Alt+Right swap in right-to-left text, where the lists swap sides.
 
 ## Theming
 

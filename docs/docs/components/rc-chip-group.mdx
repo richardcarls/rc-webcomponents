@@ -32,7 +32,7 @@ arbitrary direct children.
 The define entry also registers `rc-chip`, which the group uses for its
 internal Show all/Show less action.
 
-## Native filter markup
+## Usage
 
 Keep fieldset, legend, form value, and selection semantics native:
 
@@ -57,6 +57,20 @@ selection.
 ## Live demo
 
 <ChipGroupDemo />
+
+## Accessibility
+
+- `kind="filter"` keeps the native radios or checkboxes as the selection controls, so the
+  author's fieldset and legend name the group and each input keeps its role, label, and
+  checked state.
+- `kind="assist"` gives the group `role="toolbar"` and an `aria-label` from `label`. It is a
+  single tab stop: arrow keys along the row move between chips, wrapping, and Home and End move
+  to the first and last chip. The arrow keys follow the inline direction, so Left and Right
+  swap in right-to-left text.
+- `kind="generic"` adds no role or keyboard behavior.
+
+The **Show all** and **Show less** action is a native button whose name changes with the
+state, and its icon and separator are decorative.
 
 ## Adaptive layout
 

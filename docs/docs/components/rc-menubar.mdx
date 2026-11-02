@@ -25,9 +25,48 @@ Menubar coordinator for `rc-menu-button` children with roving tabindex and subme
 
 <Install tag="rc-menubar" />
 
+## Usage
+
+Place `rc-menu-button` elements as direct children, and name the menubar with `label`.
+
+```html
+<rc-menubar label="Application menu">
+  <rc-menu-button>
+    <button slot="trigger">File</button>
+    <rc-menu label="File">
+      <button>New</button>
+      <button>Open…</button>
+    </rc-menu>
+  </rc-menu-button>
+  <rc-menu-button>
+    <button slot="trigger">Edit</button>
+    <rc-menu label="Edit">
+      <button>Undo</button>
+      <button>Redo</button>
+    </rc-menu>
+  </rc-menu-button>
+</rc-menubar>
+```
+
 ## Live demo
 
 <MenubarDemo />
+
+## Accessibility
+
+The host has `role="menubar"`, `aria-orientation`, and an `aria-label` from `label`. The
+triggers share one tab stop through a roving `tabindex`, and each opens its `rc-menu`.
+
+| Key                                             | Action                                                                              |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Right Arrow (horizontal), Down Arrow (vertical) | Focuses the next trigger, wrapping; if a menu is open, opens the next menu instead. |
+| Left Arrow (horizontal), Up Arrow (vertical)    | Focuses the previous trigger, wrapping; if a menu is open, opens the previous menu. |
+| Home, End                                       | Focuses the first or last trigger.                                                  |
+| Escape                                          | Closes the open menu and keeps focus on its trigger.                                |
+| Tab                                             | Leaves the menubar.                                                                 |
+
+Left and Right swap in right-to-left text. Inside an open menu, the `rc-menu` keyboard behavior
+applies. See the [WAI-ARIA Menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/).
 
 ## Theming
 
