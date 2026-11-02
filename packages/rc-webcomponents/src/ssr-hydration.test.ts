@@ -33,9 +33,11 @@ const fixtures = Object.entries(fixtureModules).flatMap(([path, module]) =>
   })),
 );
 
-// The page loads modules through the test server's /@fs route by absolute path.
+// WebKit's srcdoc module loader needs a full URL, including the test server's origin.
 const ROOT = new URL(import.meta.url).pathname.replace(/packages\/rc-webcomponents\/src\/.*$/, '');
-const moduleUrl = (path: string) => `/@fs${ROOT}${path}`;
+
+// A page URL base also keeps Vite from rewriting this as an asset import.
+const moduleUrl = (path: string) => new URL(`/@fs${ROOT}${path}`, window.location.href).href;
 const HYDRATE_SUPPORT = moduleUrl('test-helpers/ssr-hydrate-entry.ts');
 
 interface PageResult {
