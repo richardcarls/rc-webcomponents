@@ -53,34 +53,22 @@ current `sort-key` and `sort-direction`.
   </TabItem>
   <TabItem value="laravel" label="Laravel">
 
+{/* prettier-ignore */}
 ```html title="resources/views/components/rc/sort-header.blade.php"
 @props(['key', 'label', 'sort', 'direction', 'href', 'first' => 'ascending'])
 <th
   scope="col"
   data-rc-sort-key="{{ $key }}"
-  @if
-  ($first=""
-  =""
-  ="descending"
-  )
-  data-rc-sort-first="descending"
-  @endif
-  @if
-  ($key=""
-  =""
-  ="$sort)"
-  aria-sort="{{ $direction }}"
-  @endif
+  @if ($first === 'descending') data-rc-sort-first="descending" @endif
+  @if ($key === $sort) aria-sort="{{ $direction }}" @endif
 >
-  <a href="{{ $href($key, \App\Support\Rc::nextSortDirection($key, $sort, $direction, $first)) }}"
-    >{{ $label }}</a
-  >
+  <a href="{{ $href($key, \App\Support\Rc::nextSortDirection($key, $sort, $direction, $first)) }}">{{ $label }}</a>
 </th>
 ```
 
+{/* prettier-ignore */}
 ```html
-@php($sortHref = fn (string $key, string $direction) => route('members.index', ['sort' => $key,
-'dir' => $direction]))
+@php($sortHref = fn (string $key, string $direction) => route('members.index', ['sort' => $key, 'dir' => $direction]))
 <rc-data-table sort-key="{{ $sort }}" sort-direction="{{ $direction }}">
   <table>
     <caption>

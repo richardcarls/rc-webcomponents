@@ -168,31 +168,30 @@ final class Rc
 }
 ```
 
+{/* prettier-ignore */}
 ```html title="resources/views/components/rc/pagination.blade.php"
-@props(['page', 'total', 'href', 'label' => null]) @if ($total > 1)
+@props(['page', 'total', 'href', 'label' => null])
+@if ($total > 1)
 <rc-pagination page="{{ $page }}" total="{{ $total }}">
   <nav @if ($label) aria-label="{{ $label }}" @endif>
     <ul>
       @if ($page > 1)
       <li><a href="{{ $href($page - 1) }}" data-rc-page="previous" rel="prev">Previous</a></li>
-      @endif @foreach (\App\Support\Rc::paginationRange($page, $total) as $item) @if ($item ===
-      'ellipsis')
+      @endif
+      @foreach (\App\Support\Rc::paginationRange($page, $total) as $item)
+      @if ($item === 'ellipsis')
       <li aria-hidden="true">…</li>
       @else
       <li>
         <a
           href="{{ $href($item) }}"
           data-rc-page="{{ $item }}"
-          @if
-          ($item=""
-          =""
-          ="$page)"
-          aria-current="page"
-          @endif
-          >{{ $item }}</a
-        >
+          @if ($item === $page) aria-current="page" @endif
+        >{{ $item }}</a>
       </li>
-      @endif @endforeach @if ($page < $total)
+      @endif
+      @endforeach
+      @if ($page < $total)
       <li><a href="{{ $href($page + 1) }}" data-rc-page="next" rel="next">Next</a></li>
       @endif
     </ul>
@@ -203,6 +202,7 @@ final class Rc
 
 Render it from a view, here with a paginator from `paginate()`:
 
+{/* prettier-ignore */}
 ```html
 <x-rc.pagination
   :page="$members->currentPage()"
