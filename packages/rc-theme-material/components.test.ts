@@ -1067,9 +1067,13 @@ test('breadcrumbs point their chevron along the reading direction and keep a 48p
   rtl.dir = 'rtl';
   scope.append(ltr, rtl);
 
-  // U+203A and U+2039: single right- and left-pointing angle quotation marks.
-  expect(getComputedStyle(ltr).getPropertyValue('--rc-breadcrumbs-separator')).toContain('203A');
-  expect(getComputedStyle(rtl).getPropertyValue('--rc-breadcrumbs-separator')).toContain('2039');
+  // CSSOM may serialize U+203A and U+2039 as escapes or decoded characters.
+  expect(getComputedStyle(ltr).getPropertyValue('--rc-breadcrumbs-separator')).toMatch(
+    /\\203a\b|›/i,
+  );
+  expect(getComputedStyle(rtl).getPropertyValue('--rc-breadcrumbs-separator')).toMatch(
+    /\\2039\b|‹/i,
+  );
   expect(getComputedStyle(ltr.querySelector('a')!).minBlockSize).toBe('48px');
 });
 
