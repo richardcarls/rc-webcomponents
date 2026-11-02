@@ -28,7 +28,9 @@ export default defineConfig({
               'packages/rc-bottom-sheet/src/**/*.test.ts',
               'packages/rc-splitter/src/**/*.test.ts',
             ],
-            maxWorkers: 2,
+            // Firefox matches :focus and sends focus events only in the focused document, so
+            // concurrent files steal focus from each other's tests.
+            maxWorkers: process.env.RC_TEST_BROWSER === 'firefox' ? 1 : 2,
             sequence: { groupOrder: 1 },
           },
           1,
