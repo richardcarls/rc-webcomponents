@@ -13,26 +13,26 @@
       "lazyChunks": 0
     },
     "dialog": {
-      "initialRaw": 40678,
-      "initialGzip": 11691,
-      "initialBrotli": 10511,
-      "totalRaw": 77117,
-      "totalGzip": 20151,
-      "totalBrotli": 17958,
-      "largestLazyGzip": 8460,
+      "initialRaw": 43169,
+      "initialGzip": 12359,
+      "initialBrotli": 11096,
+      "totalRaw": 82858,
+      "totalGzip": 21907,
+      "totalBrotli": 19519,
+      "largestLazyGzip": 9548,
       "initialChunks": 2,
       "lazyChunks": 1
     },
     "select": {
-      "initialRaw": 111664,
-      "initialGzip": 29129,
-      "initialBrotli": 25538,
-      "totalRaw": 197659,
-      "totalGzip": 49856,
-      "totalBrotli": 43702,
-      "largestLazyGzip": 8158,
+      "initialRaw": 118483,
+      "initialGzip": 31075,
+      "initialBrotli": 27191,
+      "totalRaw": 207615,
+      "totalGzip": 52932,
+      "totalBrotli": 46328,
+      "largestLazyGzip": 8641,
       "initialChunks": 2,
-      "lazyChunks": 3
+      "lazyChunks": 4
     },
     "textarea": {
       "initialRaw": 115828,
@@ -211,20 +211,20 @@
       "lazyChunks": 0
     },
     "dialog": {
-      "initialGzip": 12715,
-      "initialBrotli": 11535,
-      "totalGzip": 21723,
-      "totalBrotli": 19369,
-      "largestLazyGzip": 9484,
+      "initialGzip": 13383,
+      "initialBrotli": 12120,
+      "totalGzip": 23003,
+      "totalBrotli": 20543,
+      "largestLazyGzip": 10572,
       "initialChunks": 2,
       "lazyChunks": 1
     },
     "select": {
-      "initialGzip": 31068,
-      "initialBrotli": 27256,
-      "totalGzip": 52773,
-      "totalBrotli": 46255,
-      "largestLazyGzip": 9182,
+      "initialGzip": 32629,
+      "initialBrotli": 28551,
+      "totalGzip": 55579,
+      "totalBrotli": 48645,
+      "largestLazyGzip": 9665,
       "initialChunks": 2,
       "lazyChunks": 4
     },
