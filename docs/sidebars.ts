@@ -76,7 +76,12 @@ const sidebars: SidebarsConfig = {
         'components/rc-slider',
         'components/rc-progress',
         'components/rc-range-slider',
-        'components/rc-textarea',
+        {
+          type: 'category',
+          label: 'rc-textarea',
+          link: { type: 'doc', id: 'components/rc-textarea' },
+          items: ['components/rc-textarea/plugins'],
+        },
       ],
     },
     {
