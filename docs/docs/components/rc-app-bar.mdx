@@ -25,6 +25,22 @@ App bar modeled after the [Material 3 Top app bar](https://m3.material.io/compon
 
 <Install tag="rc-app-bar" />
 
+## Usage
+
+Put the title in the default slot and controls in the `leading` and `trailing` slots. Wrap a
+page-level bar in `<header>`, since the element adds no landmark of its own.
+
+```html
+<header>
+  <rc-app-bar scroll-target="#content">
+    <button slot="leading" aria-label="Back">&larr;</button>
+    <span>Inbox</span>
+    <rc-toolbar slot="trailing" label="Actions">...</rc-toolbar>
+  </rc-app-bar>
+</header>
+<div id="content" class="scroll-area">...</div>
+```
+
 ## Live demo
 
 ### Title app bar
@@ -49,6 +65,15 @@ midpoint regardless of asymmetric leading/trailing widths instead:
   <button slot="trailing" aria-label="Account">Account</button>
 </rc-app-bar>
 ```
+
+## Accessibility
+
+- The bar has no implicit landmark role; wrap a page-level instance in `<header>`.
+- Slotted controls keep their native semantics and keyboard behavior.
+- The title stays connected and exposed to assistive technology in every visual state; it is
+  never duplicated as the layout changes.
+- Movement and fades are off under `prefers-reduced-motion: reduce`.
+- The scrolled divider defaults to `GrayText`, so it stays visible in forced colors.
 
 ## Reclaiming space with hide
 

@@ -77,6 +77,13 @@ to restore an icon font's em-based line height.
 
 <NavigationBarDemo />
 
+## Accessibility
+
+The element adds no landmark or role; wrap it in a native `<nav>` with its own `aria-label`.
+The links stay native anchors, so Tab and Enter work as on any link. Mark the current link with
+`aria-current="page"` so assistive technology announces it. `active-selector` only chooses which
+link the visual indicator follows; it does not set `aria-current`.
+
 ## Router active classes
 
 ```html

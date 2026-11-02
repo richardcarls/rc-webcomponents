@@ -29,6 +29,17 @@ content rectangles. Consumers draw only what is visible.
 
 <Install tag="rc-virtual-canvas" />
 
+## Usage
+
+Place a `<canvas>` inside the component, set `content-width` and `content-height` to the size of
+the whole virtual surface, and draw the visible part on each `rc-virtual-canvas-render` event.
+
+```html
+<rc-virtual-canvas content-width="4000" content-height="3000" style="width: 800px; height: 600px">
+  <canvas aria-label="Floor plan" width="800" height="600"></canvas>
+</rc-virtual-canvas>
+```
+
 ## Live demo
 
 <VirtualCanvasDemo />
@@ -36,6 +47,17 @@ content rectangles. Consumers draw only what is visible.
 The native `<canvas>` must be a direct child of `rc-virtual-canvas`. Keeping it in light DOM
 preserves the consumer's drawing surface and accessible fallback content before and after the
 custom element upgrades.
+
+## Accessibility
+
+A canvas is a bitmap with no semantics of its own, so the component adds none. When the drawing
+carries information or interaction:
+
+- Name the `<canvas>` with `aria-label` or `aria-labelledby`.
+- Provide the same information outside the canvas, such as in a table, hidden visually rather
+  than with `display: none`.
+- Give interactive content, such as hit-testing or dragging, keyboard equivalents on a separate
+  focusable element.
 
 ## Theming
 
