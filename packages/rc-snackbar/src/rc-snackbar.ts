@@ -67,7 +67,8 @@ export interface RCSnackbarCloseDetail {
  * @attr default-open - Initial visible state for uncontrolled usage.
  * @attr message - Visible snackbar message.
  * @attr action-label - Optional action button label.
- * @attr duration - Auto-close duration in milliseconds.
+ * @attr duration - Auto-close duration in milliseconds. The timer pauses while the pointer is
+ *   over the snackbar or focus is inside it.
  * @attr queue-policy - `queue` appends while open; `replace` closes the current message.
  *
  * @cssprop [--rc-snackbar-inset-inline=1rem] - Inline-axis inset from the viewport edge.
@@ -109,6 +110,13 @@ export class RCSnackbar extends LitElement {
   private _queue: RCSnackbarShowOptions[] = [];
   private _timer: number | undefined;
   private _lastMessage = '';
+
+  // The auto-close timer pauses while the pointer is over the snackbar or focus is inside it,
+  // so a message with an action stays until the person can use it (WCAG 2.2.1).
+  private _remaining = 0;
+  private _deadline = 0;
+  private _pointerInside = false;
+  private _focusInside = false;
 
   private _open: boolean | undefined;
   private _defaultOpen = false;
@@ -155,7 +163,10 @@ export class RCSnackbar extends LitElement {
   @property({ type: String, attribute: 'action-label', reflect: true, useDefault: true })
   actionLabel = '';
 
-  /** Auto-close duration in milliseconds. Set to 0 to keep open. */
+  /**
+   * Auto-close duration in milliseconds. Set to 0 to keep open. The timer pauses while the
+   * pointer is over the snackbar or focus is inside it.
+   */
   @property({ type: Number })
   duration = 4000;
 
@@ -163,8 +174,22 @@ export class RCSnackbar extends LitElement {
   @property({ type: String, attribute: 'queue-policy' })
   queuePolicy: RCSnackbarQueuePolicy = 'queue';
 
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.addEventListener('pointerenter', this._onPointerEnter);
+    this.addEventListener('pointerleave', this._onPointerLeave);
+    this.addEventListener('focusin', this._onFocusIn);
+    this.addEventListener('focusout', this._onFocusOut);
+  }
+
   override disconnectedCallback(): void {
     this._clearTimer();
+    this._pointerInside = false;
+    this._focusInside = false;
+    this.removeEventListener('pointerenter', this._onPointerEnter);
+    this.removeEventListener('pointerleave', this._onPointerLeave);
+    this.removeEventListener('focusin', this._onFocusIn);
+    this.removeEventListener('focusout', this._onFocusOut);
     super.disconnectedCallback();
   }
 
@@ -233,9 +258,61 @@ export class RCSnackbar extends LitElement {
     this.open = true;
 
     if (duration > 0) {
-      this._timer = window.setTimeout(() => this._closeCurrent('timeout', true), duration);
+      this._remaining = duration;
+      this._resumeTimer();
     }
   }
+
+  private _resumeTimer(): void {
+    if (
+      !this.open ||
+      this._remaining <= 0 ||
+      this._timer !== undefined ||
+      this._pointerInside ||
+      this._focusInside
+    ) {
+      return;
+    }
+
+    this._deadline = Date.now() + this._remaining;
+    this._timer = window.setTimeout(() => this._closeCurrent('timeout', true), this._remaining);
+  }
+
+  private _pauseTimer(): void {
+    if (this._timer === undefined) {
+      return;
+    }
+
+    window.clearTimeout(this._timer);
+    this._timer = undefined;
+    this._remaining = Math.max(0, this._deadline - Date.now());
+  }
+
+  private readonly _onPointerEnter = (): void => {
+    this._pointerInside = true;
+    this._pauseTimer();
+  };
+
+  private readonly _onPointerLeave = (): void => {
+    this._pointerInside = false;
+    this._resumeTimer();
+  };
+
+  private readonly _onFocusIn = (): void => {
+    this._focusInside = true;
+    this._pauseTimer();
+  };
+
+  private readonly _onFocusOut = (event: FocusEvent): void => {
+    const $next = event.relatedTarget as Node | null;
+
+    if ($next && (this.contains($next) || this.shadowRoot?.contains($next))) {
+      return;
+    }
+
+    this._focusInside = false;
+    this._resumeTimer();
+  };
 
   private _closeCurrent(reason: RCSnackbarCloseReason, showNext: boolean): void {
     if (!this.open) {
@@ -285,6 +362,7 @@ export class RCSnackbar extends LitElement {
   private _clearTimer(): void {
     window.clearTimeout(this._timer);
     this._timer = undefined;
+    this._remaining = 0;
   }
 }
 

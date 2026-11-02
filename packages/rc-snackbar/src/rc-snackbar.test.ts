@@ -26,6 +26,7 @@ test('fades and slides in through CSS alone, with no JavaScript gating the timin
   expect(host.open).toBe(true);
 
   await nextFrame();
+
   await Promise.all(
     host.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
   );
@@ -39,6 +40,7 @@ test('fades and slides in through CSS alone, with no JavaScript gating the timin
   expect(host.open).toBe(false);
 
   await nextFrame();
+
   await Promise.all(
     host.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
   );
@@ -167,4 +169,48 @@ test('has no automated accessibility violations while open', async () => {
   host.show({ message: 'Saved', actionLabel: 'Undo', duration: 0 });
   await host.updateComplete;
   await expectNoA11yViolations(host);
+});
+
+test('pauses the auto-close timer while the pointer is over it, then resumes the rest', async () => {
+  vi.useFakeTimers();
+
+  const screen = render(html`<rc-snackbar data-testid="host" duration="100"></rc-snackbar>`);
+  const host = (await screen.getByTestId('host').element()) as RCSnackbar;
+
+  host.show('Saved');
+  await host.updateComplete;
+
+  vi.advanceTimersByTime(60);
+  host.dispatchEvent(new PointerEvent('pointerenter'));
+  vi.advanceTimersByTime(500);
+  expect(host.open).toBe(true);
+
+  host.dispatchEvent(new PointerEvent('pointerleave'));
+  vi.advanceTimersByTime(39);
+  expect(host.open).toBe(true);
+
+  vi.advanceTimersByTime(1);
+  expect(host.open).toBe(false);
+  vi.useRealTimers();
+});
+
+test('pauses the auto-close timer while focus is inside it', async () => {
+  vi.useFakeTimers();
+
+  const screen = render(html`<rc-snackbar data-testid="host" duration="100"></rc-snackbar>`);
+  const host = (await screen.getByTestId('host').element()) as RCSnackbar;
+
+  host.show({ message: 'Archived', actionLabel: 'Undo' });
+  await host.updateComplete;
+
+  const $action = host.shadowRoot!.querySelector<HTMLButtonElement>('[part="action"]')!;
+
+  $action.focus();
+  vi.advanceTimersByTime(500);
+  expect(host.open).toBe(true);
+
+  $action.blur();
+  vi.advanceTimersByTime(100);
+  expect(host.open).toBe(false);
+  vi.useRealTimers();
 });
