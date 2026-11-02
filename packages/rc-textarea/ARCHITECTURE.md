@@ -2,7 +2,7 @@
 
 Internal reference for contributors and AI agents working on `rc-textarea` internals. For
 consumer usage, see [README.md](README.md). For plugin authors, see
-[PLUGIN_AUTHORING.md](PLUGIN_AUTHORING.md).
+[rc-textarea plugins][plugins-guide].
 
 `rc-textarea` is heavier than most component packages in this repo because it owns an editing
 surface, a shadow-DOM rendering layer, a synthetic undo stack, plugin decoration state, and
@@ -220,3 +220,5 @@ When changing internals, cover the affected behavior with browser tests:
 - Pattern, plugin, and external decorations render together.
 - Line diagnostics and gutter content align with wrapped and unwrapped lines.
 - Accessibility audit covers the live enhanced editor, not only unupgraded markup.
+
+[plugins-guide]: https://richardcarls.github.io/rc-webcomponents/components/rc-textarea/plugins

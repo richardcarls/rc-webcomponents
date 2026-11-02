@@ -160,7 +160,7 @@ editor.addPattern({
 });
 ```
 
-See [PLUGIN_AUTHORING.md](PLUGIN_AUTHORING.md) for the complete decoration and plugin model.
+See [rc-textarea plugins][plugins-guide] for the complete decoration and plugin model.
 
 ## Markdown Plugin Package
 
@@ -334,7 +334,7 @@ Buttons can sit in the gutter or trailing lane. See the
 [interactive folding examples](https://richardcarls.github.io/rc-webcomponents/components/rc-textarea#folding-actions)
 for setup and lifecycle details.
 
-- [PLUGIN_AUTHORING.md](PLUGIN_AUTHORING.md) covers custom plugins, decoration types,
+- [rc-textarea plugins][plugins-guide] covers custom plugins, decoration types,
   selection APIs, stylesheet injection, and parser/highlighter recipes.
 - [ARCHITECTURE.md](ARCHITECTURE.md) is an internal contributor reference for the rendering
   loop, Parchment integration, selection mapping, and gutter synchronization.
@@ -342,3 +342,5 @@ for setup and lifecycle details.
 ## License
 
 [MIT](../../LICENSE)
+
+[plugins-guide]: https://richardcarls.github.io/rc-webcomponents/components/rc-textarea/plugins
