@@ -85,6 +85,8 @@ declare global {
  *
  * Links navigate as usual unless a listener cancels `rc-pagination-change`,
  * which also cancels the click, for client-side routing. Buttons only report.
+ * A numbered target above `total` reports the last page; its stale link does
+ * not navigate to an out-of-range URL.
  * In uncontrolled use the element moves to the requested page itself; set
  * `page` to control it.
  *
@@ -140,6 +142,7 @@ export class RCPagination extends ReactiveElement {
   private readonly _writtenNames = new WeakMap<Element, string | null>();
   private readonly _$managedCurrent = new Set<Element>();
   private readonly _$managedDisabled = new Set<Element>();
+  private readonly _disabledBeforeEdge = new Map<Element, string | null>();
 
   /** Current page, 1-based and clamped to `[1, total]`. Host writes are silent. */
   @property({ type: Number })
@@ -249,7 +252,7 @@ export class RCPagination extends ReactiveElement {
       case 'last':
         return this._clamp(this.total);
       default:
-        return target;
+        return this._clamp(target);
     }
   }
 
@@ -320,12 +323,42 @@ export class RCPagination extends ReactiveElement {
 
     for (const $item of this._$managedDisabled) {
       if (!$disabled.has($item)) {
-        setDisabled($item, false);
+        const attribute = disabledAttribute($item);
+
+        if (this._disabledBeforeEdge.has($item) && attribute) {
+          const original = this._disabledBeforeEdge.get($item) ?? null;
+
+          if ($item.getAttribute(attribute) === (attribute === 'disabled' ? '' : 'true')) {
+            if (original === null) {
+              $item.removeAttribute(attribute);
+            } else {
+              $item.setAttribute(attribute, original);
+            }
+          }
+
+          this._disabledBeforeEdge.delete($item);
+        }
       }
     }
 
     for (const $item of $disabled) {
-      setDisabled($item, true);
+      const attribute = disabledAttribute($item);
+
+      if (
+        attribute &&
+        (!this._$managedDisabled.has($item) ||
+          (this._disabledBeforeEdge.has($item) && !$item.hasAttribute(attribute)))
+      ) {
+        const original = $item.getAttribute(attribute);
+
+        if (original !== (attribute === 'disabled' ? '' : 'true')) {
+          if (!this._$managedDisabled.has($item)) {
+            this._disabledBeforeEdge.set($item, original);
+          }
+
+          $item.setAttribute(attribute, attribute === 'disabled' ? '' : 'true');
+        }
+      }
     }
 
     this._$managedDisabled.clear();
@@ -375,6 +408,12 @@ export class RCPagination extends ReactiveElement {
     const previousPage = this.page;
     const page = this._resolve(target);
 
+    // A stale numbered link may still point beyond `total`; report the
+    // clamped page without following that invalid URL.
+    if (typeof target === 'number' && target !== page) {
+      event.preventDefault();
+    }
+
     if (page === previousPage) {
       return;
     }
@@ -410,15 +449,17 @@ export class RCPagination extends ReactiveElement {
   };
 }
 
-/** Disables a button natively and a link through `aria-disabled`, which the click guard enforces. */
-function setDisabled($item: Element, disabled: boolean): void {
+/** The native or ARIA disabled attribute owned by a pagination control. */
+function disabledAttribute($item: Element): 'disabled' | 'aria-disabled' | undefined {
   if ($item instanceof HTMLButtonElement) {
-    $item.disabled = disabled;
-  } else if (disabled) {
-    $item.setAttribute('aria-disabled', 'true');
-  } else {
-    $item.removeAttribute('aria-disabled');
+    return 'disabled';
   }
+
+  if ($item instanceof HTMLAnchorElement) {
+    return 'aria-disabled';
+  }
+
+  return undefined;
 }
 
 export default RCPagination;

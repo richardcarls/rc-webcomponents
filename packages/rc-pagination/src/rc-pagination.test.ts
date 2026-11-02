@@ -118,6 +118,47 @@ test('disables steps past either end', async () => {
   expect($previous.disabled).toBe(false);
 });
 
+test('preserves an author-disabled button after it leaves the edge', async () => {
+  const screen = render(html`
+    <rc-pagination total="3">
+      <nav>
+        <ul>
+          <li><button type="button" data-rc-page="previous" disabled>Previous</button></li>
+          <li><button type="button" data-rc-page="2">2</button></li>
+        </ul>
+      </nav>
+    </rc-pagination>
+  `);
+  const $host = await host(screen);
+  const $previous = $host.querySelector<HTMLButtonElement>('[data-rc-page="previous"]')!;
+
+  expect($previous.disabled).toBe(true);
+  $host.querySelector<HTMLButtonElement>('[data-rc-page="2"]')!.click();
+
+  await vi.waitFor(() => expect($host.page).toBe(2));
+  expect($previous.disabled).toBe(true);
+});
+
+test('restores an authored aria-disabled value after a link leaves the edge', async () => {
+  const screen = render(html`
+    <rc-pagination total="3">
+      <nav>
+        <ul>
+          <li><a href="?page=1" data-rc-page="previous" aria-disabled="false">Previous</a></li>
+          <li><button type="button" data-rc-page="2">2</button></li>
+        </ul>
+      </nav>
+    </rc-pagination>
+  `);
+  const $host = await host(screen);
+  const $previous = $host.querySelector<HTMLAnchorElement>('[data-rc-page="previous"]')!;
+
+  await vi.waitFor(() => expect($previous.getAttribute('aria-disabled')).toBe('true'));
+  $host.querySelector<HTMLButtonElement>('[data-rc-page="2"]')!.click();
+
+  await vi.waitFor(() => expect($previous.getAttribute('aria-disabled')).toBe('false'));
+});
+
 test('uncontrolled: a click moves to the page and reports the change', async () => {
   const onChange = vi.fn();
   const screen = render(html`
@@ -192,6 +233,50 @@ test('clamps the page to the total', async () => {
 
   expect($host.page).toBe(3);
   await vi.waitFor(() => expect(current($host)).toEqual(['3']));
+});
+
+test('clamps a stale numbered target before reporting and announcing it', async () => {
+  const onChange = vi.fn();
+  const screen = render(html`
+    <rc-pagination total="3" announce @rc-pagination-change=${onChange}>
+      <nav>
+        <ul>
+          <li><button type="button" data-rc-page="3">3</button></li>
+          <li><button type="button" data-rc-page="9">9</button></li>
+        </ul>
+      </nav>
+    </rc-pagination>
+  `);
+  const $host = await host(screen);
+
+  $host.querySelector<HTMLButtonElement>('[data-rc-page="9"]')!.click();
+
+  await vi.waitFor(() => expect($host.page).toBe(3));
+  expect(onChange.mock.calls[0]?.[0].detail).toEqual({ page: 3, previousPage: 1 });
+  expect(current($host)).toEqual(['3']);
+
+  await vi.waitFor(() =>
+    expect(
+      [...document.querySelectorAll('[data-rc-live-announcer]')].map(($el) => $el.textContent),
+    ).toContain('Page 3 of 3'),
+  );
+});
+
+test('does not follow a stale numbered link beyond the total', async () => {
+  const onChange = vi.fn();
+  const screen = render(html`
+    <rc-pagination total="3" @rc-pagination-change=${onChange}>
+      <nav><a href="?page=9" data-rc-page="9">9</a></nav>
+    </rc-pagination>
+  `);
+  const $host = await host(screen);
+  const clicks: boolean[] = [];
+
+  screen.container.addEventListener('click', (event) => clicks.push(event.defaultPrevented));
+  $host.querySelector('a')!.click();
+
+  expect(clicks).toEqual([true]);
+  expect(onChange.mock.calls[0]?.[0].detail.page).toBe(3);
 });
 
 test('announces the new page when announce is set', async () => {

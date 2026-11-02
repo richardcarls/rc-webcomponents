@@ -102,10 +102,12 @@ paginationRange({ page: 6, total: 12, siblings: 2, boundaries: 2 });
   controls keep their visible text; icon-only ones are named "Previous page" and so on. An
   authored `aria-label` always wins.
 - Steps past either end are disabled: buttons natively, links with `aria-disabled="true"`
-  and a guard that ignores their clicks.
+  and a guard that ignores their clicks. An authored disabled state remains when a control
+  leaves the edge.
 - Activating a control fires `rc-pagination-change` with `{ page, previousPage }`. In
   uncontrolled use the element moves to the requested page; with `page` set, the host
-  decides by writing `page`.
+  decides by writing `page`. A numbered target beyond `total` requests the last page, and
+  a stale link to that target does not navigate to its out-of-range URL.
 - `rc-pagination-change` is cancelable. Canceling it also cancels the click, so a link does
   not navigate: use this to hand the change to a client-side router.
 
