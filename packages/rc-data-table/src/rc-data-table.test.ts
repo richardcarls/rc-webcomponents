@@ -219,6 +219,33 @@ test('becomes a focusable group named by the caption only while the table overfl
   expect($host.hasAttribute('tabindex')).toBe(false);
 });
 
+test('keeps author role, focus order, and name when overflow ends', async () => {
+  const screen = render(html`
+    <div style="inline-size: 120px">
+      <span id="table-name">Inventory</span>
+      <rc-data-table role="region" tabindex="-1" aria-labelledby="table-name"
+        >${table}</rc-data-table
+      >
+    </div>
+  `);
+  const $host = await host(screen);
+
+  await vi.waitFor(() => expect($host.scrollWidth).toBeGreaterThan($host.clientWidth + 1));
+  expect($host.getAttribute('role')).toBe('region');
+  expect($host.getAttribute('tabindex')).toBe('-1');
+  expect($host.getAttribute('aria-labelledby')).toBe('table-name');
+  expect($host.querySelector('caption')?.hasAttribute('id')).toBe(false);
+
+  ($host.parentElement as HTMLElement).style.inlineSize = '2000px';
+
+  await vi.waitFor(() => expect($host.scrollWidth).toBeLessThanOrEqual($host.clientWidth + 1));
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+  expect($host.getAttribute('role')).toBe('region');
+  expect($host.getAttribute('tabindex')).toBe('-1');
+  expect($host.getAttribute('aria-labelledby')).toBe('table-name');
+});
+
 test('warns in development about a sortable header without a button', async () => {
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   const screen = render(html`

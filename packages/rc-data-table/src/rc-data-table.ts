@@ -1,7 +1,12 @@
 import { ReactiveElement } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { LiveAnnouncer, MessagesController, MorphRecoveryController } from '@rcarls/rc-common';
+import {
+  LiveAnnouncer,
+  MessagesController,
+  MorphRecoveryController,
+  syncDefaultAttribute,
+} from '@rcarls/rc-common';
 import { ensureDataTableBaseStyles } from './dataTableBaseStyles.js';
 
 const TABLE_SELECTOR = ':scope > table';
@@ -130,7 +135,10 @@ export class RCDataTable extends ReactiveElement {
   private _announcer: LiveAnnouncer | undefined;
   private readonly _$managedSort = new Set<Element>();
   private _scrollableWritten = false;
-  private _captionIdWritten = false;
+  private _writtenCaptionId: string | null = null;
+  private _writtenTabIndex: string | null = null;
+  private _writtenRole: string | null = null;
+  private _writtenLabelledBy: string | null = null;
 
   /** Current sort column. Host writes are silent; assign `undefined` to release control. */
   @property({ attribute: 'sort-key' })
@@ -303,35 +311,46 @@ export class RCDataTable extends ReactiveElement {
       this.scrollWidth > this.clientWidth + 1 || this.scrollHeight > this.clientHeight + 1;
     const $caption = this.querySelector<HTMLElement>(`${TABLE_SELECTOR} > caption`);
 
-    if (overflowing && !this._scrollableWritten) {
-      if (!this.hasAttribute('tabindex')) {
-        this.tabIndex = 0;
-      }
+    if (overflowing) {
+      this._writtenTabIndex = syncDefaultAttribute(this, 'tabindex', '0', this._writtenTabIndex);
 
-      if (!this.hasAttribute('role')) {
-        this.setAttribute('role', 'group');
-      }
+      this._writtenRole = syncDefaultAttribute(this, 'role', 'group', this._writtenRole);
 
-      if ($caption) {
+      if ($caption && (!this.hasAttribute('aria-labelledby') || this._writtenLabelledBy)) {
         if (!$caption.id) {
           $caption.id = `rc-data-table-caption-${crypto.randomUUID()}`;
-          this._captionIdWritten = true;
+          this._writtenCaptionId = $caption.id;
         }
 
-        this.setAttribute('aria-labelledby', $caption.id);
+        this._writtenLabelledBy = syncDefaultAttribute(
+          this,
+          'aria-labelledby',
+          $caption.id,
+          this._writtenLabelledBy,
+        );
       }
 
       this._scrollableWritten = true;
-    } else if (!overflowing && this._scrollableWritten) {
-      this.removeAttribute('tabindex');
-      this.removeAttribute('role');
-      this.removeAttribute('aria-labelledby');
-
-      if ($caption && this._captionIdWritten) {
-        $caption.removeAttribute('id');
-        this._captionIdWritten = false;
+    } else if (this._scrollableWritten) {
+      for (const [name, written] of [
+        ['tabindex', this._writtenTabIndex],
+        ['role', this._writtenRole],
+        ['aria-labelledby', this._writtenLabelledBy],
+      ] as const) {
+        if (written !== null && this.getAttribute(name) === written) {
+          this.removeAttribute(name);
+        }
       }
 
+      this._writtenTabIndex = null;
+      this._writtenRole = null;
+      this._writtenLabelledBy = null;
+
+      if ($caption && this._writtenCaptionId === $caption.id) {
+        $caption.removeAttribute('id');
+      }
+
+      this._writtenCaptionId = null;
       this._scrollableWritten = false;
     }
   }
