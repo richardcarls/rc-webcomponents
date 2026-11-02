@@ -431,6 +431,8 @@ macOS too, and it installs dependencies there only when `yarn.lock` changes. Eac
 single-file iteration only: record screenshot baselines and benchmark budgets only through the
 wrapper (`yarn test:screenshots:update`, `yarn benchmark:browser:update`), since fonts and system
 libraries differ between hosts. Per-package `test:browser` scripts also run on the host.
+Host runs need Node.js from `.nvmrc` and browsers from `yarn test:host:install`; see README
+§ Host setup.
 
 Agents run every suite, screenshot check, and final result through the wrapper. Host runs
 (`:host` scripts and per-package `test:browser`) are for one file or package while iterating;

@@ -11,6 +11,9 @@
   "author": "Richard Carls <richard.j.carls@gmail.com>",
   "license": "MIT",
   "packageManager": "yarn@4.16.0",
+  "engines": {
+    "node": ">=24"
+  },
   "workspaces": [
     "packages/*",
     "docs"
@@ -19,6 +22,7 @@
     "build": "yarn workspaces foreach --all --topological --exclude '@rcarls/rc-docs' run build",
     "test": "node scripts/playwright-env.mjs test:host",
     "test:host": "vitest --run",
+    "test:host:install": "playwright install",
     "test:full": "node scripts/playwright-env.mjs test:full:host",
     "test:full:host": "RC_FULL_BROWSER_MATRIX=1 RC_TEST_BROWSER=chromium vitest --run && RC_FULL_BROWSER_MATRIX=1 RC_TEST_BROWSER=firefox vitest --run && RC_FULL_BROWSER_MATRIX=1 RC_TEST_BROWSER=webkit vitest --run",
     "test:screenshots:update": "node scripts/playwright-env.mjs test:screenshots:update:host",

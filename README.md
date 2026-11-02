@@ -211,6 +211,28 @@ publishing the synchronized workspace packages.
 > **Note:** Use the root `build` script to build all workspace packages in topological order.
 > Rebuild package dependencies before running tests.
 
+### Host setup
+
+Docker is the supported test environment, and `yarn test`, `yarn test:full`, `yarn ci`, and the
+screenshot and benchmark scripts always run in it. The host needs only:
+
+- Node.js 24, the version in `.nvmrc` that CI and the Playwright image use. A version manager
+  such as `fnm`, `nvm`, or `mise` picks it up from that file.
+- Yarn, enabled with `corepack enable`. Without write access to Node's install directory, pass
+  `--install-directory` a directory on your `PATH`, such as `~/.local/bin`.
+- Docker, running and reachable from your shell. On WSL 2, enable Docker Desktop's WSL
+  integration for the distro.
+
+Then run `yarn install` and `yarn build`.
+
+The `:host` script variants (`yarn test:host`, `yarn test:full:host`, ...) and per-package
+`test:browser` scripts run on host browsers for quick single-file iteration. They are not
+authoritative: screenshot comparisons fail on the host by design. Install the browsers that match
+the locked Playwright version once with `yarn test:host:install`, or pass names to install only some,
+as in `yarn test:host:install chromium`. On Debian or Ubuntu, `sudo yarn playwright install-deps`
+adds the system libraries the browsers need; on other distributions, install them through the
+system package manager.
+
 ### AI Agents
 
 Agent guidance is in `AGENTS.md`. Other agent configuration files are shallow adapters that

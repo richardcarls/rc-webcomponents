@@ -52,7 +52,8 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: '22'
+          # Not .nvmrc: older release tags built here predate it. Keep in step with .nvmrc.
+          node-version: '24'
           cache: yarn
 
       - name: Install dependencies
@@ -86,7 +87,8 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: '22'
+          # Not .nvmrc: older release tags built here predate it. Keep in step with .nvmrc.
+          node-version: '24'
           cache: yarn
 
       - name: Install dependencies

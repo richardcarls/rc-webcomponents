@@ -46,7 +46,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version-file: .nvmrc
           package-manager-cache: false
 
       - name: Build, validate packages, and test in the Playwright image
@@ -89,7 +89,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version-file: .nvmrc
           package-manager-cache: false
 
       - name: Install dependencies
@@ -133,7 +133,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version-file: .nvmrc
           package-manager-cache: false
 
       - name: Install dependencies
