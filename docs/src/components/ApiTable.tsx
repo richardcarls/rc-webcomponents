@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import Heading from '@theme/Heading';
 
 import cemData from '../../../dist/custom-elements.json';
 
@@ -367,7 +368,9 @@ export function ApiTable({ tag }: ApiTableProps) {
       )}
       {sections.map((section) => (
         <section key={section.id} className={styles.section}>
-          <h3 id={section.id}>{section.title}</h3>
+          <Heading as="h3" id={section.id}>
+            {section.title}
+          </Heading>
           {section.table}
         </section>
       ))}

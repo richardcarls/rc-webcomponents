@@ -1,0 +1,88 @@
+---
+title: Controlled and uncontrolled state
+description: 'Initialize component state with defaults, or synchronize it with application state through properties and events.'
+---
+
+# Controlled and uncontrolled state
+
+Stateful components expose a current property, such as `value`, `open`, or `expanded`, and
+a matching initial default, such as `defaultValue`, `defaultOpen`, or `defaultExpanded`.
+Choose who owns that state for each component. The contract is the same in plain JavaScript
+and in a framework; each component's API lists its properties and event payloads.
+
+## Initialize uncontrolled state
+
+Use the matching `default*` property or kebab-case attribute for an initial value. The component
+then owns changes made through its controls. For example, a disclosure can start open:
+
+```html
+<rc-disclosure default-open>
+  <details open>
+    <summary>Delivery details</summary>
+    <p>Orders ship within two working days.</p>
+  </details>
+</rc-disclosure>
+```
+
+The native `open` attribute also provides the initial state before JavaScript loads. Keep the
+native fallback and the component's initial default in agreement.
+
+Set defaults before initialization. They are initial values, not a way to reset an already
+initialized component, and reconnecting the element does not reapply them. To reset state
+later, write the current property.
+
+## Synchronize application-owned state
+
+Write the current property when the application owns the state, and listen for the component's
+event to capture user changes. This example starts with the disclosure markup above:
+
+```js
+import '@rcarls/rc-webcomponents/rc-disclosure/define';
+
+const $disclosure = document.querySelector('rc-disclosure');
+let deliveryOpen = true;
+
+function setDeliveryOpen(open) {
+  deliveryOpen = open;
+  $disclosure.open = deliveryOpen;
+}
+
+$disclosure.addEventListener('rc-disclosure-toggle', (event) => {
+  setDeliveryOpen(event.detail.open);
+});
+
+setDeliveryOpen(deliveryOpen);
+
+// A later application action can close the disclosure without simulating user input.
+setDeliveryOpen(false);
+```
+
+Framework bindings follow the same loop: bind the current property from application state,
+then update that state from the component event. Check the component's behavior when deciding
+whether to accept or restore a user-requested value; a property binding alone is not a
+universal veto mechanism.
+
+## Keep programmatic writes silent
+
+Writing a current property from code does not dispatch the component's change event. Update
+your application state in the same action that writes the property; do not wait for an event
+that represents user interaction. This also keeps an event handler that writes state back to
+the element from creating a feedback loop.
+
+`rc-*` events bubble and are composed, so an ancestor can listen across a shadow boundary.
+Some imperative methods deliberately dispatch events; check their API documentation rather
+than assuming they behave like property setters.
+
+## Update the component's current property
+
+The native child keeps form submission and label association. When application code changes
+an enhanced control, write the component's property so it can synchronize its rendered surface
+and native child together. A direct write to the native child's JavaScript `value` or `checked`
+property may not be observed by the wrapper.
+
+Use JavaScript properties for arrays, objects, and boolean `false`. A boolean HTML attribute
+is true when present: `open="false"` still supplies an open state. Multi-word attribute names
+use kebab case, such as `default-open`; the JavaScript property is `defaultOpen`.
+
+For framework-specific syntax, see [React](./react.mdx), [Angular](./angular.mdx),
+[Vue](./vue.mdx), [Svelte](./svelte.mdx), and [Blazor](./blazor.mdx).

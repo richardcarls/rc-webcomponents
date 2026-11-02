@@ -412,7 +412,9 @@ tabindex values during roving-tabindex management. Any `tabindex` attribute is t
 ### `nativeLabelText`
 
 Returns the text that names a native control: its `aria-label`, else the joined text of its
-`<label>` elements, else `undefined`. An ID reference cannot cross into a shadow root, so a
+`<label>` elements, excluding the control's own subtree, else `undefined`. A wrapping label
+therefore omits a textarea's initial content or a select's options. The authored DOM stays
+unchanged. An ID reference cannot cross into a shadow root, so a
 component whose shadow-DOM surface stands in for a light-DOM control copies this text as the
 surface's `aria-label`.
 

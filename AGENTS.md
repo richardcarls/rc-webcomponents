@@ -375,9 +375,14 @@ directly usable public packages.
   `<Install tag="rc-..." />` from `docs/src/components/Install.tsx`, and their API
   reference with `<ApiTable tag="rc-..." />`; change those components instead of
   writing install commands or API tables by hand.
+  `Install` reads `customFields.releaseChannel` from Docusaurus config so preview pages install
+  `@next` and stable pages use the default npm channel. API subsection headings use
+  `@theme/Heading` to keep fragment targets below the fixed navbar.
 - `docs/docs/guide/usage-rules.mdx` summarizes the consumer-facing rules every
   component shares and links to their details. Update it in the same change as
   any rule it summarizes.
+  Keep the shared controlled/uncontrolled contract in `docs/docs/guide/state.mdx`; framework
+  guides link there and describe only their binding syntax and integration details.
 - `packages/rc-theme-material/DESIGN.md` is the agent-facing Material 3
   composition guide and ships with the package. Update it in the same change
   as any theme class hook, `data-*` hook, variant, token mapping, or component

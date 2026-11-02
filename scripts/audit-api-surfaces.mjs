@@ -8,7 +8,7 @@ const errors = [];
 const COMPONENT_PAGE_OUTLINE = ['Installation', 'Usage', 'Live demo', 'Accessibility', 'API'];
 
 function read(path) {
-  return readFileSync(join(root, path), 'utf8');
+  return readFileSync(join(root, path), 'utf8').replaceAll('\r\n', '\n');
 }
 
 function readJson(path) {

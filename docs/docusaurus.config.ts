@@ -13,6 +13,9 @@ const config: Config = {
   organizationName: 'richardcarls',
   projectName: 'rc-webcomponents',
   trailingSlash: false,
+  customFields: {
+    releaseChannel: variant,
+  },
   onBrokenLinks: 'warn',
   markdown: {
     mermaid: false,
