@@ -239,3 +239,66 @@ test('names the rich view from the textarea aria-label', async () => {
     'Shopping list',
   );
 });
+
+test('releases external label listeners on disconnect and reconnects to the current labels', async () => {
+  const screen = render(html`
+    <label for="retained-notes">Notes</label>
+    <rc-markdown-editor data-testid="host">
+      <textarea id="retained-notes"></textarea>
+    </rc-markdown-editor>
+  `);
+  const $host = screen.getByTestId('host').element() as RcMarkdownEditor;
+
+  await $host.updateComplete;
+
+  const $richView = $host.shadowRoot!.querySelector<HTMLElement>('#rich-view')!;
+  const $label = document.querySelector<HTMLLabelElement>('label[for="retained-notes"]')!;
+  const $parent = $host.parentElement!;
+  const focus = vi.spyOn($richView, 'focus');
+
+  $host.remove();
+  $label.click();
+  expect(focus).not.toHaveBeenCalled();
+
+  $parent.append($host);
+  await $host.updateComplete;
+  $label.click();
+  expect(focus).toHaveBeenCalledTimes(1);
+
+  $host.remove();
+  $label.htmlFor = 'another-control';
+
+  const $newLabel = document.createElement('label');
+
+  $newLabel.htmlFor = 'retained-notes';
+  $newLabel.textContent = 'Updated notes';
+  $parent.append($newLabel, $host);
+  await $host.updateComplete;
+  focus.mockClear();
+  $label.click();
+  expect(focus).not.toHaveBeenCalled();
+  $newLabel.click();
+  expect(focus).toHaveBeenCalledTimes(1);
+  expect($richView).toHaveAttribute('aria-label', 'Updated notes');
+});
+
+test('names a populated editor from its wrapping label without including the Markdown', async () => {
+  const screen = render(html`
+    <label>
+      <span>Recipe notes</span>
+      <rc-markdown-editor data-testid="host">
+        <textarea name="notes"># Shopping list</textarea>
+      </rc-markdown-editor>
+    </label>
+  `);
+  const $host = screen.getByTestId('host').element() as RcMarkdownEditor;
+
+  await $host.updateComplete;
+
+  expect($host.shadowRoot!.querySelector('#rich-view')).toHaveAttribute(
+    'aria-label',
+    'Recipe notes',
+  );
+
+  expect($host.querySelector('textarea')!.value).toBe('# Shopping list');
+});

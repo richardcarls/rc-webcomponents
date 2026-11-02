@@ -53,6 +53,10 @@ an [`rc-textarea`](./rc-textarea.mdx#accessibility) named by the `source` messag
 toolbar is an [`rc-toolbar`](./rc-toolbar.mdx#accessibility) of native buttons that report active
 formats with `aria-pressed`, and the link editor is a labeled `role="dialog"` popover.
 
+A wrapping label names the editor without including the textarea's initial Markdown content.
+Label click forwarding stops when the editor disconnects and follows its current labels when
+it reconnects.
+
 | Key              | Action                                |
 | ---------------- | ------------------------------------- |
 | Ctrl/Cmd+B       | Bold                                  |

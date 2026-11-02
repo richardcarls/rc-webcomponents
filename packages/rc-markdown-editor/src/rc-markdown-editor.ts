@@ -467,11 +467,17 @@ export class RcMarkdownEditor extends LitElement {
   @state()
   protected _linkPopoverHref = '';
 
+  private _$labels: HTMLLabelElement[] = [];
+
   override connectedCallback() {
     super.connectedCallback();
     document.addEventListener('selectionchange', this._onSelectionChange);
     document.addEventListener('click', this._onDocumentClick);
     this.addEventListener('keydown', this._onKeyDown);
+
+    if (this.hasUpdated) {
+      this._connectLabel();
+    }
   }
 
   override disconnectedCallback() {
@@ -481,6 +487,7 @@ export class RcMarkdownEditor extends LitElement {
     this.removeEventListener('keydown', this._onKeyDown);
     this._$richView?.removeEventListener('click', this._onRichViewClick);
     this._observer?.disconnect();
+    this._disconnectLabels();
 
     if (this._syncTimer !== null) {
       clearTimeout(this._syncTimer);
@@ -1416,6 +1423,8 @@ export class RcMarkdownEditor extends LitElement {
   }
 
   protected _connectLabel() {
+    this._disconnectLabels();
+
     const $textarea = this.querySelector<HTMLTextAreaElement>('textarea');
 
     if (!$textarea) {
@@ -1432,9 +1441,19 @@ export class RcMarkdownEditor extends LitElement {
     }
 
     // Forward label clicks to the active editor surface
-    for (const $label of $textarea.labels ?? []) {
+    this._$labels = Array.from($textarea.labels ?? []);
+
+    for (const $label of this._$labels) {
       $label.addEventListener('click', this._onLabelClick);
     }
+  }
+
+  private _disconnectLabels(): void {
+    for (const $label of this._$labels) {
+      $label.removeEventListener('click', this._onLabelClick);
+    }
+
+    this._$labels = [];
   }
 
   protected _onLabelClick = () => {
