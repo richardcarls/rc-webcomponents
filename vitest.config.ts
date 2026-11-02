@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitest/config';
 
-import { createBrowserTestConfig } from './vitest.browser.config';
+import { browserOptimizeDeps, createBrowserTestConfig } from './vitest.browser.config';
 
 export default defineConfig({
   test: {
@@ -17,6 +17,7 @@ export default defineConfig({
         },
       },
       {
+        optimizeDeps: browserOptimizeDeps,
         test: createBrowserTestConfig(
           {
             name: 'browser-components',
@@ -34,6 +35,7 @@ export default defineConfig({
         ),
       },
       {
+        optimizeDeps: browserOptimizeDeps,
         test: createBrowserTestConfig(
           {
             name: 'browser-geometry',
@@ -49,6 +51,7 @@ export default defineConfig({
         ),
       },
       {
+        optimizeDeps: browserOptimizeDeps,
         test: createBrowserTestConfig(
           {
             name: 'browser-themes',

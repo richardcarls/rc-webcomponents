@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { playwright } from '@vitest/browser-playwright';
+import type { UserConfig } from 'vite';
 import type { BrowserConfigOptions, InlineConfig } from 'vitest/node';
 
 import { renderOnServer } from './test-helpers/ssr-command';
@@ -69,3 +70,16 @@ export function createBrowserTestConfig(
 }
 
 export const browserTestConfig = createBrowserTestConfig();
+
+/**
+ * Dependency pre-bundling options for browser projects rooted at the repository.
+ *
+ * Vite's dependency scan reads decorator settings only from a `tsconfig.json` at
+ * the Vite root. The repository root has none, so without this the scan rejects
+ * decorated `declare` fields, skips pre-bundling, and re-optimizes mid-run.
+ */
+export const browserOptimizeDeps: UserConfig['optimizeDeps'] = {
+  esbuildOptions: {
+    tsconfig: fileURLToPath(new URL('./tsconfig.base.json', import.meta.url)),
+  },
+};
