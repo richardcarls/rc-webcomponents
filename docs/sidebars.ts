@@ -53,7 +53,22 @@ const sidebars: SidebarsConfig = {
         slug: '/guide/styling-and-theming',
         description: 'Adapt the components to a design system with tokens, parts, and themes.',
       },
-      items: ['guide/styling', 'guide/motion', 'guide/theme-previews'],
+      items: [
+        'guide/styling',
+        'guide/adaptive-layout',
+        {
+          type: 'category',
+          label: 'Themes',
+          items: [
+            'guide/themes/substrate',
+            'guide/themes/tailwind',
+            'guide/themes/material',
+            'guide/themes/win31',
+            'guide/theme-previews',
+          ],
+        },
+        'guide/motion',
+      ],
     },
     {
       type: 'category',
@@ -65,6 +80,7 @@ const sidebars: SidebarsConfig = {
       },
       items: ['guide/accessibility-testing', 'guide/localization', 'guide/performance'],
     },
+    'guide/upgrading',
   ],
   components: [
     'components',

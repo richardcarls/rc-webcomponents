@@ -1,0 +1,70 @@
+---
+title: Windows 3.1 theme
+description: 'A period theme with the beveled, square, motionless chrome of Windows 3.1.'
+---
+
+# Windows 3.1 theme
+
+The optional `@rcarls/rc-theme-win31` package is a period theme: the beveled,
+square, motionless chrome of Windows 3.1 as it looked to applications that
+linked `CTL3D`. It changes styling only.
+
+```sh
+npm install @rcarls/rc-theme-win31
+```
+
+```css
+@import '@rcarls/rc-theme-win31/theme.css';
+```
+
+```html
+<div class="rc-theme-win31">
+  <rc-select>...</rc-select>
+  <rc-dialog>...</rc-dialog>
+</div>
+```
+
+Unlike the other packaged themes, its component stylesheets read the
+`--win31-*` tokens with no literal fallbacks, so a value lives in exactly one
+place and cannot drift between the token layer and thirty-nine component
+sheets. Import `defaults.css` before any selective import, or supply the
+`--win31-*` set yourself:
+
+```css
+@import '@rcarls/rc-theme-win31/defaults.css';
+@import '@rcarls/rc-theme-win31/bridge.css';
+@import '@rcarls/rc-theme-win31/components/button.css';
+```
+
+Native controls and CSS-only recipes are separate opt-ins. With the defaults
+and bridge loaded, import `native.css` for ordinary controls or
+`css-components.css` (or a selective `css-components/<name>.css`) for the
+documented native classes and `details.rc-disclosure`.
+
+Three properties of the theme are deliberate and worth knowing before you
+adopt it:
+
+- **It is light only.** Windows 3.1 had user-selectable whole-system color
+  schemes rather than an automatic dark mode. Override the `--win31-color-*`
+  roles together. The dither follows the surface token, while the black glyph
+  image tokens may need replacement for a contrasting scheme.
+- **It has no hover states**, except on menus, which is period-correct and can
+  surprise people. Push buttons and list rows look identical at rest and under
+  the pointer.
+- **It disappears under forced colors.** Every bevel is an inset shadow, a
+  four-value `border-color`, or a dither image, and High Contrast removes all
+  three. The theme yields completely rather than fighting it.
+
+Scale the whole theme from one token when you need it larger, without changing
+any proportion:
+
+```css
+.rc-theme-win31 {
+  --win31-unit: 2px;
+}
+```
+
+See [Theme previews](../theme-previews.mdx) to compare components with and without
+each packaged theme applied.
+The package [design guide](https://github.com/richardcarls/rc-webcomponents/blob/develop/packages/rc-theme-win31/DESIGN.md)
+documents composition, historical references, and visual limitations.
