@@ -12,7 +12,15 @@ value without changing what the form submits.
 
 ### Mental model
 
-`rc-textarea` stores one plain-text value. Plugins add visual decorations over that value.
+`rc-textarea` stores one plain-text value. Plugins add visual decorations over that value:
+
+- Mark decorations style character ranges.
+- Line decorations add classes, attributes, gutter content, or diagnostic messages to logical
+  lines.
+- Widget decorations insert non-editable inline, block, or trailing elements at character
+  offsets.
+- Fold decorations hide complete source lines without removing them from the value.
+
 Decorations never change the submitted textarea value. Offsets are always absolute character
 indices into the current plain-text value unless a helper explicitly says otherwise.
 
@@ -45,6 +53,9 @@ const plugin: RCTextareaPlugin = {
 editor.usePlugin(plugin);
 ```
 
+Use `mount()` to capture the live API object, `update()` or `highlight()` to provide
+decorations, and `destroy()` to remove external subscriptions.
+
 ### Plugin interface
 
 ```ts
@@ -58,10 +69,7 @@ interface RCTextareaPlugin {
   /** Imperative decoration hook. May be async. */
   update?(value: string, api: RCTextareaPluginAPI): void | Promise<void>;
 
-  /**
-   * HTML compat hook; return HTML token spans from hljs/prism.
-   * The returned string is parsed via api.parseDecorationsFromHtml().
-   */
+  /** HTML compatibility hook; return HTML token spans from a highlighter. */
   highlight?(
     value: string,
     api: RCTextareaPluginAPI,
@@ -69,11 +77,18 @@ interface RCTextareaPlugin {
 }
 ```
 
-At least one of `update` or `highlight` must be provided. Async hooks are allowed. If a
-newer render starts while a hook is pending, stale results are discarded.
+`update()` is the general-purpose hook. Use it when you already have decoration objects from a
+parser, linter, or tokenizer.
+
+`highlight()` is the compatibility hook for highlighters that return HTML. The component parses
+the returned token spans with `api.parseDecorationsFromHtml()` and adds mark decorations; the
+HTML is never inserted into the editor.
 
 `transform()` runs only while the slotted textarea is `readonly` and substitutes the
 display-layer text without changing `editor.value` or the slotted textarea value.
+
+Async `update()` and `highlight()` hooks are allowed. If a newer render starts while an async
+hook is pending, stale results are discarded.
 
 ### External updates
 
@@ -105,7 +120,8 @@ When passing decorations to the API, omit `id`; the component assigns IDs.
 type DecorationInput =
   | Omit<MarkDecoration, 'id'>
   | Omit<LineDecoration, 'id'>
-  | Omit<WidgetDecoration, 'id'>;
+  | Omit<WidgetDecoration, 'id'>
+  | Omit<FoldDecoration, 'id'>;
 ```
 
 ### MarkDecoration
@@ -135,7 +151,7 @@ api.setDecorations([{ type: 'mark', from: 0, to: 5, className: 'keyword', bold: 
 
 ### LineDecoration
 
-Adds a class, gutter label, or diagnostic message to a logical line.
+Adds a class, gutter content, or diagnostic message to a logical line.
 
 ```ts
 interface LineDecoration {
@@ -147,6 +163,7 @@ interface LineDecoration {
   messageClassName?: string;
   attributes?: Record<string, string>;
   gutterContent?: string | HTMLElement | null; // null: suppress; undefined: use default
+  gutterLineNumber?: boolean; // keep the built-in number before custom content
   gutterAccessible?: boolean; // expose this cell when it contains a control
 }
 ```
@@ -164,7 +181,8 @@ api.setDecorations([
 ]);
 ```
 
-Style error-lens messages through an adopted stylesheet:
+`message` renders at the end of the line through `.line[data-message]::after`, so it is visual
+and not part of the editable text or clipboard. Style it through an adopted stylesheet:
 
 ```ts
 api.adoptStyleSheet(`
@@ -172,23 +190,31 @@ api.adoptStyleSheet(`
     content: attr(data-message);
     color: var(--editor-diagnostic-error);
     font-style: italic;
-    margin-left: 1em;
+    margin-inline-start: 1em;
   }
 `);
 ```
 
+Use `gutterContent: null` to suppress the built-in gutter content for a line. An `HTMLElement`
+supplies a plugin-owned marker or control; set `gutterAccessible: true` when the cell contains a
+control, since other cells stay hidden from assistive technology. Set `gutterLineNumber: true`
+to keep the built-in number before custom content when the host also has `line-numbers`.
+
 ### WidgetDecoration
 
-Inserts a non-editable DOM element at a character offset. Widgets have no text width in the
-value coordinate space.
+Inserts a non-editable element at a character offset. Widgets have no text width in the value
+coordinate space.
 
 ```ts
 interface WidgetDecoration {
   id: string;
   type: 'widget';
   offset: number;
-  create(): HTMLElement; // called on every render; return a new element each time
+  create(): HTMLElement;
   side?: 'before' | 'after';
+  key?: string; // keep the line DOM while the key is unchanged
+  layout?: 'inline' | 'block' | 'trailing';
+  accessible?: boolean; // expose the widget to assistive technology
 }
 ```
 
@@ -207,6 +233,36 @@ api.setDecorations([
   },
 ]);
 ```
+
+Without a `key`, `create()` runs whenever the line rebuilds, so return a new element each time.
+With a key, unchanged lines keep their DOM; change the key when the widget's content changes.
+`layout` defaults to `inline`; block widgets add to the line's height, and trailing widgets
+reserve space at the logical line end. The default wrapper is decorative, so set
+`accessible: true` for controls or meaningful content. Such controls take normal Tab navigation
+instead of tab insertion.
+
+### FoldDecoration
+
+Hides complete source lines while keeping their text and offsets in the value.
+
+```ts
+interface FoldDecoration {
+  id: string;
+  type: 'fold';
+  fromLine: number; // first hidden line, 1-based, inclusive
+  toLine: number; // last hidden line, 1-based, inclusive
+  reveal(): void; // called before a user edit or caret move enters the hidden lines
+}
+```
+
+Most plugins create folds through `FoldingActionController` from `@rcarls/rc-textarea/folding`
+rather than directly. The controller owns the accessible button and expansion state, not panel
+content or syntax rules. Give each action a stable `key`, `label`, `target`, and `gutterLine` or
+trailing `offset`. A target is a caller-owned panel element or `{ fromLine, toLine }`. Render
+panel content separately as an accessible block widget and change its widget key when that
+content changes, and call the controller's `clear()` when document identity changes and in
+`destroy()`. See [Folding actions](../rc-textarea.mdx#folding-actions) for the user-facing
+behavior.
 
 ## Plugin API reference
 
@@ -259,6 +315,8 @@ interface RCTextareaPluginAPI {
 
 ### Cursor and selection
 
+The plugin API exposes selection as plain-text offsets, not DOM ranges.
+
 ```ts
 let unsubscribe: (() => void) | undefined;
 
@@ -288,19 +346,21 @@ letters, digits and `_`.
 
 ### Text mutation
 
-`insertText()`, `wrapSelection()`, and `replaceSelection()` update the value, sync the slotted
-textarea, dispatch `rc-textarea-change`, and schedule a render.
+`insertText()`, `wrapSelection()`, and `replaceSelection()` operate on the current selection.
+They update the value, sync the slotted textarea, dispatch `rc-textarea-change`, and schedule a
+render.
 
 ````ts
 api.insertText('```\n\n```');
-api.wrapSelection('**', '**'); // no-op when selection is collapsed
+api.wrapSelection('**', '**'); // no-op when the selection is collapsed
 api.replaceSelection('[replaced]');
 ````
 
 ### Stylesheet injection
 
-Decoration elements live inside the shadow root. Use `api.adoptStyleSheet()` to style them.
-Adopted sheets are removed automatically when the plugin is unmounted.
+The editor, lines, marks, widgets, and diagnostics live inside the component's shadow root, so
+document styles do not reach them. Inject decoration CSS with `api.adoptStyleSheet()`. Adopted
+sheets are removed automatically when the plugin is unmounted.
 
 ```ts
 editor.usePlugin({
@@ -309,6 +369,19 @@ editor.usePlugin({
       .keyword { color: var(--editor-syntax-keyword); font-weight: 600; }
       .string  { color: var(--editor-syntax-string); }
     `);
+  },
+});
+```
+
+Pass a shared `CSSStyleSheet` to reuse one sheet across editors:
+
+```ts
+const sharedSheet = new CSSStyleSheet();
+sharedSheet.replaceSync('.keyword { color: rebeccapurple; }');
+
+editor.usePlugin({
+  mount(api) {
+    api.adoptStyleSheet(sharedSheet);
   },
 });
 ```
@@ -370,8 +443,9 @@ editor.usePlugin({
 
 ### `createLineDecoratorPlugin(decorator, options?)`
 
-Wraps a `LineDecoratorPlugin` in a full `RCTextareaPlugin`. Handles CSS injection, line-relative
-offset conversion, and optional `watch` subscriptions.
+Wraps a `LineDecoratorPlugin` in a full `RCTextareaPlugin`. It injects the decorator's `styles`,
+converts the line-relative mark offsets returned from `decorateLine()` to document offsets, and
+handles optional `watch` subscriptions.
 
 ```ts
 import { createLineDecoratorPlugin, type LineDecoratorPlugin } from '@rcarls/rc-textarea';
@@ -472,6 +546,9 @@ editor.usePlugin({
 ```
 
 ### Merging HTML marks with other decorations
+
+To combine HTML-derived marks with other decorations, parse the HTML yourself in `update()`
+instead of returning it from `highlight()`:
 
 ```ts
 editor.usePlugin({
