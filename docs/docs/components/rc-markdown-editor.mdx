@@ -25,6 +25,17 @@ Rich/source Markdown editor with a formatting toolbar, backed by `rc-textarea`.
 
 <Install tag="rc-markdown-editor" />
 
+## Usage
+
+Place a native `<textarea>` inside the element. Its content is the initial Markdown, and it keeps
+the value for form submission.
+
+```html
+<rc-markdown-editor>
+  <textarea name="notes"># Shopping list</textarea>
+</rc-markdown-editor>
+```
+
 ## Live demo
 
 <MarkdownEditorDemo />
@@ -32,6 +43,22 @@ Rich/source Markdown editor with a formatting toolbar, backed by `rc-textarea`.
 The editor composes its formatting surface from `rc-toolbar`, `rc-button`, and
 a native `<select>` for the heading level, allowing the selected theme to style
 the controls consistently with the rest of an application.
+
+## Accessibility
+
+The rich editing surface is a `role="textbox"` with `aria-multiline="true"`, and source mode is
+an [`rc-textarea`](./rc-textarea.mdx#accessibility) named by the `source` message. The formatting
+toolbar is an [`rc-toolbar`](./rc-toolbar.mdx#accessibility) of native buttons that report active
+formats with `aria-pressed`, and the link editor is a labeled `role="dialog"` popover.
+
+| Key              | Action                                |
+| ---------------- | ------------------------------------- |
+| Ctrl/Cmd+B       | Bold                                  |
+| Ctrl/Cmd+I       | Italic                                |
+| Ctrl/Cmd+U       | Underline                             |
+| Ctrl/Cmd+\`      | Inline code                           |
+| Ctrl/Cmd+K       | Opens the link editor                 |
+| Ctrl/Cmd+Shift+S | Switches between rich and source mode |
 
 ## Theming
 

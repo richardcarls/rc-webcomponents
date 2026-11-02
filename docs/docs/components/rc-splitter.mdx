@@ -25,9 +25,39 @@ Resizable pane splitter with pointer, keyboard, and collapse/restore controls, f
 
 <Install tag="rc-splitter" />
 
+## Usage
+
+Put the primary pane in the default slot and the secondary pane in the `secondary` slot, and
+name the primary pane with `label`.
+
+```html
+<rc-splitter label="Recipe list" style="inline-size: 100%; block-size: 400px">
+  <div>Recipe list</div>
+  <div slot="secondary">Recipe details</div>
+</rc-splitter>
+```
+
 ## Live demo
 
 <SplitterDemo />
+
+## Accessibility
+
+The separator handle has `role="separator"`, takes focus, and is labelled by the primary pane,
+whose name comes from `label`. It reports its position with `aria-valuenow`, `aria-valuemin`,
+`aria-valuemax`, and a localized `aria-valuetext`, and `aria-controls` the primary pane. With
+`collapsible`, a native collapse button also controls the pane and reports `aria-expanded`.
+
+| Key                     | Action                                                 |
+| ----------------------- | ------------------------------------------------------ |
+| Right Arrow, Down Arrow | Grows the primary pane by `step`.                      |
+| Left Arrow, Up Arrow    | Shrinks the primary pane by `step`.                    |
+| Shift+Arrow             | Moves ten times as far.                                |
+| Home, End               | Moves to the smallest or largest primary pane size.    |
+| Enter                   | Collapses the primary pane, or restores its last size. |
+
+Left and Right swap in right-to-left text. See the
+[WAI-ARIA Window Splitter pattern](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/).
 
 ## Theming
 

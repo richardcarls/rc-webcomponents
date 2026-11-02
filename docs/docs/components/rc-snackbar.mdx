@@ -58,6 +58,14 @@ shape, spacing, and action treatment.
 
 <SnackbarDemo />
 
+## Accessibility
+
+Messages appear in a `role="status"` live region with `aria-live="polite"` and
+`aria-atomic="true"`, so screen readers announce them without moving focus. The action is a
+native button. A positive `duration` closes the message on a timer that does not pause on hover
+or focus, so give a message with an action enough time to reach it, or own its dismissal with
+`duration: 0`.
+
 ## API
 
 <ApiTable tag="rc-snackbar" />

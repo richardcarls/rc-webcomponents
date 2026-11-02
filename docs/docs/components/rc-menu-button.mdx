@@ -25,9 +25,42 @@ Trigger button that opens an `rc-menu` popup, following the [WAI-ARIA Menu Butto
 
 <Install tag="rc-menu-button" />
 
+## Usage
+
+Put a native button in the `trigger` slot and an `rc-menu` in the default slot.
+
+```html
+<rc-menu-button>
+  <button slot="trigger">File</button>
+  <rc-menu label="File">
+    <button>New</button>
+    <button>Open…</button>
+    <button>Save</button>
+  </rc-menu>
+</rc-menu-button>
+```
+
 ## Live demo
 
 <MenuButtonDemo />
+
+## Accessibility
+
+The element sets `aria-haspopup="menu"` on the trigger and keeps its `aria-expanded` in step
+with `open`. Choosing an item or pressing Escape closes the menu and returns focus to the
+trigger; a click outside closes it without moving focus.
+
+| Key          | Action                                            |
+| ------------ | ------------------------------------------------- |
+| Enter, Space | Opens the menu.                                   |
+| Down Arrow   | Opens the menu and focuses the first item.        |
+| Up Arrow     | Opens the menu and focuses the last item.         |
+| Escape       | Closes the menu and returns focus to the trigger. |
+
+Inside the open menu, the [`rc-menu`](./rc-menu.mdx#accessibility) keys apply. In a vertical
+layout, such as a submenu or a vertical menubar, Right Arrow opens on the first item and Left
+Arrow on the last, and these keys turn with right-to-left and vertical writing modes. See the
+[WAI-ARIA Menu Button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/).
 
 ## Theming
 
