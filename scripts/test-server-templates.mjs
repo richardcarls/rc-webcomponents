@@ -1,9 +1,9 @@
 /**
  * Renders the partials in the server templates guide
- * (`docs/docs/guide/server-templates.mdx`) with ActionView, Blade, and the
- * Razor `HtmlRenderer`, and checks the output against the markup the
- * components document. Each framework's port of `paginationRange()` is also
- * compared with the original over a grid of inputs.
+ * (`docs/docs/guide/server-templates.mdx` and its `server-templates/` pages)
+ * with ActionView, Blade, and the Razor `HtmlRenderer`, and checks the output
+ * against the markup the components document. Each framework's port of
+ * `paginationRange()` is also compared with the original over a grid of inputs.
  *
  * Needs Ruby with Bundler, PHP with Composer, and the .NET 10 SDK. Gems and
  * Composer packages install into a cache outside the checkout
@@ -12,7 +12,15 @@
  *   node scripts/test-server-templates.mjs
  */
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,7 +31,13 @@ import { paginationRange } from '../packages/rc-pagination/src/range.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const HARNESS = join(ROOT, 'scripts', 'server-templates');
-const GUIDE = join(ROOT, 'docs', 'docs', 'guide', 'server-templates.mdx');
+const GUIDE_DIR = join(ROOT, 'docs', 'docs', 'guide');
+const GUIDES = [
+  join(GUIDE_DIR, 'server-templates.mdx'),
+  ...readdirSync(join(GUIDE_DIR, 'server-templates'))
+    .filter((name) => name.endsWith('.mdx'))
+    .map((name) => join(GUIDE_DIR, 'server-templates', name)),
+];
 const CASES = join(HARNESS, 'cases.json');
 const CACHE =
   process.env.RC_SERVER_TEMPLATES_CACHE ??
@@ -303,7 +317,7 @@ function compare(framework, output, cases, failures) {
 
 function main() {
   const cases = JSON.parse(readFileSync(CASES, 'utf8'));
-  const blocks = titledBlocks(readFileSync(GUIDE, 'utf8'));
+  const blocks = titledBlocks(GUIDES.map((path) => readFileSync(path, 'utf8')).join('\n'));
   const failures = [];
 
   // The reference markup must match the examples on the component pages.

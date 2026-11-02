@@ -32,7 +32,16 @@ const sidebars: SidebarsConfig = {
         'guide/vue',
         'guide/svelte',
         'guide/blazor',
-        'guide/server-templates',
+        {
+          type: 'category',
+          label: 'Server templates',
+          link: { type: 'doc', id: 'guide/server-templates' },
+          items: [
+            'guide/server-templates/pagination',
+            'guide/server-templates/breadcrumbs',
+            'guide/server-templates/sortable-tables',
+          ],
+        },
         'guide/ssr',
       ],
     },
