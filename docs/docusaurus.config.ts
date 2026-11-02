@@ -38,13 +38,29 @@ const config: Config = {
       } satisfies Preset.Options,
     ],
   ],
+  themes: [
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        // The index is built with the site, so search works only in a built site, not `docs`.
+        hashed: true,
+        docsRouteBasePath: '/',
+        indexBlog: false,
+      },
+    ],
+  ],
   themeConfig: {
+    docs: {
+      sidebar: {
+        autoCollapseCategories: true,
+      },
+    },
     navbar: {
       title: 'rc-webcomponents',
       items: [
-        { label: 'Guide', to: '/guide/installation' },
+        { type: 'docSidebar', sidebarId: 'guide', label: 'Guide' },
         { label: 'Theme previews', to: '/guide/theme-previews' },
-        { label: 'Components', to: '/components/rc-select' },
+        { type: 'docSidebar', sidebarId: 'components', label: 'Components' },
         variant === 'next'
           ? {
               href: 'https://richardcarls.github.io/rc-webcomponents/',

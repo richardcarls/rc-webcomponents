@@ -188,7 +188,7 @@ export default function Home() {
             where they apply.
           </p>
           <div className={styles.actions}>
-            <Link className="button button--primary" to="/components/rc-select">
+            <Link className="button button--primary" to="/components">
               Browse components
             </Link>
             <Link className="button button--secondary" to="/guide/progressive-enhancement">

@@ -339,7 +339,8 @@ source/JSDoc -> event/detail/exported types -> tests -> CEM -> package README
 
 When adding a new component package, add it to the `## Packages` table in
 `README.md`, create or update `docs/docs/components/<component>.mdx`, and add it
-to `docs/sidebars.ts` in the same change. Infrastructure, adapter, plugin, and
+to a category of the `components` sidebar in `docs/sidebars.ts` in the same change;
+the `/components` overview page lists that sidebar automatically. Infrastructure, adapter, plugin, and
 aggregate packages do not need docs sidebar entries unless they are documented as
 directly usable public packages.
 
@@ -349,7 +350,10 @@ directly usable public packages.
   detail and agent workflow here only when it helps future code changes.
 - Keep package descriptions aligned across `package.json`, package README first
   paragraph, exported class JSDoc, docs page intro, the root README package
-  table, and the docs homepage package table. Descriptions should be concise and
+  table, and the docs homepage package table. Each component docs page also
+  repeats the `package.json` description verbatim as its `description` front
+  matter, which feeds the components overview cards and the meta description;
+  `yarn audit:api-surfaces` checks that they match. Descriptions should be concise and
   matter-of-fact, mention the native element a component wraps/enhances, and use
   WAI-ARIA APG links only when a real APG pattern applies. Component class
   JSDoc should include a docs-site `@see {@link ...}` entry and an APG or
