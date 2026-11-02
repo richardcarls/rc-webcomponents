@@ -1,0 +1,81 @@
+---
+title: Usage rules
+description: 'The rules every component expects, with links to the details.'
+---
+
+# Usage rules
+
+These rules apply to every component. Each page states the specifics, such as which native
+child a component needs; this page collects the rules in one place.
+
+## Keep the native child in place
+
+Components that wrap a form control or other native element need it as a direct child, and
+keep it connected after upgrade. The native element owns form submission, label association,
+and the behavior that works before JavaScript loads.
+
+:::warning
+
+Do not move or replace the native child, for example by letting a framework re-create it
+outside the component. The form loses the value, and the label loses its control, with no
+error.
+
+:::
+
+Details: [Progressive enhancement](./progressive-enhancement).
+
+## Label and name the native element
+
+Put `id`, `name`, `value`, and labels on the native element, not the custom element. A
+`<label for>` targets the native control's `id`.
+
+```html
+<label for="status-select">Status</label>
+<rc-select>
+  <select id="status-select" name="status">
+    <option value="draft">Draft</option>
+  </select>
+</rc-select>
+```
+
+Details: [Installation](./installation#basic-usage).
+
+## Choose controlled or uncontrolled state
+
+Each value-like property, such as `value`, `open`, or `selected`, works in one of two modes:
+
+- **Uncontrolled:** set the matching `default*` property or attribute, and the component
+  owns the value after that.
+- **Controlled:** write the property yourself, and your application owns the value.
+
+:::note
+
+Writing a property from code never dispatches the component's change event; only user
+interaction does. Listen for the `rc-*` event to learn about user changes, and update your
+own state from it. `rc-*` events bubble and are composed, so you can listen on an ancestor.
+
+:::
+
+Details: [Controlled and uncontrolled properties](./angular#controlled-and-uncontrolled-properties).
+
+## Register elements on the client
+
+Register the elements a page uses from client code, once per page, with the `define`
+entries. Every package imports safely on the server, where the native markup is the output.
+
+Details: [Installation](./installation#load-elements) and
+[Server rendering](./ssr#register-components-on-the-client).
+
+## Set the interface language with `lang`
+
+Component text, such as button names and announcements, follows the element's own `lang`,
+else `<html lang>`. Translate it with the `messages` property or `registerMessages()`.
+
+Details: [Localization](./localization).
+
+## Style through tokens and parts
+
+Components ship structural styles only. Change their look with `--rc-*` custom properties,
+CSS parts, or a theme package, not by restyling their internals.
+
+Details: [Styling](./styling).
