@@ -3,11 +3,10 @@ title: rc-chip-group
 description: 'Adaptive wrapping and scrolling layout for native-backed chips and arbitrary elements.'
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { ChipGroupDemo } from '@site/src/components/ComponentDemos';
+import { Install } from '@site/src/components/Install';
 
 # rc-chip-group
 
@@ -28,26 +27,7 @@ arbitrary direct children.
 
 ## Installation
 
-<Tabs groupId="package-manager">
-  <TabItem value="npm" label="npm">
-
-```sh
-npm install @rcarls/rc-webcomponents
-```
-
-  </TabItem>
-  <TabItem value="yarn" label="Yarn">
-
-```sh
-yarn add @rcarls/rc-webcomponents
-```
-
-  </TabItem>
-</Tabs>
-
-```js
-import '@rcarls/rc-webcomponents/rc-chip-group/define';
-```
+<Install tag="rc-chip-group" />
 
 The define entry also registers `rc-chip`, which the group uses for its
 internal Show all/Show less action.

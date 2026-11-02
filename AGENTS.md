@@ -366,6 +366,10 @@ directly usable public packages.
   cards and meta descriptions use it; without it Docusaurus excerpts the first
   paragraph and drops inline code such as `<select>`. Add a new guide to one of
   the `guide` sidebar categories in `docs/sidebars.ts`.
+- Component pages render their `## Installation` section with
+  `<Install tag="rc-..." />` from `docs/src/components/Install.tsx`, and their API
+  reference with `<ApiTable tag="rc-..." />`; change those components instead of
+  writing install commands or API tables by hand.
 - `docs/docs/guide/usage-rules.mdx` summarizes the consumer-facing rules every
   component shares and links to their details. Update it in the same change as
   any rule it summarizes.
