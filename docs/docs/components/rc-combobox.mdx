@@ -30,9 +30,47 @@ Editable combobox with filtering and optional allow-create behavior, configured 
 
 <Install tag="rc-combobox" />
 
+## Usage
+
+Wrap a native `<select>` whose options are the choices. It stays in the page as the form value
+and the no-JavaScript fallback, and its label names the text input.
+
+```html
+<label>
+  Fruit
+  <rc-combobox placeholder="Search fruit">
+    <select name="fruit">
+      <option value="apple">Apple</option>
+      <option value="banana">Banana</option>
+      <option value="cherry">Cherry</option>
+    </select>
+  </rc-combobox>
+</label>
+```
+
 ## Live demo
 
 <ComboboxDemo />
+
+## Accessibility
+
+The text input has `role="combobox"` and `aria-autocomplete="list"`, and filters an `rc-listbox`
+popup. Focus stays in the input, which tracks the active option with `aria-activedescendant`.
+In `popup-mode="dialog"`, a trigger opens a modal that holds the filter input instead; Enter,
+Space, or Down Arrow on the trigger opens it.
+
+| Key        | Action                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------ |
+| Down Arrow | Opens the popup on the first match, or moves to the next match.                            |
+| Up Arrow   | Moves to the previous match while the popup is open.                                       |
+| Home, End  | Moves to the first or last match while the popup is open.                                  |
+| Enter      | Selects the active match, or the first match when none is active.                          |
+| Escape     | Clears the typed filter and closes the popup.                                              |
+| Tab        | With the popup open, selects the first match, closes the popup, and moves focus on.        |
+| Backspace  | In a multiple combobox with an empty filter, moves focus to the last chip's remove button. |
+
+In a multiple combobox, Left Arrow with the caret at the start of the input also moves to the
+last chip's remove button (Right Arrow in right-to-left text).
 
 ## Theming
 

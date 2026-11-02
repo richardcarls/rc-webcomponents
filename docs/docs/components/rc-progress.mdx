@@ -29,9 +29,28 @@ built-in fix for the indeterminate/undefined-binding footgun.
 
 <Install tag="rc-progress" />
 
+## Usage
+
+Wrap a native `<progress>`, and name it with a `<label for>` or `aria-label`; the component
+renders no label of its own. Both forms work before JavaScript loads.
+
+```html
+<label for="sync">Sync</label>
+<rc-progress>
+  <progress id="sync" max="100" value="40"></progress>
+</rc-progress>
+```
+
 ## Live demo
 
 <ProgressDemo />
+
+## Accessibility
+
+The native `<progress>` keeps its `progressbar` role and value, so assistive technology reads the
+same progress before and after upgrade. The component forwards `value-text` to `aria-valuetext`
+and `orientation="vertical"` to `aria-orientation`. Its track, fill, and formatted value display
+are decorative. The bar takes no focus and has no keyboard interaction.
 
 ## Determinate vs. indeterminate
 

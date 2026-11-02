@@ -36,7 +36,20 @@ Textarea wrapper with line decorations, gutter rendering, folding actions, and p
 
 <Install tag="rc-textarea" />
 
-## Demos
+## Usage
+
+Place a native `<textarea>` as the direct child. It is hidden after upgrade and keeps the form
+value, name, and validation; its label names the editor.
+
+```html
+<label for="message">Message</label>
+
+<rc-textarea line-numbers word-wrap auto-grow>
+  <textarea id="message" name="message" rows="10" placeholder="Start typing..."></textarea>
+</rc-textarea>
+```
+
+## Live demo
 
 <Tabs>
 <TabItem value="basic" label="Basic" default>
@@ -203,15 +216,23 @@ editor.addEventListener('rc-textarea-change', (e) => {
 });
 ```
 
-## Keyboard Behavior
+## Accessibility
 
-| Key                               | Behavior                                          |
-| --------------------------------- | ------------------------------------------------- |
-| `Tab`                             | Inserts `\t`.                                     |
-| `Ctrl/Cmd+Z`                      | Undo.                                             |
-| `Ctrl/Cmd+Y` / `Ctrl/Cmd+Shift+Z` | Redo.                                             |
-| `Paste`                           | Inserts plain text only; normalizes line endings. |
-| `Enter`                           | Inserts a line break.                             |
+The editor is a `role="textbox"` with `aria-multiline="true"`. It takes its accessible name from
+the native textarea's `aria-label`, else the text of the textarea's labels.
+
+| Key                               | Behavior                                                    |
+| --------------------------------- | ----------------------------------------------------------- |
+| `Tab`                             | Inserts `\t`.                                               |
+| `Escape`, then `Tab`              | Moves focus to the next element instead of inserting a tab. |
+| `Shift+Tab`                       | Moves focus to the previous element.                        |
+| `Ctrl/Cmd+Z`                      | Undo.                                                       |
+| `Ctrl/Cmd+Y` / `Ctrl/Cmd+Shift+Z` | Redo.                                                       |
+| `Paste`                           | Inserts plain text only; normalizes line endings.           |
+| `Enter`                           | Inserts a line break.                                       |
+
+While the editor contains an accessible widget, such as an expanded folding panel, `Tab` moves
+focus instead of inserting a tab, so the widget stays reachable.
 
 ## Theming
 

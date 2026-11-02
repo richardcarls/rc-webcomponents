@@ -30,6 +30,27 @@ Select-only combobox backed by a native `<select>`, following the [WAI-ARIA Comb
 
 <Install tag="rc-select" />
 
+## Usage
+
+Wrap a native `<select>`. It stays in the page as the form value and the no-JavaScript
+fallback, and its label names the enhanced trigger.
+
+```html
+<label>
+  Fruit
+  <rc-select placeholder="Choose fruit">
+    <select name="fruit">
+      <option value="">Choose fruit</option>
+      <option value="apple">Apple</option>
+      <option value="banana">Banana</option>
+      <option value="cherry" disabled>Cherry</option>
+    </select>
+  </rc-select>
+</label>
+```
+
+Add `multiple` to the native select for multiple selection.
+
 ## Live demo
 
 <SingleSelectDemo />
@@ -39,6 +60,28 @@ Select-only combobox backed by a native `<select>`, following the [WAI-ARIA Comb
 <SelectFormDemo />
 
 <DynamicOptionsDemo />
+
+## Accessibility
+
+The trigger has `role="combobox"` and `aria-haspopup="listbox"`, and the popup is an
+`rc-listbox` with `role="listbox"`. Focus stays on the trigger, which tracks the active option
+with `aria-activedescendant`. The trigger takes its accessible name from the select's label or
+`aria-label` unless it has a label of its own.
+
+| Key                  | Action                                                                                                    |
+| -------------------- | --------------------------------------------------------------------------------------------------------- |
+| Down Arrow           | Opens the popup on the first option, or moves to the next option.                                         |
+| Up Arrow             | Opens the popup on the last option, or moves to the previous option.                                      |
+| Home, End            | Moves to the first or last option while the popup is open.                                                |
+| Enter, Space         | Opens the popup, or selects the active option. A single select then closes; a multiple select stays open. |
+| Escape               | Closes the popup.                                                                                         |
+| Tab                  | Closes the popup and moves focus on.                                                                      |
+| Printable characters | Moves to the first option whose label starts with the typed text; a closed single select selects it.      |
+
+In a multiple select, Left Arrow on a closed trigger moves focus into the selected chips (Right
+Arrow in right-to-left text). The same arrows move between chips, moving past the last chip
+returns to the trigger, Escape returns to the trigger, and Delete, Backspace, Enter, or Space
+removes the focused chip.
 
 ## Dialog popup
 
