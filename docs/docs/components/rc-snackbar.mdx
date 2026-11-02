@@ -62,9 +62,9 @@ shape, spacing, and action treatment.
 
 Messages appear in a `role="status"` live region with `aria-live="polite"` and
 `aria-atomic="true"`, so screen readers announce them without moving focus. The action is a
-native button. A positive `duration` closes the message on a timer that does not pause on hover
-or focus, so give a message with an action enough time to reach it, or own its dismissal with
-`duration: 0`.
+native button. A positive `duration` closes the message on a timer that pauses while the
+pointer is over the snackbar or focus is inside it, and resumes with the time that was left, so
+people can reach the action ([WCAG 2.2.1](https://www.w3.org/WAI/WCAG22/Understanding/timing-adjustable)).
 
 ## API
 
