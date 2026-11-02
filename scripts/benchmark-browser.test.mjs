@@ -9,11 +9,13 @@ import {
   createRuntimeBaseline,
   createRuntimeBudgets,
   runBenchmarkAttempts,
+  FRAME_MS,
   timingBudget,
 } from './benchmark-browser.mjs';
 
-test('timingBudget allows twenty percent or five milliseconds, whichever is larger', () => {
-  assert.equal(timingBudget(10), 15);
+test('timingBudget allows twenty percent or one 60Hz frame, whichever is larger', () => {
+  assert.equal(timingBudget(10), 10 + FRAME_MS);
+  assert.equal(timingBudget(50), 50 + FRAME_MS);
   assert.equal(timingBudget(100), 120);
 });
 
@@ -48,7 +50,7 @@ test('the motion metrics added for frame sampling have the right budget semantic
       example: { median: 10, longFrames: 3, longestFrameMs: 20, animationCount: 4 },
     }),
     {
-      example: { median: 15, longFrames: 3, longestFrameMs: 50, animationCount: 4 },
+      example: { median: 10 + FRAME_MS, longFrames: 3, longestFrameMs: 50, animationCount: 4 },
     },
   );
 });
@@ -57,7 +59,7 @@ test('createRuntimeBudgets excludes diagnostic samples', () => {
   assert.deepEqual(
     createRuntimeBudgets({ example: { median: 10, p95: 20, samples: [], frameWaitSamples: [] } }),
     {
-      example: { median: 15, p95: 25 },
+      example: { median: 10 + FRAME_MS, p95: 20 + FRAME_MS },
     },
   );
 });
@@ -66,7 +68,7 @@ test('createRuntimeBaseline preserves measurements separately from limits', () =
   assert.deepEqual(createRuntimeBaseline({ example: { median: 10, p95: 20, samples: [10, 20] } }), {
     version: 1,
     measurements: { example: { median: 10, p95: 20 } },
-    budgets: { example: { median: 15, p95: 25 } },
+    budgets: { example: { median: 10 + FRAME_MS, p95: 20 + FRAME_MS } },
   });
 });
 

@@ -94,7 +94,7 @@ interaction features, and timing and heap use depend on the browser environment.
 
 ## Browser scenarios
 
-Headless Chromium measures three warmups followed by ten samples and records the
+Headless Chromium measures three warmups followed by twenty samples and records the
 median and p95 for:
 
 - creating 100 native-backed buttons
@@ -104,8 +104,10 @@ median and p95 for:
 - updating an adaptive menu with 50 actions
 - opening, moving, and settling an anchored popup
 
-The CI limit for each of these two metrics is 20 percent or 5 ms above its
-recorded baseline, whichever is larger.
+The CI limit for each of these two metrics is 20 percent or one 60 Hz frame
+(about 16.7 ms) above its recorded baseline, whichever is larger. Each sample
+waits for animation frames, so timings move in whole frames, and a smaller
+margin would fail on a single frame-aligned sample.
 
 A second group of scenarios profiles motion specifically, sampling
 `requestAnimationFrame` deltas from the moment a transition is triggered until

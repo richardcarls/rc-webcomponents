@@ -32,8 +32,15 @@ const NON_METRIC_RESULT_FIELDS = new Set(['samples', 'frameWaitSamples']);
  * baseline value itself isn't a meaningful budget input (a frame that blows
  * past ~50ms is bad regardless of how fast prior runs happened to be).
  */
+/*
+ * Scenarios await requestAnimationFrame, so their timings move in whole
+ * ~16.7ms frames. A budget at least one frame above the baseline keeps a
+ * single frame-aligned sample from reading as a regression.
+ */
+export const FRAME_MS = 1000 / 60;
+
 export function timingBudget(value) {
-  return Math.max(value * 1.2, value + 5);
+  return Math.max(value * 1.2, value + FRAME_MS);
 }
 
 export function countBudget(value) {

@@ -2,68 +2,68 @@
   "version": 1,
   "measurements": {
     "create100Buttons": {
-      "median": 23.100000023841858,
-      "p95": 32
+      "median": 20.5,
+      "p95": 29.5
     },
     "create50Selects": {
-      "median": 48.39999997615814,
-      "p95": 91.39999997615814
+      "median": 35.19999999925494,
+      "p95": 43
     },
     "mount220RouteComponents": {
-      "median": 49.09999990463257,
-      "p95": 51.10000014305115
+      "median": 33.399999998509884,
+      "p95": 50.30000000074506
     },
     "filter1000OptionCombobox": {
-      "median": 144,
-      "p95": 192.39999997615814
+      "median": 96.09999999776483,
+      "p95": 120.40000000223517
     },
     "render1000LineTextarea": {
-      "median": 170.79999995231628,
-      "p95": 231
+      "median": 111.19999999925494,
+      "p95": 134.90000000223517
     },
     "update50ActionAdaptiveMenu": {
-      "median": 33.300000071525574,
-      "p95": 33.700000047683716
+      "median": 33.399999998509884,
+      "p95": 33.5
     },
     "settleAnchoredPopup": {
-      "median": 233.39999997615814,
-      "p95": 235.59999990463257
+      "median": 233.30000000074506,
+      "p95": 233.40000000223517
+    },
+    "mount30PagePageTurner": {
+      "median": 16.600000001490116,
+      "p95": 16.800000000745058
     },
     "materialNavigationRailExpandMotion": {
-      "median": 300.2999999523163,
-      "p95": 317,
+      "median": 300.1000000014901,
+      "p95": 316.6000000014901,
       "longFrames": 0,
       "longestFrameMs": 16.800000000000182,
       "animationCount": 2
     },
     "materialMenuOpenCloseMotion": {
-      "median": 166.79999995231628,
-      "p95": 183.70000004768372,
+      "median": 150,
+      "p95": 166.90000000223517,
       "longFrames": 0,
       "longestFrameMs": 16.800000000000182,
       "animationCount": 5
     },
     "materialSwitchToggleMotion": {
-      "median": 333.2999999523163,
-      "p95": 333.7000000476837,
+      "median": 333.19999999925494,
+      "p95": 333.5,
       "longFrames": 0,
       "longestFrameMs": 16.800000000000182,
       "animationCount": 9
     },
     "win31MenuOpenCloseMotion": {
-      "median": 16.600000023841858,
-      "p95": 17.199999928474426,
+      "median": 16.599999997764826,
+      "p95": 16.900000002235174,
       "longFrames": 0,
-      "longestFrameMs": 16.799999999999955,
+      "longestFrameMs": 16.700000000000045,
       "animationCount": 0
     },
-    "mount30PagePageTurner": {
-      "median": 16.700000047683716,
-      "p95": 16.90000009536743
-    },
     "pageTurnerTurnMotion": {
-      "median": 333.2000000476837,
-      "p95": 333.90000009536743,
+      "median": 333.19999999925494,
+      "p95": 333.6000000014901,
       "longFrames": 0,
       "longestFrameMs": 16.800000000000182,
       "animationCount": 2
@@ -71,68 +71,68 @@
   },
   "budgets": {
     "create100Buttons": {
-      "median": 28.100000023841858,
-      "p95": 38.4
+      "median": 37.16666666666667,
+      "p95": 46.16666666666667
     },
     "create50Selects": {
-      "median": 58.07999997138977,
-      "p95": 109.67999997138976
+      "median": 51.86666666592161,
+      "p95": 59.66666666666667
     },
     "mount220RouteComponents": {
-      "median": 58.91999988555908,
-      "p95": 61.32000017166138
+      "median": 50.066666665176555,
+      "p95": 66.96666666741173
     },
     "filter1000OptionCombobox": {
-      "median": 172.79999999999998,
-      "p95": 230.87999997138976
+      "median": 115.31999999731778,
+      "p95": 144.4800000026822
     },
     "render1000LineTextarea": {
-      "median": 204.95999994277955,
-      "p95": 277.2
+      "median": 133.43999999910594,
+      "p95": 161.8800000026822
     },
     "update50ActionAdaptiveMenu": {
-      "median": 39.960000085830686,
-      "p95": 40.44000005722046
+      "median": 50.066666665176555,
+      "p95": 50.16666666666667
     },
     "settleAnchoredPopup": {
-      "median": 280.0799999713898,
-      "p95": 282.71999988555905
+      "median": 279.96000000089407,
+      "p95": 280.0800000026822
+    },
+    "mount30PagePageTurner": {
+      "median": 33.26666666815679,
+      "p95": 33.46666666741173
     },
     "materialNavigationRailExpandMotion": {
-      "median": 360.35999994277955,
-      "p95": 380.4,
+      "median": 360.1200000017881,
+      "p95": 379.92000000178814,
       "longFrames": 0,
       "longestFrameMs": 50,
       "animationCount": 2
     },
     "materialMenuOpenCloseMotion": {
-      "median": 200.15999994277954,
-      "p95": 220.44000005722046,
+      "median": 180,
+      "p95": 200.28000000268221,
       "longFrames": 0,
       "longestFrameMs": 50,
       "animationCount": 5
     },
     "materialSwitchToggleMotion": {
-      "median": 399.9599999427795,
-      "p95": 400.44000005722046,
+      "median": 399.83999999910594,
+      "p95": 400.2,
       "longFrames": 0,
       "longestFrameMs": 50,
       "animationCount": 9
     },
     "win31MenuOpenCloseMotion": {
-      "median": 21.600000023841858,
-      "p95": 22.199999928474426,
+      "median": 33.2666666644315,
+      "p95": 33.566666668901846,
       "longFrames": 0,
       "longestFrameMs": 50,
       "animationCount": 0
     },
-    "mount30PagePageTurner": {
-      "median": 21.700000047683716,
-      "p95": 21.90000009536743
-    },
     "pageTurnerTurnMotion": {
-      "median": 399.84000005722044,
-      "p95": 400.68000011444093,
+      "median": 399.83999999910594,
+      "p95": 400.3200000017881,
       "longFrames": 0,
       "longestFrameMs": 50,
       "animationCount": 2

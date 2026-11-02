@@ -636,7 +636,8 @@ const motionScenarios: Record<string, () => Promise<MotionBenchmarkResult>> = {
 
 async function measureScenario(run: () => Promise<void>): Promise<BenchmarkResult> {
   const warmups = 3;
-  const measuredRuns = 10;
+  // With 20 samples, p95 is the second-slowest sample rather than the slowest.
+  const measuredRuns = 20;
 
   for (let index = 0; index < warmups; index += 1) {
     await run();
