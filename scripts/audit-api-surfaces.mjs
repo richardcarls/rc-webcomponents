@@ -4,6 +4,9 @@ import { join } from 'node:path';
 const root = process.cwd();
 const errors = [];
 
+/** Required `##` sections of a component docs page, in order. */
+const COMPONENT_PAGE_OUTLINE = ['Installation', 'Usage', 'Live demo', 'Accessibility', 'API'];
+
 function read(path) {
   return readFileSync(join(root, path), 'utf8');
 }
@@ -122,6 +125,21 @@ for (const file of readdirSync(join(root, 'docs/docs/components')).filter((name)
 
   assertIncludes(content, `<ApiTable tag="${tag}" />`, page);
   assertIncludes(sidebar, `components/${tag}`, 'docs/sidebars.ts');
+
+  // Every component page shares one outline; other sections may sit between Usage and API.
+  const headings = [...content.matchAll(/^## (.+)$/gm)].map((match) => match[1]);
+  const outline = headings.filter((heading) => COMPONENT_PAGE_OUTLINE.includes(heading));
+
+  if (
+    outline.join('|') !== COMPONENT_PAGE_OUTLINE.join('|') ||
+    headings.at(-1) !== 'API' ||
+    headings[0] !== 'Installation'
+  ) {
+    errors.push(
+      `${page}: sections must be ${COMPONENT_PAGE_OUTLINE.join(', ')} in that order, ` +
+        `starting with Installation and ending with API (found: ${headings.join(', ')})`,
+    );
+  }
 
   // The page description feeds overview cards and the meta description; Docusaurus's fallback
   // excerpt drops inline code such as `<select>`, so keep it equal to the package description.

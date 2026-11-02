@@ -366,6 +366,11 @@ directly usable public packages.
   cards and meta descriptions use it; without it Docusaurus excerpts the first
   paragraph and drops inline code such as `<select>`. Add a new guide to one of
   the `guide` sidebar categories in `docs/sidebars.ts`.
+- Component pages share one outline, which `yarn audit:api-surfaces` enforces:
+  `## Installation`, `## Usage` (the native markup), `## Live demo`,
+  `## Accessibility` (roles, names, and a keyboard table for any keys the
+  component handles, checked against its source), and `## API` last. Other
+  sections may sit between Usage and API.
 - Component pages render their `## Installation` section with
   `<Install tag="rc-..." />` from `docs/src/components/Install.tsx`, and their API
   reference with `<ApiTable tag="rc-..." />`; change those components instead of
