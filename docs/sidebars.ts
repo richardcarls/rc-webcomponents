@@ -4,26 +4,57 @@ const sidebars: SidebarsConfig = {
   guide: [
     {
       type: 'category',
-      label: 'Start here',
+      label: 'Get started',
       collapsed: false,
+      link: {
+        type: 'generated-index',
+        slug: '/guide/get-started',
+        description: 'Install the components and learn the rules every page follows.',
+      },
       items: [
         'guide/installation',
+        'guide/usage-rules',
         'guide/progressive-enhancement',
         'guide/compatibility',
-        'guide/ssr',
-        'guide/server-templates',
-        'guide/localization',
-        'guide/accessibility-testing',
-        'guide/performance',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Frameworks',
+      link: {
+        type: 'generated-index',
+        slug: '/guide/frameworks',
+        description: 'Use the components from a framework, a server template, or server rendering.',
+      },
+      items: [
         'guide/react',
         'guide/angular',
         'guide/vue',
         'guide/svelte',
         'guide/blazor',
-        'guide/styling',
-        'guide/motion',
-        'guide/theme-previews',
+        'guide/server-templates',
+        'guide/ssr',
       ],
+    },
+    {
+      type: 'category',
+      label: 'Styling & theming',
+      link: {
+        type: 'generated-index',
+        slug: '/guide/styling-and-theming',
+        description: 'Adapt the components to a design system with tokens, parts, and themes.',
+      },
+      items: ['guide/styling', 'guide/motion', 'guide/theme-previews'],
+    },
+    {
+      type: 'category',
+      label: 'Quality',
+      link: {
+        type: 'generated-index',
+        slug: '/guide/quality',
+        description: 'Accessibility testing, localization, and performance budgets.',
+      },
+      items: ['guide/accessibility-testing', 'guide/localization', 'guide/performance'],
     },
   ],
   components: [

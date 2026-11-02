@@ -1,4 +1,5 @@
 import Link from '@docusaurus/Link';
+
 import styles from './AtAGlance.module.css';
 
 export interface AtAGlanceLink {
@@ -58,6 +59,7 @@ export function AtAGlance({
       <div>
         <dt>Related</dt>
         <dd>
+          <Link to="/guide/usage-rules">Usage rules</Link>
           {related.map((item) => (
             <Link key={item.href} to={item.href}>
               {item.label}

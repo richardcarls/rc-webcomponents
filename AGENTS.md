@@ -362,6 +362,13 @@ directly usable public packages.
   the most specific docs page for the public package.
 - The Docusaurus docs workspace is the canonical home for public component docs,
   examples, and live demos.
+- Give every docs page a one-sentence `description` front matter. Category
+  cards and meta descriptions use it; without it Docusaurus excerpts the first
+  paragraph and drops inline code such as `<select>`. Add a new guide to one of
+  the `guide` sidebar categories in `docs/sidebars.ts`.
+- `docs/docs/guide/usage-rules.mdx` summarizes the consumer-facing rules every
+  component shares and links to their details. Update it in the same change as
+  any rule it summarizes.
 - `packages/rc-theme-material/DESIGN.md` is the agent-facing Material 3
   composition guide and ships with the package. Update it in the same change
   as any theme class hook, `data-*` hook, variant, token mapping, or component
