@@ -25,9 +25,29 @@ Disclosure wrapper for a native `<details>`/`<summary>` pair with controlled ope
 
 <Install tag="rc-disclosure" />
 
+## Usage
+
+Wrap a native `<details>` with a `<summary>` as its first child.
+
+```html
+<rc-disclosure>
+  <details id="shipping">
+    <summary>Shipping details</summary>
+    <p>Orders ship within two business days.</p>
+  </details>
+</rc-disclosure>
+```
+
 ## Live demo
 
 <DisclosureDemo />
+
+## Accessibility
+
+The browser keeps ownership of the disclosure: the `<summary>` is the button, Enter and Space
+toggle it, and its expanded state is exposed natively. The element adds `aria-controls` from the
+summary to the `<details>`, mirrors the open state, and opens when the URL hash matches an id
+inside it. See the [WAI-ARIA Disclosure pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/).
 
 ## Open state
 

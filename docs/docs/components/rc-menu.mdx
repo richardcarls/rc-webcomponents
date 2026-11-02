@@ -29,18 +29,33 @@ events, following the
 
 <Install tag="rc-menu" />
 
+## Usage
+
+Place focusable elements, usually native buttons, as the menu items, and name the menu with
+`label`. Elements that cannot take focus, such as separators, render but are skipped during
+keyboard navigation. A menu usually sits inside an [`rc-menu-button`](./rc-menu-button.mdx).
+
+```html
+<rc-menu label="File">
+  <button type="button" value="new">New</button>
+  <button type="button" value="open">Open…</button>
+  <hr />
+  <button type="button" value="save-as">Save As…</button>
+</rc-menu>
+```
+
 ## Live demo
 
 <MenuDemo />
 
-## Interaction model
+## Accessibility
 
 `rc-menu` is the focus target and owns the `menu` role. It exposes the active
 slotted item through `aria-activedescendant` instead of moving DOM focus between
 items. Arrow Down and Arrow Up move the virtual cursor and wrap at the menu
 boundaries; Home and End select the first or last item. Enter, Space, and pointer
 interactions activate menu items, while Escape requests that the containing popup
-close.
+close. See the [WAI-ARIA Menu pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/).
 
 The public `focusFirst()`, `focusLast()`, `focusItem()`, and `focusItemAt()`
 methods follow the same model: each focuses the host and updates the virtual

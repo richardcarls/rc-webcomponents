@@ -31,7 +31,7 @@ progress effects.
 
 <Install tag="rc-button" />
 
-## Markup
+## Usage
 
 ```html
 <rc-button toggle default-selected>
@@ -120,6 +120,13 @@ Only set this on a button that genuinely has no neighbor on the
 overlapping side; otherwise the two buttons' touch targets overlap each
 other instead of a container's padding.
 
+## Live demo
+
+<ButtonDemo />
+
+The Save recipe button is controlled: both native button activation and the
+Selected checkbox update the same `selected` state.
+
 ## Accessibility
 
 Keep the native button's accessible label unchanged between states. The icons
@@ -139,13 +146,6 @@ Substrate supplies hover, focus, and pressed state layers, and presents
 determinate progress as a numeric percentage. Material supplies the same
 interaction states, adds a reduced-motion-aware ripple originating at the
 pointer or touch position, and uses a compact circular progress affordance.
-
-## Live demo
-
-<ButtonDemo />
-
-The Save recipe button is controlled: both native button activation and the
-Selected checkbox update the same `selected` state.
 
 ## API
 

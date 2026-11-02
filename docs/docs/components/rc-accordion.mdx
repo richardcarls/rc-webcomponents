@@ -31,6 +31,24 @@ Accordion coordinator for child native `<details>` panels with single- or multip
 
 <Install tag="rc-accordion" />
 
+## Usage
+
+Place native `<details>` panels as direct children, each with a `<summary>` as its first child.
+Opening one panel closes the others unless `multiple` is set.
+
+```html
+<rc-accordion>
+  <details>
+    <summary>Ingredients</summary>
+    <p>Two cups of flour, one egg, and a pinch of salt.</p>
+  </details>
+  <details>
+    <summary>Method</summary>
+    <p>Mix, rest for ten minutes, then roll out.</p>
+  </details>
+</rc-accordion>
+```
+
 ## Live demo
 
 <Tabs>

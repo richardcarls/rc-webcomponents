@@ -25,9 +25,40 @@ Two-thumb range slider backed by native range inputs for min/max values, followi
 
 <Install tag="rc-range-slider" />
 
+## Usage
+
+Wrap two native range inputs, the low value first. They stay in the page as the form values and
+the no-JavaScript fallback. Name the group and each input.
+
+```html
+<rc-range-slider aria-label="Price range">
+  <input type="range" name="price-min" min="0" max="100" value="20" aria-label="Minimum" />
+  <input type="range" name="price-max" min="0" max="100" value="80" aria-label="Maximum" />
+</rc-range-slider>
+```
+
 ## Live demo
 
 <RangeSliderDemo />
+
+## Accessibility
+
+After upgrade, two thumbs with `role="slider"` in a `group` replace the native inputs for
+keyboard and assistive technology, while the hidden inputs keep their `name` and `value` for
+form submission. Each thumb's `aria-valuemin` and `aria-valuemax` follow the other thumb, so the
+low value cannot pass the high value. `low-value-text` and `high-value-text` set
+`aria-valuetext`.
+
+| Key                    | Action                                                     |
+| ---------------------- | ---------------------------------------------------------- |
+| Right Arrow, Up Arrow  | Raises the focused thumb one step.                         |
+| Left Arrow, Down Arrow | Lowers the focused thumb one step.                         |
+| Page Up, Page Down     | Raises or lowers the focused thumb ten steps.              |
+| Home, End              | Moves the focused thumb to its lowest or highest position. |
+
+Along the rendered track, the arrow that points toward higher values raises the thumb, so Left
+and Right swap in right-to-left text. A `readonly` or disabled slider ignores these keys. See the
+[WAI-ARIA multi-thumb slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider-multithumb/).
 
 ## Theming
 

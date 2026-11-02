@@ -28,7 +28,7 @@ Chip wrapper for native actions, links, filters, suggestions, and inputs.
 
 <Install tag="rc-chip" />
 
-## Markup
+## Usage
 
 ```html
 <rc-chip variant="filter">
@@ -45,9 +45,7 @@ Chip wrapper for native actions, links, filters, suggestions, and inputs.
 </rc-chip>
 ```
 
-Button-backed filter chips toggle `selected` on user activation and add
-`aria-pressed` only when the author has not supplied stronger toggle semantics.
-For form-backed filters, keep the native input inside a direct label:
+For a form-backed filter, keep the native input inside a direct label:
 
 ```html
 <rc-chip variant="filter">
@@ -55,9 +53,23 @@ For form-backed filters, keep the native input inside a direct label:
 </rc-chip>
 ```
 
+## Live demo
+
+<ChipDemo />
+
+## Accessibility
+
+The direct native button, link, or labeled input keeps its own role and keyboard behavior:
+Enter or Space activates a button, Enter follows a link, and Space toggles a checkbox or radio.
+
+Button-backed filter chips toggle `selected` on user activation and add
+`aria-pressed` only when the author has not supplied stronger toggle semantics.
+
 For removable chips, the direct native button is the sole removal action and
 fires `rc-chip-remove`. The trailing remove icon is presentational, so it does
 not add another tab stop or duplicate button semantics.
+
+## Theming
 
 Without a theme, button and link chips retain their browser appearance.
 Packaged themes opt into chip sizing, shape, selection colors, and focus
@@ -68,10 +80,6 @@ For asymmetric content such as a leading icon, use
 back to `--rc-chip-padding-inline`; the Material theme applies its documented
 8px leading-icon inset and icon-label gap automatically when the icon carries
 `data-rc-chip-icon`.
-
-## Live demo
-
-<ChipDemo />
 
 ## Groups
 

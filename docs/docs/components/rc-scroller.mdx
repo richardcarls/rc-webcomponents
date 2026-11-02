@@ -27,7 +27,7 @@ events, restoration, and observers work without reaching into shadow DOM.
 
 <Install tag="rc-scroller" />
 
-## Markup
+## Usage
 
 ```html
 <rc-scroller layout="content" role="region" aria-label="Recipes">
@@ -44,6 +44,13 @@ authors add those semantics only when the surrounding document needs them.
 ## Live demo
 
 <ScrollerDemo />
+
+## Accessibility
+
+The scroller is a plain native scroll region: it adds no `role`, accessible name, or `tabindex`.
+When the region needs a name or a landmark, add them yourself. Some browsers make a scroll
+region with no focusable content keyboard-focusable on their own; add `tabindex="0"` when
+keyboard users must scroll such content in every browser.
 
 ## Content layout
 

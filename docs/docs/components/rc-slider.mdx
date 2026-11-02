@@ -25,9 +25,37 @@ Single-thumb slider backed by a native `<input type="range">` with custom track 
 
 <Install tag="rc-slider" />
 
+## Usage
+
+Wrap a native `<input type="range">`. It stays in the page as the form value, the keyboard
+control, and the no-JavaScript fallback. Label it as any range input.
+
+```html
+<label for="volume">Volume</label>
+<rc-slider>
+  <input id="volume" name="volume" type="range" min="0" max="100" value="40" />
+</rc-slider>
+```
+
 ## Live demo
 
 <SliderDemo />
+
+## Accessibility
+
+The native range input keeps its `slider` role and keyboard behavior. The component forwards
+`value-text` to `aria-valuetext`, `orientation="vertical"` to `aria-orientation`, and `readonly`
+to `aria-readonly`, and its track and value display are decorative.
+
+| Key                | Action                                   |
+| ------------------ | ---------------------------------------- |
+| Arrow keys         | Native: moves the value one step.        |
+| Home, End          | Native: moves to the minimum or maximum. |
+| Page Up, Page Down | Moves the value ten steps up or down.    |
+
+A `readonly` slider ignores Page Up and Page Down and restores its value after any other key or
+pointer change. See the
+[WAI-ARIA Slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider/).
 
 ## Theming
 

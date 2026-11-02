@@ -31,6 +31,28 @@ lower-priority actions into an overflow menu.
 
 <Install tag="rc-adaptive-menu" />
 
+## Usage
+
+Place native buttons as direct children and name the menu with `label`. Higher `data-priority`
+values stay visible first, up to `max-shown`; the rest move to the overflow menu, as does any
+action with `slot="overflow"`.
+
+```html
+<rc-adaptive-menu label="Document actions" max-shown="3">
+  <button type="button" data-priority="30">
+    <span data-rc-menu-leading aria-hidden="true">★</span>
+    <span data-rc-menu-label>Favorite</span>
+  </button>
+  <button type="button" data-priority="20">
+    <span data-rc-menu-leading aria-hidden="true">✎</span>
+    <span data-rc-menu-label>Edit</span>
+  </button>
+  <button type="button" slot="overflow">
+    <span data-rc-menu-label>Delete</span>
+  </button>
+</rc-adaptive-menu>
+```
+
 ## Live demo
 
 Change "Max shown" to see actions move between the toolbar and overflow menu.

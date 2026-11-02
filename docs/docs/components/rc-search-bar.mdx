@@ -30,9 +30,32 @@ Search field/view wrapper for a native `<input type="search">` with icon chrome,
 
 <Install tag="rc-search-bar" />
 
+## Usage
+
+Wrap a native `<input type="search">` and label it. Wrap the bar in `<search>` when it is the
+page's search landmark.
+
+```html
+<search>
+  <label for="q" class="visually-hidden">Search recipes</label>
+  <rc-search-bar placeholder="Search 51 recipes">
+    <span slot="leading" aria-hidden="true">🔍</span>
+    <input type="search" id="q" name="q" />
+  </rc-search-bar>
+</search>
+```
+
 ## Live demo
 
 <SearchBarDemo />
+
+## Accessibility
+
+The component writes no ARIA to the input: `type="search"` already exposes the `searchbox` role,
+and author labels are never overwritten. It adds no landmark of its own. The clear button is a
+real `<button>` named by the translatable `clear` message, and activating it returns
+focus to the input before the button hides. In a search view (`variant="view"`), Escape in the
+input closes the open view.
 
 ## Theming
 

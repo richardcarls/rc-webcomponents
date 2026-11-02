@@ -25,7 +25,7 @@ Switch wrapper that enhances a native `<input type="checkbox">`.
 
 <Install tag="rc-switch" />
 
-## Markup
+## Usage
 
 ```html
 <label for="dark-mode">Dark mode</label>
@@ -35,16 +35,24 @@ Switch wrapper that enhances a native `<input type="checkbox">`.
 ```
 
 The native checkbox stays in light DOM for labels, forms, validation, reset,
-and no-JavaScript fallback. `rc-switch` adds `role="switch"` only when the
-input does not already have a role.
-
-Without a theme, the native checkbox remains visible. Packaged themes hide its
-visual box and enable the component's track, thumb, icons, and motion while
-leaving the checkbox connected and interactive.
+and no-JavaScript fallback.
 
 ## Live demo
 
 <SwitchDemo />
+
+## Accessibility
+
+`rc-switch` adds `role="switch"` to the checkbox only when the input does not already have a
+role, so the checked state is announced as on or off. The checkbox keeps its keyboard behavior:
+Space toggles it. The track, thumb, and icons are decorative. See the
+[WAI-ARIA Switch pattern](https://www.w3.org/WAI/ARIA/apg/patterns/switch/).
+
+## Theming
+
+Without a theme, the native checkbox remains visible. Packaged themes hide its
+visual box and enable the component's track, thumb, icons, and motion while
+leaving the checkbox connected and interactive.
 
 ## API
 

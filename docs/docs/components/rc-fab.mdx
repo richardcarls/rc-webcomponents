@@ -33,6 +33,19 @@ Icons go inside the button alongside or instead of visible text.
 
 <Install tag="rc-fab" />
 
+## Usage
+
+Place a native `<button>` as the direct child. Its text or `aria-label` names the FAB, and
+decorative icons inside it take `aria-hidden="true"`.
+
+```html
+<rc-fab scroll-reveal>
+  <button type="button" aria-label="Back to top">
+    <span aria-hidden="true">↑</span>
+  </button>
+</rc-fab>
+```
+
 ## Live demo
 
 Scroll the demo canvas to see the back-to-top FAB reveal after 100 px. The
@@ -41,16 +54,20 @@ container; real-world use relies on `position: fixed` anchored to the viewport c
 
 <FabDemo />
 
+## Accessibility
+
+The native button keeps its role, name, and keyboard behavior: Enter and Space activate it. The
+component chooses no landmark or page position. With `scroll-reveal`, the hidden FAB uses
+`visibility: hidden`, which removes it from the tab order and the accessibility tree until it
+appears; the reveal animation lifts that halfway through, so keyboard users can reach the button
+as it fades in.
+
 ## Theming
 
 Without a theme, `rc-fab` preserves the direct child button's browser appearance.
 
 Apply `rc-theme-material` to achieve the Material Design FAB style, or customize with
 CSS custom properties for shape, size, colors, and shadow.
-
-## API
-
-<ApiTable tag="rc-fab" />
 
 ## Cookbook
 
@@ -276,3 +293,7 @@ than the component API:
 Use `rc-fab--small` and `rc-fab--large` for Material size presets, or set
 `--rc-fab-size` and `--rc-fab-radius` directly. For an action menu, use
 [`rc-fab-menu`](/components/rc-fab-menu).
+
+## API
+
+<ApiTable tag="rc-fab" />

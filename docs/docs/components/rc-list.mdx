@@ -29,9 +29,35 @@ leading and trailing content, and native-backed selection.
 
 <Install tag="rc-list" />
 
+## Usage
+
+Place `rc-list-item` elements as direct children, and name the list with `aria-label` or
+`aria-labelledby`.
+
+```html
+<rc-list aria-label="Recent recipes">
+  <rc-list-item>Apple pie</rc-list-item>
+  <rc-list-item>Tomato soup</rc-list-item>
+</rc-list>
+```
+
 ## Live demo
 
 <ListDemo />
+
+## Accessibility
+
+The list and its items expose the `list` and `listitem` roles through `ElementInternals`, so no
+role attributes appear in the markup. Rows add no keyboard behavior of their own; each feature
+keeps native controls in charge:
+
+- [Reordering](#reordering) uses native handle buttons, with Space or Enter to pick up and drop,
+  arrow keys, Home, and End to move, and announcements in a polite live region.
+- [Expandable details](#expandable-details) wires `aria-expanded` and `aria-controls` onto the
+  author's toggle button.
+- [Native selection](#native-selection) leaves the radio or checkbox as the source of checked,
+  disabled, and accessibility state.
+- [Action targets](#action-targets) extend pointer reach only; the target stays its own tab stop.
 
 ## Shared columns
 

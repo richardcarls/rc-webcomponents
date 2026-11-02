@@ -84,6 +84,16 @@ indicator positioning.
 
 <NavigationRailDemo />
 
+## Accessibility
+
+The element adds no landmark or role; wrap it in a native `<nav>` with its own `aria-label`.
+The links stay native anchors, so Tab and Enter work as on any link. Mark the current link with
+`aria-current="page"` so assistive technology announces it. `active-selector` only chooses which
+link the visual indicator follows; it does not set `aria-current`.
+
+The collapse control is the author's native button. The rail keeps its `aria-expanded` in step
+with `expanded`; give the button a name such as `aria-label="Toggle navigation"`.
+
 ## Expanded state
 
 Use `default-expanded` for uncontrolled initial state or bind `expanded` from

@@ -25,7 +25,7 @@ Segmented button group backed by native radio inputs.
 
 <Install tag="rc-segmented-button" />
 
-## Markup
+## Usage
 
 ```html
 <rc-segmented-button>
@@ -39,8 +39,34 @@ Segmented button group backed by native radio inputs.
 ```
 
 The fieldset, legend, labels, and radios stay in light DOM for forms and
-no-JavaScript fallback. Arrow keys, Home, and End follow the APG radio group
-model.
+no-JavaScript fallback.
+
+## Live demo
+
+<SegmentedButtonDemo />
+
+## Accessibility
+
+The fieldset and legend name the group, and each radio keeps its role, label, and checked state,
+including while a theme hides the radio's visual box. Selection follows focus, as in a native
+radio group, and fires `change` on the radio.
+
+| Key                     | Action                                                          |
+| ----------------------- | --------------------------------------------------------------- |
+| Right Arrow, Down Arrow | Selects and focuses the next segment, wrapping to the first.    |
+| Left Arrow, Up Arrow    | Selects and focuses the previous segment, wrapping to the last. |
+| Home, End               | Selects and focuses the first or last segment.                  |
+
+Disabled segments are skipped. Left and Right swap in right-to-left text, and with
+`orientation="vertical"` only Up and Down Arrow move. See the
+[WAI-ARIA Radio Group pattern](https://www.w3.org/WAI/ARIA/apg/patterns/radio/).
+
+In forced-colors mode the component restates the selected segment in system
+colors, so selection stays visible after the forced palette replaces whatever
+background a theme selects a segment with. Themes do not need to handle this,
+and a theme that omits the optional selected-icon slot is still covered.
+
+## Theming
 
 Without a theme, the fieldset, legend, and radio controls retain their browser
 appearance. Setting `--rc-segmented-button-appearance: segmented` turns on the
@@ -63,15 +89,6 @@ a segmented control. Write the segment layout in your own CSS if that is not
 acceptable for your audience.
 
 :::
-
-In forced-colors mode the component restates the selected segment in system
-colors, so selection stays visible after the forced palette replaces whatever
-background a theme selects a segment with. Themes do not need to handle this,
-and a theme that omits the optional selected-icon slot is still covered.
-
-## Live demo
-
-<SegmentedButtonDemo />
 
 ## API
 

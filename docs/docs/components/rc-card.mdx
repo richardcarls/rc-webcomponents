@@ -29,7 +29,7 @@ variants through tokens and selectors rather than a `variant` attribute.
 
 <Install tag="rc-card" />
 
-## Markup
+## Usage
 
 ```html
 <rc-card interactive action-target="article-link">
@@ -54,6 +54,14 @@ Orientation is presentational and does not set `aria-orientation`.
 ## Live demo
 
 <CardDemo />
+
+## Accessibility
+
+The card adds no role and no keyboard behavior; its container and state layer are decorative.
+Slotted headings, links, and buttons keep their own semantics, so put a real heading in the
+`title` slot. With `interactive` and `action-target`, clicks on the card surface reach the target
+link or button for pointer users only. Keyboard and assistive technology users reach that target
+directly, and other controls in the card, such as an action button, keep their own behavior.
 
 ## Structure
 

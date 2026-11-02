@@ -93,6 +93,13 @@ descriptions, use `rc-tooltip` instead.
 
 <PopoverDemo />
 
+## Accessibility
+
+The element keeps the trigger's `aria-expanded` and `aria-controls` in step with `open`, and
+restores the author's own values when it lets go of the trigger. Escape closes an open popover
+and returns focus to the trigger. Give the popover content its own semantics, such as a heading
+or a labeled dialog, when it is more than a hint.
+
 ## API
 
 <ApiTable tag="rc-popover" />
