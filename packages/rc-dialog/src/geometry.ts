@@ -38,10 +38,10 @@ export class DialogGeometry {
   private readonly _host: ReactiveControllerHost & HTMLElement;
   private _dragController: DragController | null = null;
   // Move-relevant options the current controller was built from.
-  private _dragConfig: readonly (string | number)[] = [];
+  private _dragConfig: readonly ConfigValue[] = [];
   private _resizeControllers: ResizeController[] = [];
   // Resize-relevant options the current controllers were built from.
-  private _resizeConfig: readonly (string | number)[] = [];
+  private _resizeConfig: readonly ConfigValue[] = [];
 
   constructor(host: ReactiveControllerHost & HTMLElement) {
     this._host = host;
@@ -55,6 +55,15 @@ export class DialogGeometry {
   sync($dialog: HTMLDialogElement | null, options: DialogGeometryOptions, force = false): void {
     this._syncDragController($dialog, options, force);
     this._syncResizeControllers($dialog, options, force);
+  }
+
+  /**
+   * Resolves `move-bounds`, which limits both moving and resizing. The controllers read `parent`
+   * as the target's parent, which for the inner `<dialog>` is the inline `rc-dialog` host with an
+   * empty box, so `parent` names the element that contains the host instead.
+   */
+  private _bounds(options: DialogGeometryOptions): 'viewport' | Element {
+    return options.moveBounds === 'parent' ? (this._host.parentElement ?? 'viewport') : 'viewport';
   }
 
   /** Disposes every controller this instance created. */
@@ -77,7 +86,8 @@ export class DialogGeometry {
     force: boolean,
   ): void {
     const enabled = !!$dialog && (options.movable || !!options.moveHandle);
-    const config = enabled ? [options.moveHandle, options.moveBounds, options.moveStep] : [];
+    const bounds = this._bounds(options);
+    const config = enabled ? [options.moveHandle, bounds, options.moveStep] : [];
 
     if (!force && sameConfig(config, this._dragConfig)) {
       return;
@@ -98,7 +108,7 @@ export class DialogGeometry {
     this._dragController = new DragController(this._host, {
       target: $dialog,
       handle: $handle,
-      bounds: options.moveBounds,
+      bounds,
       step: options.moveStep,
     });
   }
@@ -108,6 +118,7 @@ export class DialogGeometry {
     options: DialogGeometryOptions,
     force: boolean,
   ): void {
+    const bounds = this._bounds(options);
     const config = $dialog
       ? [
           options.resize,
@@ -115,7 +126,7 @@ export class DialogGeometry {
           options.resizeHandle,
           options.resizeThreshold,
           options.resizeStep,
-          options.moveBounds,
+          bounds,
         ]
       : [];
 
@@ -136,12 +147,11 @@ export class DialogGeometry {
     }
 
     const $handles = resizeHandles($dialog, options.resizeHandle);
-    // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
     const shared = {
       target: $dialog,
       threshold: options.resizeThreshold,
       step: options.resizeStep,
-      bounds: options.moveBounds,
+      bounds,
       onResizeStart: options.onResizeStart,
       onResize: options.onResize,
       onResizeEnd: options.onResizeEnd,
@@ -172,10 +182,9 @@ export class DialogGeometry {
   }
 }
 
-function sameConfig(
-  current: readonly (string | number)[],
-  previous: readonly (string | number)[],
-): boolean {
+type ConfigValue = string | number | Element;
+
+function sameConfig(current: readonly ConfigValue[], previous: readonly ConfigValue[]): boolean {
   return (
     current.length === previous.length && current.every((value, index) => value === previous[index])
   );
