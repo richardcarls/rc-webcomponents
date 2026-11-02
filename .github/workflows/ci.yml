@@ -63,11 +63,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # Ruby, Bundler, PHP, and Composer come with the runner image.
       - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
           package-manager-cache: false
+
+      # Resolve Bundler from the template fixture's lockfile.
+      - name: Install Ruby and Bundler
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          working-directory: scripts/server-templates/rails
 
       - uses: actions/setup-dotnet@v4
         with:
