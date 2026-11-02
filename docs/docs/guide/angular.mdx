@@ -87,15 +87,14 @@ protected onRailToggle(event: Event): void {
 
 ## Controlled and uncontrolled properties
 
-Some properties are documented as "host writes are silent" once the component
-has mounted. That is the controlled and uncontrolled contract every stateful
-`rc-*` component follows, not anything Angular-specific, but it is easy to trip
-over coming from Angular's usual one-way binding model.
+The [controlled and uncontrolled state guide](./state.mdx) explains the shared
+contract, including silent property writes and initial `default*` values.
 
-`rc-navigation-rail`'s `expanded` is one example: bind `expanded` when the
-application owns the state and use the matching `default*` property for an
-initial uncontrolled value. Listen for the component's own event to learn
-about user-driven changes, as shown above.
+In Angular, bind `[expanded]="railExpanded()"` when the application owns the
+state, or `[defaultExpanded]="initialExpanded"` to seed an uncontrolled rail.
+Listen for `(rc-navigation-rail-toggle)` to learn about user changes. A
+programmatic property write does not fire that event or update the signal for
+you.
 
 ## Signal Forms
 

@@ -14,6 +14,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'guide/installation',
         'guide/usage-rules',
+        'guide/state',
         'guide/progressive-enhancement',
         'guide/compatibility',
       ],
