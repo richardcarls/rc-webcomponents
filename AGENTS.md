@@ -339,7 +339,8 @@ source/JSDoc -> event/detail/exported types -> tests -> CEM -> package README
 
 When adding a new component package, add it to the `## Packages` table in
 `README.md`, create or update `docs/docs/components/<component>.mdx`, and add it
-to `docs/sidebars.ts` in the same change. Infrastructure, adapter, plugin, and
+to a category of the `components` sidebar in `docs/sidebars.ts` in the same change;
+the `/components` overview page lists that sidebar automatically. Infrastructure, adapter, plugin, and
 aggregate packages do not need docs sidebar entries unless they are documented as
 directly usable public packages.
 

@@ -1,11 +1,11 @@
 import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 
 const sidebars: SidebarsConfig = {
-  docs: [
+  guide: [
     {
       type: 'category',
       label: 'Start here',
-      collapsible: false,
+      collapsed: false,
       items: [
         'guide/installation',
         'guide/progressive-enhancement',
@@ -25,10 +25,12 @@ const sidebars: SidebarsConfig = {
         'guide/theme-previews',
       ],
     },
+  ],
+  components: [
+    'components',
     {
       type: 'category',
       label: 'Elements',
-      collapsible: false,
       items: [
         'components/rc-button',
         'components/rc-chip',
@@ -49,7 +51,6 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Collections',
-      collapsible: false,
       items: [
         'components/rc-accordion',
         'components/rc-card',
@@ -66,7 +67,6 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Views',
-      collapsible: false,
       items: [
         'components/rc-app-bar',
         'components/rc-carousel',
@@ -84,7 +84,6 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Modules',
-      collapsible: false,
       items: [
         'components/rc-dialog',
         'components/rc-bottom-sheet',
