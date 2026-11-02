@@ -218,7 +218,7 @@ screenshot and benchmark scripts always run in it. The host needs only:
 
 - Node.js 24, the version in `.nvmrc` that CI and the Playwright image use. A version manager
   such as `fnm`, `nvm`, or `mise` picks it up from that file.
-- Yarn, enabled with `corepack enable`. Without write access to Node's install directory, pass
+- Yarn through Corepack: `corepack enable`. Without write access to Node's install directory, pass
   `--install-directory` a directory on your `PATH`, such as `~/.local/bin`.
 - Docker, running and reachable from your shell. On WSL 2, enable Docker Desktop's WSL
   integration for the distro.
