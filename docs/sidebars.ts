@@ -32,7 +32,16 @@ const sidebars: SidebarsConfig = {
         'guide/vue',
         'guide/svelte',
         'guide/blazor',
-        'guide/server-templates',
+        {
+          type: 'category',
+          label: 'Server templates',
+          link: { type: 'doc', id: 'guide/server-templates' },
+          items: [
+            'guide/server-templates/pagination',
+            'guide/server-templates/breadcrumbs',
+            'guide/server-templates/sortable-tables',
+          ],
+        },
         'guide/ssr',
       ],
     },
@@ -44,7 +53,22 @@ const sidebars: SidebarsConfig = {
         slug: '/guide/styling-and-theming',
         description: 'Adapt the components to a design system with tokens, parts, and themes.',
       },
-      items: ['guide/styling', 'guide/motion', 'guide/theme-previews'],
+      items: [
+        'guide/styling',
+        'guide/adaptive-layout',
+        {
+          type: 'category',
+          label: 'Themes',
+          items: [
+            'guide/themes/substrate',
+            'guide/themes/tailwind',
+            'guide/themes/material',
+            'guide/themes/win31',
+            'guide/theme-previews',
+          ],
+        },
+        'guide/motion',
+      ],
     },
     {
       type: 'category',
@@ -56,6 +80,7 @@ const sidebars: SidebarsConfig = {
       },
       items: ['guide/accessibility-testing', 'guide/localization', 'guide/performance'],
     },
+    'guide/upgrading',
   ],
   components: [
     'components',
@@ -76,7 +101,12 @@ const sidebars: SidebarsConfig = {
         'components/rc-slider',
         'components/rc-progress',
         'components/rc-range-slider',
-        'components/rc-textarea',
+        {
+          type: 'category',
+          label: 'rc-textarea',
+          link: { type: 'doc', id: 'components/rc-textarea' },
+          items: ['components/rc-textarea/plugins'],
+        },
       ],
     },
     {

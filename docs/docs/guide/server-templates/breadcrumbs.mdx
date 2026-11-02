@@ -1,0 +1,96 @@
+---
+title: Breadcrumb partials
+description: 'Server partials for rc-breadcrumbs in Rails, Laravel, and Razor.'
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Breadcrumb partials
+
+These partials follow the shared rules in [Server templates](../server-templates.mdx). The
+tabs remember your framework, and a link can choose it with `?server-framework=laravel`.
+
+The partial takes the trail as a list of label and URL pairs, ending with the
+current page, which gets `aria-current="page"`. The element names the landmark
+"Breadcrumb" unless you pass a name.
+
+<Tabs groupId="server-framework" queryString>
+  <TabItem value="rails" label="Rails">
+
+```erb title="app/views/rc/_breadcrumbs.html.erb"
+<%# locals: (items:, label: nil) -%>
+<rc-breadcrumbs>
+  <nav <%= tag.attributes(aria: { label: label }) %>>
+    <ol>
+<% items.each_with_index do |(text, path), index| -%>
+      <li><a <%= tag.attributes(href: path, aria: { current: ("page" if index == items.size - 1) }) %>><%= text %></a></li>
+<% end -%>
+    </ol>
+  </nav>
+</rc-breadcrumbs>
+```
+
+```erb
+<%= render "rc/breadcrumbs", items: [
+  ["Home", root_path],
+  ["Settings", settings_path],
+  ["Members", settings_members_path],
+] %>
+```
+
+  </TabItem>
+  <TabItem value="laravel" label="Laravel">
+
+```html title="resources/views/components/rc/breadcrumbs.blade.php"
+@props(['items', 'label' => null])
+<rc-breadcrumbs>
+  <nav @if ($label) aria-label="{{ $label }}" @endif>
+    <ol>
+      @foreach ($items as [$text, $url])
+      <li><a href="{{ $url }}" @if ($loop->last) aria-current="page" @endif>{{ $text }}</a></li>
+      @endforeach
+    </ol>
+  </nav>
+</rc-breadcrumbs>
+```
+
+```html
+<x-rc.breadcrumbs
+  :items="[
+  ['Home', route('home')],
+  ['Settings', route('settings')],
+  ['Members', route('settings.members')],
+]"
+/>
+```
+
+  </TabItem>
+  <TabItem value="razor" label="Razor">
+
+```razor title="Components/Rc/RcBreadcrumbs.razor"
+<rc-breadcrumbs>
+    <nav aria-label="@Label">
+        <ol>
+            @for (var index = 0; index < Items.Count; index++)
+            {
+                var (text, href) = Items[index];
+
+                <li><a href="@href" aria-current="@(index == Items.Count - 1 ? "page" : null)">@text</a></li>
+            }
+        </ol>
+    </nav>
+</rc-breadcrumbs>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<(string Text, string Href)> Items { get; set; } = [];
+    [Parameter] public string? Label { get; set; }
+}
+```
+
+```razor
+<RcBreadcrumbs Items="@([("Home", "/"), ("Settings", "/settings"), ("Members", "/settings/members")])" />
+```
+
+  </TabItem>
+</Tabs>

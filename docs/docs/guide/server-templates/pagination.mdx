@@ -1,0 +1,320 @@
+---
+title: Pagination partials
+description: 'Server partials for rc-pagination in Rails, Laravel, and Razor.'
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Pagination partials
+
+These partials follow the shared rules in [Server templates](../server-templates.mdx). The
+tabs remember your framework, and a link can choose it with `?server-framework=laravel`.
+
+The partial takes the current page, the page count, a function that returns
+the URL of a page, and an optional landmark name. It renders nothing for a
+single page, leaves out the previous and next links at either end, and lists
+the pages the way `paginationRange()` from `@rcarls/rc-pagination/range` does:
+the first and last page, the pages beside the current one, and an ellipsis for
+each hidden run of two or more pages. Each framework gets a port of that
+function, tested against the original.
+
+<Tabs groupId="server-framework" queryString>
+  <TabItem value="rails" label="Rails">
+
+```ruby title="app/helpers/rc_helper.rb"
+module RcHelper
+  # The pages to list, with :ellipsis for each run of hidden pages.
+  # A port of paginationRange() from @rcarls/rc-pagination/range.
+  def rc_pagination_range(page, total, siblings: 1, boundaries: 1)
+    last = [total.to_i, 0].max
+    return [] if last.zero?
+
+    current = page.to_i.clamp(1, last)
+    shown = [
+      *(1..boundaries),
+      *((last - boundaries + 1)..last),
+      *((current - siblings)..(current + siblings)),
+    ].select { |value| value.between?(1, last) }.uniq.sort
+
+    shown.each_with_index.flat_map do |value, index|
+      gap = index.zero? ? 1 : value - shown[index - 1]
+
+      if gap == 1
+        [value]
+      elsif gap == 2
+        [value - 1, value]
+      else
+        [:ellipsis, value]
+      end
+    end
+  end
+
+  # The direction a sortable header link asks for: the reverse of the current
+  # direction on the sorted column, else the column's first direction.
+  def rc_next_sort_direction(key, sort_key, sort_direction, first: "ascending")
+    return first unless key == sort_key
+
+    sort_direction == "ascending" ? "descending" : "ascending"
+  end
+end
+```
+
+```erb title="app/views/rc/_pagination.html.erb"
+<%# locals: (page:, total:, href:, label: nil) -%>
+<% if total > 1 -%>
+<rc-pagination page="<%= page %>" total="<%= total %>">
+  <nav <%= tag.attributes(aria: { label: label }) %>>
+    <ul>
+<% if page > 1 -%>
+      <li><a href="<%= href.call(page - 1) %>" data-rc-page="previous" rel="prev">Previous</a></li>
+<% end -%>
+<% rc_pagination_range(page, total).each do |item| -%>
+<% if item == :ellipsis -%>
+      <li aria-hidden="true">…</li>
+<% else -%>
+      <li><a <%= tag.attributes(href: href.call(item), data: { rc_page: item }, aria: { current: ("page" if item == page) }) %>><%= item %></a></li>
+<% end -%>
+<% end -%>
+<% if page < total -%>
+      <li><a href="<%= href.call(page + 1) %>" data-rc-page="next" rel="next">Next</a></li>
+<% end -%>
+    </ul>
+  </nav>
+</rc-pagination>
+<% end -%>
+```
+
+Render it from a view with a lambda for the page URLs:
+
+```erb
+<%= render "rc/pagination",
+  page: @page,
+  total: @page_count,
+  href: ->(page) { members_path(page: page) } %>
+```
+
+With Pagy, pass `@pagy.page`, `@pagy.last`, and `->(page) { pagy_url_for(@pagy, page) }`.
+
+  </TabItem>
+  <TabItem value="laravel" label="Laravel">
+
+```php title="app/Support/Rc.php"
+<?php
+
+namespace App\Support;
+
+final class Rc
+{
+    /**
+     * The pages to list, with 'ellipsis' for each run of hidden pages.
+     * A port of paginationRange() from @rcarls/rc-pagination/range.
+     *
+     * @return list<int|'ellipsis'>
+     */
+    public static function paginationRange(int $page, int $total, int $siblings = 1, int $boundaries = 1): array
+    {
+        $last = max(0, $total);
+
+        if ($last === 0) {
+            return [];
+        }
+
+        $current = min(max(1, $page), $last);
+        $shown = [];
+
+        $add = function (int $from, int $to) use (&$shown, $last): void {
+            for ($value = max(1, $from); $value <= min($last, $to); $value++) {
+                $shown[$value] = true;
+            }
+        };
+
+        $add(1, $boundaries);
+        $add($last - $boundaries + 1, $last);
+        $add($current - $siblings, $current + $siblings);
+
+        $pages = array_keys($shown);
+        sort($pages);
+
+        $items = [];
+        $previous = null;
+
+        foreach ($pages as $value) {
+            if ($previous !== null && $value - $previous === 2) {
+                $items[] = $previous + 1;
+            } elseif ($previous !== null && $value - $previous > 2) {
+                $items[] = 'ellipsis';
+            }
+
+            $items[] = $value;
+            $previous = $value;
+        }
+
+        return $items;
+    }
+
+    /**
+     * The direction a sortable header link asks for: the reverse of the current
+     * direction on the sorted column, else the column's first direction.
+     */
+    public static function nextSortDirection(string $key, ?string $sortKey, string $direction, string $first = 'ascending'): string
+    {
+        if ($key !== $sortKey) {
+            return $first;
+        }
+
+        return $direction === 'ascending' ? 'descending' : 'ascending';
+    }
+}
+```
+
+```html title="resources/views/components/rc/pagination.blade.php"
+@props(['page', 'total', 'href', 'label' => null]) @if ($total > 1)
+<rc-pagination page="{{ $page }}" total="{{ $total }}">
+  <nav @if ($label) aria-label="{{ $label }}" @endif>
+    <ul>
+      @if ($page > 1)
+      <li><a href="{{ $href($page - 1) }}" data-rc-page="previous" rel="prev">Previous</a></li>
+      @endif @foreach (\App\Support\Rc::paginationRange($page, $total) as $item) @if ($item ===
+      'ellipsis')
+      <li aria-hidden="true">…</li>
+      @else
+      <li>
+        <a
+          href="{{ $href($item) }}"
+          data-rc-page="{{ $item }}"
+          @if
+          ($item=""
+          =""
+          ="$page)"
+          aria-current="page"
+          @endif
+          >{{ $item }}</a
+        >
+      </li>
+      @endif @endforeach @if ($page < $total)
+      <li><a href="{{ $href($page + 1) }}" data-rc-page="next" rel="next">Next</a></li>
+      @endif
+    </ul>
+  </nav>
+</rc-pagination>
+@endif
+```
+
+Render it from a view, here with a paginator from `paginate()`:
+
+```html
+<x-rc.pagination
+  :page="$members->currentPage()"
+  :total="$members->lastPage()"
+  :href="fn (int $page) => $members->url($page)"
+/>
+```
+
+Pass integers: the component compares `page` with each listed page strictly.
+
+  </TabItem>
+  <TabItem value="razor" label="Razor">
+
+```razor title="Components/Rc/RcPagination.razor"
+@if (Total > 1)
+{
+    <rc-pagination page="@Page" total="@Total">
+        <nav aria-label="@Label">
+            <ul>
+                @if (Page > 1)
+                {
+                    <li><a href="@Href(Page - 1)" data-rc-page="previous" rel="prev">Previous</a></li>
+                }
+                @foreach (var item in Range(Page, Total))
+                {
+                    if (item is int number)
+                    {
+                        <li><a href="@Href(number)" data-rc-page="@number" aria-current="@(number == Page ? "page" : null)">@number</a></li>
+                    }
+                    else
+                    {
+                        <li aria-hidden="true">…</li>
+                    }
+                }
+                @if (Page < Total)
+                {
+                    <li><a href="@Href(Page + 1)" data-rc-page="next" rel="next">Next</a></li>
+                }
+            </ul>
+        </nav>
+    </rc-pagination>
+}
+
+@code {
+    [Parameter, EditorRequired] public int Page { get; set; }
+    [Parameter, EditorRequired] public int Total { get; set; }
+    [Parameter, EditorRequired] public Func<int, string> Href { get; set; } = default!;
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// The pages to list, with <c>null</c> for each run of hidden pages.
+    /// A port of paginationRange() from @rcarls/rc-pagination/range.
+    /// </summary>
+    public static IReadOnlyList<int?> Range(int page, int total, int siblings = 1, int boundaries = 1)
+    {
+        var last = Math.Max(0, total);
+
+        if (last == 0)
+        {
+            return [];
+        }
+
+        var current = Math.Clamp(page, 1, last);
+        var shown = new SortedSet<int>();
+
+        void Add(int from, int to)
+        {
+            for (var value = Math.Max(1, from); value <= Math.Min(last, to); value++)
+            {
+                shown.Add(value);
+            }
+        }
+
+        Add(1, boundaries);
+        Add(last - boundaries + 1, last);
+        Add(current - siblings, current + siblings);
+
+        var items = new List<int?>();
+        int? previous = null;
+
+        foreach (var value in shown)
+        {
+            if (previous is int before && value - before == 2)
+            {
+                items.Add(before + 1);
+            }
+            else if (previous is int start && value - start > 2)
+            {
+                items.Add(null);
+            }
+
+            items.Add(value);
+            previous = value;
+        }
+
+        return items;
+    }
+}
+```
+
+Render it from a page or component:
+
+```razor
+<RcPagination Page="page" Total="pageCount" Href="@(n => $"/members?page={n}")" />
+```
+
+Razor drops an attribute whose value is `null`, so `aria-label` and
+`aria-current` appear only when they have a value.
+
+  </TabItem>
+</Tabs>
+
+The visible text, "Previous" and "Next", is the partial's. Translate it with
+your framework's localization helpers. The element translates only the names it
+adds, such as "Page 3", and leaves visible text alone.

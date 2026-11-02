@@ -1,0 +1,30 @@
+---
+title: Upgrading
+description: 'Breaking changes between releases and how to migrate.'
+---
+
+# Upgrading
+
+Each section lists the breaking changes in one release and what replaces them.
+
+## 0.7 styling migration
+
+Version 0.7 removes compatibility aliases and accepts the following breaking
+token replacements as the only supported names:
+
+| Removed token or prefix                    | Replacement                         |
+| ------------------------------------------ | ----------------------------------- |
+| `--rme-*`                                  | `--rc-markdown-editor-*`            |
+| `--rc-app-bar-background`                  | `--rc-app-bar-bg`                   |
+| `--rc-textarea-radius`                     | `--rc-textarea-border-radius`       |
+| `--rc-transfer-list-panel-border`          | `--rc-transfer-list-listbox-border` |
+| `--rc-transfer-list-panel-background`      | `--rc-transfer-list-listbox-bg`     |
+| `--rc-transfer-list-panel-radius`          | `--rc-transfer-list-listbox-radius` |
+| `--rc-chip-group-webkit-scrollbar-display` | `--rc-chip-group-scrollbar-display` |
+| `--rc-text`                                | `--rc-field-text`                   |
+
+The Material navigation-rail toggle overrides and list-item background and
+supporting-color tokens were internal theme leftovers with no component
+consumer; they have been removed rather than replaced. Component-specific
+tokens still win over shared semantic fallbacks, so localized overrides remain
+straightforward after migrating.
