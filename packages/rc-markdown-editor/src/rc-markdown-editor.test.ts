@@ -3,7 +3,7 @@ import { html } from 'lit';
 import { render } from 'vitest-browser-lit';
 
 import './define.js';
-import type { RcMarkdownEditor } from './rc-markdown-editor.js';
+import type { RCMarkdownEditor } from './rc-markdown-editor.js';
 
 test.each(['ltr', 'rtl'] as const)(
   'positions the link popover at a selection under CSS zoom in %s',
@@ -15,7 +15,7 @@ test.each(['ltr', 'rtl'] as const)(
         style="display: block; inline-size: 400px; zoom: 0.8;"
       ></rc-markdown-editor>
     `);
-    const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+    const host = screen.getByTestId('host').element() as RCMarkdownEditor;
 
     await host.updateComplete;
 
@@ -56,12 +56,12 @@ test.each(['ltr', 'rtl'] as const)(
   },
 );
 
-describe('RcMarkdownEditor value ownership', () => {
+describe('RCMarkdownEditor value ownership', () => {
   test('value attribute seeds the initial value declaratively', async () => {
     const screen = render(html`
       <rc-markdown-editor value="## Attribute Seeded" data-testid="host"></rc-markdown-editor>
     `);
-    const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+    const host = screen.getByTestId('host').element() as RCMarkdownEditor;
 
     await host.updateComplete;
 
@@ -76,7 +76,7 @@ describe('RcMarkdownEditor value ownership', () => {
         <textarea id="notes" name="notes"></textarea>
       </rc-markdown-editor>
     `);
-    const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+    const host = screen.getByTestId('host').element() as RCMarkdownEditor;
 
     await host.updateComplete;
 
@@ -109,7 +109,7 @@ describe('RcMarkdownEditor value ownership', () => {
         data-testid="host"
       ></rc-markdown-editor>
     `);
-    const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+    const host = screen.getByTestId('host').element() as RCMarkdownEditor;
 
     await host.updateComplete;
 
@@ -127,7 +127,7 @@ describe('RcMarkdownEditor value ownership', () => {
         <textarea id="notes" name="notes"></textarea>
       </rc-markdown-editor>
     `);
-    const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+    const host = screen.getByTestId('host').element() as RCMarkdownEditor;
 
     await host.updateComplete;
 
@@ -146,7 +146,7 @@ describe('RcMarkdownEditor value ownership', () => {
   });
 });
 
-describe('RcMarkdownEditor source mode', () => {
+describe('RCMarkdownEditor source mode', () => {
   test('setting sourceMode programmatically is silent (no rc-mode-change)', async () => {
     const screen = render(html`
       <rc-markdown-editor data-testid="host">
@@ -154,7 +154,7 @@ describe('RcMarkdownEditor source mode', () => {
         <textarea id="notes" name="notes"></textarea>
       </rc-markdown-editor>
     `);
-    const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+    const host = screen.getByTestId('host').element() as RCMarkdownEditor;
 
     await host.updateComplete;
 
@@ -176,7 +176,7 @@ describe('RcMarkdownEditor source mode', () => {
         <textarea id="notes" name="notes"></textarea>
       </rc-markdown-editor>
     `);
-    const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+    const host = screen.getByTestId('host').element() as RCMarkdownEditor;
 
     await host.updateComplete;
 
@@ -211,7 +211,7 @@ test('names the rich view from a label outside the element and forwards its clic
       <textarea id="outside-notes" name="notes"></textarea>
     </rc-markdown-editor>
   `);
-  const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+  const host = screen.getByTestId('host').element() as RCMarkdownEditor;
 
   await host.updateComplete;
 
@@ -230,7 +230,7 @@ test('names the rich view from the textarea aria-label', async () => {
       <textarea name="notes" aria-label="Shopping list"></textarea>
     </rc-markdown-editor>
   `);
-  const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+  const host = screen.getByTestId('host').element() as RCMarkdownEditor;
 
   await host.updateComplete;
 
@@ -247,7 +247,7 @@ test('releases external label listeners on disconnect and reconnects to the curr
       <textarea id="retained-notes"></textarea>
     </rc-markdown-editor>
   `);
-  const $host = screen.getByTestId('host').element() as RcMarkdownEditor;
+  const $host = screen.getByTestId('host').element() as RCMarkdownEditor;
 
   await $host.updateComplete;
 
@@ -291,7 +291,7 @@ test('names a populated editor from its wrapping label without including the Mar
       </rc-markdown-editor>
     </label>
   `);
-  const $host = screen.getByTestId('host').element() as RcMarkdownEditor;
+  const $host = screen.getByTestId('host').element() as RCMarkdownEditor;
 
   await $host.updateComplete;
 

@@ -102,7 +102,7 @@ declare module '@rcarls/rc-common' {
  * @attr code-language - Language of the code block at the cursor; absent when not in a code block.
  * @attr source-mode - Whether the parent editor is in source mode.
  */
-export class RcEditorToolbar extends LitElement {
+export class RCEditorToolbar extends LitElement {
   /** Built-in text overrides; unset keys fall back to registered text, then English. */
   @property({ attribute: false })
   messages: Partial<RCEditorToolbarMessages> | undefined;

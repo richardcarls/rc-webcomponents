@@ -1,9 +1,9 @@
 import '@rcarls/rc-textarea/define';
-import { RcEditorToolbar } from './rc-editor-toolbar.js';
-import { RcMarkdownEditor } from './rc-markdown-editor.js';
+import { RCEditorToolbar } from './rc-editor-toolbar.js';
+import { RCMarkdownEditor } from './rc-markdown-editor.js';
 
 customElements.get('rc-editor-toolbar') ??
-  customElements.define('rc-editor-toolbar', RcEditorToolbar);
+  customElements.define('rc-editor-toolbar', RCEditorToolbar);
 
 customElements.get('rc-markdown-editor') ??
-  customElements.define('rc-markdown-editor', RcMarkdownEditor);
+  customElements.define('rc-markdown-editor', RCMarkdownEditor);

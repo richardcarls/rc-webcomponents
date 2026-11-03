@@ -7,15 +7,15 @@ import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 
 import {
-  RcEditorToolbar as RcEditorToolbarElement,
-  RcMarkdownEditor as RcMarkdownEditorElement,
+  RCEditorToolbar as RCEditorToolbarElement,
+  RCMarkdownEditor as RCMarkdownEditorElement,
 } from '@rcarls/rc-webcomponents/rc-markdown-editor';
 import '@rcarls/rc-webcomponents/rc-markdown-editor/define';
 
 /** React wrapper for `<rc-editor-toolbar>`. Registers the element when this module loads. */
 export const RcEditorToolbar = createComponent({
   tagName: 'rc-editor-toolbar',
-  elementClass: RcEditorToolbarElement,
+  elementClass: RCEditorToolbarElement,
   react: React,
   displayName: 'RcEditorToolbar',
   events: {
@@ -26,7 +26,7 @@ export const RcEditorToolbar = createComponent({
 /** React wrapper for `<rc-markdown-editor>`. Registers the element when this module loads. */
 export const RcMarkdownEditor = createComponent({
   tagName: 'rc-markdown-editor',
-  elementClass: RcMarkdownEditorElement,
+  elementClass: RCMarkdownEditorElement,
   react: React,
   displayName: 'RcMarkdownEditor',
   events: {

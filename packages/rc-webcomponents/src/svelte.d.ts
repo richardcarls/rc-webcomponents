@@ -33,7 +33,7 @@ import type { RCFabMenu } from '@rcarls/rc-fab-menu';
 import type { RCField } from '@rcarls/rc-field';
 import type { RCList, RCListItem } from '@rcarls/rc-list';
 import type { RCListbox } from '@rcarls/rc-listbox';
-import type { RcEditorToolbar, RcMarkdownEditor } from '@rcarls/rc-markdown-editor';
+import type { RCEditorToolbar, RCMarkdownEditor } from '@rcarls/rc-markdown-editor';
 import type { RCMenu } from '@rcarls/rc-menu';
 import type { RCMenuButton } from '@rcarls/rc-menu-button';
 import type { RCMenubar } from '@rcarls/rc-menubar';
@@ -360,35 +360,35 @@ declare module 'svelte/elements' {
     >;
 
     'rc-editor-toolbar': RCElementProps<
-      RcEditorToolbar,
+      RCEditorToolbar,
       {
-        'active-blockquote'?: RCAttribute<RcEditorToolbar['activeBlockquote']>;
-        'active-bold'?: RCAttribute<RcEditorToolbar['activeBold']>;
-        'active-bullet-list'?: RCAttribute<RcEditorToolbar['activeBulletList']>;
-        'active-code'?: RCAttribute<RcEditorToolbar['activeCode']>;
-        'active-code-block'?: RCAttribute<RcEditorToolbar['activeCodeBlock']>;
-        'active-heading'?: RCAttribute<RcEditorToolbar['activeHeading']>;
-        'active-italic'?: RCAttribute<RcEditorToolbar['activeItalic']>;
-        'active-link'?: RCAttribute<RcEditorToolbar['activeLink']>;
-        'active-ordered-list'?: RCAttribute<RcEditorToolbar['activeOrderedList']>;
-        'active-strikethrough'?: RCAttribute<RcEditorToolbar['activeStrikethrough']>;
-        'active-underline'?: RCAttribute<RcEditorToolbar['activeUnderline']>;
-        'code-language'?: RCAttribute<RcEditorToolbar['codeLanguage']>;
-        'source-mode'?: RCAttribute<RcEditorToolbar['sourceMode']>;
-        activeBlockquote?: RcEditorToolbar['activeBlockquote'];
-        activeBold?: RcEditorToolbar['activeBold'];
-        activeBulletList?: RcEditorToolbar['activeBulletList'];
-        activeCode?: RcEditorToolbar['activeCode'];
-        activeCodeBlock?: RcEditorToolbar['activeCodeBlock'];
-        activeHeading?: RcEditorToolbar['activeHeading'];
-        activeItalic?: RcEditorToolbar['activeItalic'];
-        activeLink?: RcEditorToolbar['activeLink'];
-        activeOrderedList?: RcEditorToolbar['activeOrderedList'];
-        activeStrikethrough?: RcEditorToolbar['activeStrikethrough'];
-        activeUnderline?: RcEditorToolbar['activeUnderline'];
-        codeLanguage?: RcEditorToolbar['codeLanguage'];
-        messages?: RcEditorToolbar['messages'];
-        sourceMode?: RcEditorToolbar['sourceMode'];
+        'active-blockquote'?: RCAttribute<RCEditorToolbar['activeBlockquote']>;
+        'active-bold'?: RCAttribute<RCEditorToolbar['activeBold']>;
+        'active-bullet-list'?: RCAttribute<RCEditorToolbar['activeBulletList']>;
+        'active-code'?: RCAttribute<RCEditorToolbar['activeCode']>;
+        'active-code-block'?: RCAttribute<RCEditorToolbar['activeCodeBlock']>;
+        'active-heading'?: RCAttribute<RCEditorToolbar['activeHeading']>;
+        'active-italic'?: RCAttribute<RCEditorToolbar['activeItalic']>;
+        'active-link'?: RCAttribute<RCEditorToolbar['activeLink']>;
+        'active-ordered-list'?: RCAttribute<RCEditorToolbar['activeOrderedList']>;
+        'active-strikethrough'?: RCAttribute<RCEditorToolbar['activeStrikethrough']>;
+        'active-underline'?: RCAttribute<RCEditorToolbar['activeUnderline']>;
+        'code-language'?: RCAttribute<RCEditorToolbar['codeLanguage']>;
+        'source-mode'?: RCAttribute<RCEditorToolbar['sourceMode']>;
+        activeBlockquote?: RCEditorToolbar['activeBlockquote'];
+        activeBold?: RCEditorToolbar['activeBold'];
+        activeBulletList?: RCEditorToolbar['activeBulletList'];
+        activeCode?: RCEditorToolbar['activeCode'];
+        activeCodeBlock?: RCEditorToolbar['activeCodeBlock'];
+        activeHeading?: RCEditorToolbar['activeHeading'];
+        activeItalic?: RCEditorToolbar['activeItalic'];
+        activeLink?: RCEditorToolbar['activeLink'];
+        activeOrderedList?: RCEditorToolbar['activeOrderedList'];
+        activeStrikethrough?: RCEditorToolbar['activeStrikethrough'];
+        activeUnderline?: RCEditorToolbar['activeUnderline'];
+        codeLanguage?: RCEditorToolbar['codeLanguage'];
+        messages?: RCEditorToolbar['messages'];
+        sourceMode?: RCEditorToolbar['sourceMode'];
       },
       'rc-toolbar-action'
     >;
@@ -490,20 +490,20 @@ declare module 'svelte/elements' {
     >;
 
     'rc-markdown-editor': RCElementProps<
-      RcMarkdownEditor,
+      RCMarkdownEditor,
       {
-        'default-source-mode'?: RCAttribute<RcMarkdownEditor['defaultSourceMode']>;
-        'default-value'?: RCAttribute<RcMarkdownEditor['defaultValue']>;
-        'hide-toolbar'?: RCAttribute<RcMarkdownEditor['hideToolbar']>;
-        'read-only'?: RCAttribute<RcMarkdownEditor['readOnly']>;
-        'source-mode'?: RCAttribute<RcMarkdownEditor['sourceMode']>;
-        defaultSourceMode?: RcMarkdownEditor['defaultSourceMode'];
-        defaultValue?: RcMarkdownEditor['defaultValue'];
-        hideToolbar?: RcMarkdownEditor['hideToolbar'];
-        messages?: RcMarkdownEditor['messages'];
-        readOnly?: RcMarkdownEditor['readOnly'];
-        sourceMode?: RcMarkdownEditor['sourceMode'];
-        value?: RcMarkdownEditor['value'];
+        'default-source-mode'?: RCAttribute<RCMarkdownEditor['defaultSourceMode']>;
+        'default-value'?: RCAttribute<RCMarkdownEditor['defaultValue']>;
+        'hide-toolbar'?: RCAttribute<RCMarkdownEditor['hideToolbar']>;
+        'read-only'?: RCAttribute<RCMarkdownEditor['readOnly']>;
+        'source-mode'?: RCAttribute<RCMarkdownEditor['sourceMode']>;
+        defaultSourceMode?: RCMarkdownEditor['defaultSourceMode'];
+        defaultValue?: RCMarkdownEditor['defaultValue'];
+        hideToolbar?: RCMarkdownEditor['hideToolbar'];
+        messages?: RCMarkdownEditor['messages'];
+        readOnly?: RCMarkdownEditor['readOnly'];
+        sourceMode?: RCMarkdownEditor['sourceMode'];
+        value?: RCMarkdownEditor['value'];
       },
       'rc-change' | 'rc-formatting-change' | 'rc-mode-change'
     >;
