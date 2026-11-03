@@ -106,7 +106,7 @@ short and tell the tool to read `AGENTS.md` before project work.
 - Never hard-code user-facing text (an `aria-label`, `title`, placeholder,
   role description, announcement, or visible button text) in a component.
   Declare a `<Component>Messages` interface with English defaults, add it to
-  `RcMessageCatalog` by module augmentation, expose a `messages` property, and
+  `RCMessageCatalog` by module augmentation, expose a `messages` property, and
   read the text through `MessagesController` so it follows the element's own
   `lang`, else `<html lang>`, and re-renders when either changes. An ancestor's
   `lang` marks content and must not change component text. A per-instance name

@@ -15,7 +15,7 @@ import { DEFAULT_RESIZE_MESSAGES } from './ResizeController.js';
 // its own private-use language subtag (qaa to qtz).
 
 declare module './messages.js' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'test-base': { label: string; extra: string };
     'test-derived': { label: string; search: string };
   }

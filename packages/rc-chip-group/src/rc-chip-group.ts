@@ -54,7 +54,7 @@ export const DEFAULT_CHIP_GROUP_MESSAGES: Readonly<RCChipGroupMessages> = Object
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-chip-group': RCChipGroupMessages;
   }
 }

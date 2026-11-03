@@ -175,7 +175,7 @@ export const DEFAULT_LISTBOX_MESSAGES: Readonly<RCListboxMessages> = Object.free
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-listbox': RCListboxMessages;
   }
 }

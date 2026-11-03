@@ -44,7 +44,7 @@ export const DEFAULT_COMBOBOX_MESSAGES: Readonly<RCComboboxMessages> = Object.fr
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-combobox': RCComboboxMessages;
   }
 }

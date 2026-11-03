@@ -11,23 +11,23 @@ import type { ResizeMessages } from './ResizeController.js';
  *
  * ```ts
  * declare module '@rcarls/rc-common' {
- *   interface RcMessageCatalog {
+ *   interface RCMessageCatalog {
  *     'rc-carousel': RCCarouselMessages;
  *   }
  * }
  * ```
  */
-export interface RcMessageCatalog {
+export interface RCMessageCatalog {
   reorder: ReorderMessages;
   resize: ResizeMessages;
 }
 
-/** Message overrides for some scopes of {@link RcMessageCatalog}. */
-export type RcMessageCatalogInput = {
-  [K in keyof RcMessageCatalog]?: Partial<RcMessageCatalog[K]>;
+/** Message overrides for some scopes of {@link RCMessageCatalog}. */
+export type RCMessageCatalogInput = {
+  [K in keyof RCMessageCatalog]?: Partial<RCMessageCatalog[K]>;
 };
 
-const registry = new Map<string, RcMessageCatalogInput>();
+const registry = new Map<string, RCMessageCatalogInput>();
 
 let registryVersion = 0;
 
@@ -39,7 +39,7 @@ let registryVersion = 0;
  * Only English ships built in. Call this before components connect, or at
  * least before the first paint, so the defaults never flash.
  */
-export function registerMessages(locale: string, catalog: RcMessageCatalogInput): void {
+export function registerMessages(locale: string, catalog: RCMessageCatalogInput): void {
   const key = locale.toLowerCase();
   const entry: Record<string, object | undefined> = { ...registry.get(key) };
 
@@ -97,7 +97,7 @@ export interface ResolveMessagesOptions {
    * taken from it. Within each locale the scope's own text wins; a more
    * specific locale wins over a less specific one either way.
    */
-  inherit?: keyof RcMessageCatalog;
+  inherit?: keyof RCMessageCatalog;
 }
 
 /**
@@ -105,21 +105,21 @@ export interface ResolveMessagesOptions {
  * the registry for the host's locale (exact tag, then its base language),
  * else `defaults`.
  */
-export function resolveMessages<K extends keyof RcMessageCatalog>(
+export function resolveMessages<K extends keyof RCMessageCatalog>(
   host: Element,
   scope: K,
-  defaults: Readonly<RcMessageCatalog[K]>,
-  overrides?: Partial<RcMessageCatalog[K]>,
+  defaults: Readonly<RCMessageCatalog[K]>,
+  overrides?: Partial<RCMessageCatalog[K]>,
   options: ResolveMessagesOptions = {},
-): RcMessageCatalog[K] {
-  const resolved = { ...defaults } as RcMessageCatalog[K];
+): RCMessageCatalog[K] {
+  const resolved = { ...defaults } as RCMessageCatalog[K];
   const keys = new Set(Object.keys(defaults));
 
   for (const locale of localeChain(messagesLocale(host))) {
     const entry = registry.get(locale);
 
     if (options.inherit) {
-      assignDefined(resolved, entry?.[options.inherit] as Partial<RcMessageCatalog[K]>, keys);
+      assignDefined(resolved, entry?.[options.inherit] as Partial<RCMessageCatalog[K]>, keys);
     }
 
     assignDefined(resolved, entry?.[scope]);
@@ -204,28 +204,28 @@ export class LocaleController implements ReactiveController {
 }
 
 export interface MessagesControllerOptions<
-  K extends keyof RcMessageCatalog,
+  K extends keyof RCMessageCatalog,
 > extends LocaleControllerOptions {
   /** Per-element overrides, usually the element's `messages` property. */
-  overrides?: () => Partial<RcMessageCatalog[K]> | undefined;
+  overrides?: () => Partial<RCMessageCatalog[K]> | undefined;
   /** See {@link ResolveMessagesOptions.inherit}. */
-  inherit?: keyof RcMessageCatalog;
+  inherit?: keyof RCMessageCatalog;
 }
 
 /**
- * Resolves a host's text for one scope of {@link RcMessageCatalog} and
+ * Resolves a host's text for one scope of {@link RCMessageCatalog} and
  * requests an update when its locale or the registered text changes.
  */
-export class MessagesController<K extends keyof RcMessageCatalog> extends LocaleController {
+export class MessagesController<K extends keyof RCMessageCatalog> extends LocaleController {
   private readonly _scope: K;
-  private readonly _defaults: Readonly<RcMessageCatalog[K]>;
-  private readonly _overrides: (() => Partial<RcMessageCatalog[K]> | undefined) | undefined;
-  private readonly _inherit: keyof RcMessageCatalog | undefined;
+  private readonly _defaults: Readonly<RCMessageCatalog[K]>;
+  private readonly _overrides: (() => Partial<RCMessageCatalog[K]> | undefined) | undefined;
+  private readonly _inherit: keyof RCMessageCatalog | undefined;
 
   constructor(
     host: ReactiveControllerHost & Element,
     scope: K,
-    defaults: Readonly<RcMessageCatalog[K]>,
+    defaults: Readonly<RCMessageCatalog[K]>,
     options: MessagesControllerOptions<K> = {},
   ) {
     super(host, options);
@@ -236,7 +236,7 @@ export class MessagesController<K extends keyof RcMessageCatalog> extends Locale
   }
 
   /** The resolved text. Read it while rendering. */
-  get value(): RcMessageCatalog[K] {
+  get value(): RCMessageCatalog[K] {
     // Reading the locale marks it current, so only a later change notifies.
     void this.locale;
 

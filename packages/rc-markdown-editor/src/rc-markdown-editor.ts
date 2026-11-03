@@ -244,7 +244,7 @@ export const DEFAULT_MARKDOWN_EDITOR_MESSAGES: Readonly<RCMarkdownEditorMessages
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-markdown-editor': RCMarkdownEditorMessages;
   }
 }

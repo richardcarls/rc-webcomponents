@@ -95,7 +95,7 @@ export const DEFAULT_SPLITTER_MESSAGES: Readonly<RCSplitterMessages> = Object.fr
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-splitter': RCSplitterMessages;
   }
 }

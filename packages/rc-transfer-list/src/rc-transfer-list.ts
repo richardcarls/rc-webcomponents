@@ -46,7 +46,7 @@ export const DEFAULT_TRANSFER_LIST_MESSAGES: Readonly<RCTransferListMessages> = 
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-transfer-list': RCTransferListMessages;
   }
 }

@@ -119,7 +119,7 @@ translations; built-in messages format them with `Intl.NumberFormat` for the int
 Custom translations can use `numberFormat(locale)` from this package. Use `bidiIsolate(text)`
 when inserting consumer text of unknown direction into a plain-text message.
 
-Each package declares its entry in the `RcMessageCatalog` interface, so `registerMessages()`
+Each package declares its entry in the `RCMessageCatalog` interface, so `registerMessages()`
 type-checks scope names and keys for the packages you import. Registering text, or changing a
 `lang` or `dir` attribute, re-renders the affected components through `observeLocale()`, so a
 language switch needs no reload. Register before components connect to avoid a flash of

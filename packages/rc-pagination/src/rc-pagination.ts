@@ -48,7 +48,7 @@ export const DEFAULT_PAGINATION_MESSAGES: Readonly<RCPaginationMessages> = Objec
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-pagination': RCPaginationMessages;
   }
 }
