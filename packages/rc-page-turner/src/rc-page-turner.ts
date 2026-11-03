@@ -49,7 +49,7 @@ export const DEFAULT_PAGE_TURNER_MESSAGES: Readonly<RCPageTurnerMessages> = Obje
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-page-turner': RCPageTurnerMessages;
   }
 }

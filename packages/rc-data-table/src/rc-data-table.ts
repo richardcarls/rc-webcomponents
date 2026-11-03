@@ -28,7 +28,7 @@ export const DEFAULT_DATA_TABLE_MESSAGES: Readonly<RCDataTableMessages> = Object
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-data-table': RCDataTableMessages;
   }
 }

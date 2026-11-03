@@ -174,7 +174,7 @@ export const DEFAULT_ADAPTIVE_MENU_MESSAGES: Readonly<RCAdaptiveMenuMessages> = 
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-adaptive-menu': RCAdaptiveMenuMessages;
   }
 }

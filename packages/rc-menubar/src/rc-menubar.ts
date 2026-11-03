@@ -39,7 +39,7 @@ export const DEFAULT_MENUBAR_MESSAGES: Readonly<RCMenubarMessages> = Object.free
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-menubar': RCMenubarMessages;
   }
 }

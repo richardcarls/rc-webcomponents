@@ -93,7 +93,7 @@ export const DEFAULT_SELECT_MESSAGES: Readonly<RCSelectMessages> = Object.freeze
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-select': RCSelectMessages;
   }
 }

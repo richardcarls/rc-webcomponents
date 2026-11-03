@@ -67,7 +67,7 @@ export const DEFAULT_CAROUSEL_MESSAGES: Readonly<RCCarouselMessages> = Object.fr
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-carousel': RCCarouselMessages;
   }
 }

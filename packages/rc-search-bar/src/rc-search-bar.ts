@@ -99,7 +99,7 @@ export const DEFAULT_SEARCH_BAR_MESSAGES: Readonly<RCSearchBarMessages> = Object
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-search-bar': RCSearchBarMessages;
   }
 }

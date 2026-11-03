@@ -65,7 +65,7 @@ export const DEFAULT_EDITOR_TOOLBAR_MESSAGES: Readonly<RCEditorToolbarMessages> 
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-editor-toolbar': RCEditorToolbarMessages;
   }
 }

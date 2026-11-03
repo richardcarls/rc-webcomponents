@@ -18,7 +18,7 @@ export const DEFAULT_BREADCRUMBS_MESSAGES: Readonly<RCBreadcrumbsMessages> = Obj
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-breadcrumbs': RCBreadcrumbsMessages;
   }
 }

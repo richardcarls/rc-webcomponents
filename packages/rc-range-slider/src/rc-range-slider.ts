@@ -98,7 +98,7 @@ export const DEFAULT_RANGE_SLIDER_MESSAGES: Readonly<RCRangeSliderMessages> = Ob
 });
 
 declare module '@rcarls/rc-common' {
-  interface RcMessageCatalog {
+  interface RCMessageCatalog {
     'rc-range-slider': RCRangeSliderMessages;
   }
 }
