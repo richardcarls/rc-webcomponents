@@ -19,6 +19,7 @@ import {
   normalizeRegistryMetadata,
   parseProvenanceExceptions,
   provenanceRetryDelay,
+  publishErrorCode,
   validatePackedManifest,
 } from './publish-workspaces.mjs';
 import {
@@ -659,6 +660,135 @@ test('recovers when a failed publish raced with another successful publisher', a
   });
 
   assert.deepEqual(summary.raceRecovered, [workspace.name]);
+});
+
+test('reads the npm error code from publish output', () => {
+  assert.equal(
+    publishErrorCode(
+      'npm notice Publishing to https://registry.npmjs.org/\nnpm error code TLOG_CREATE_ENTRY_ERROR\nnpm error cause (409)',
+    ),
+    'TLOG_CREATE_ENTRY_ERROR',
+  );
+
+  assert.equal(publishErrorCode('npm notice no error here'), undefined);
+  assert.equal(publishErrorCode(undefined), undefined);
+});
+
+function transparencyLogConflict() {
+  const error = new Error('npm publish failed with exit 1');
+
+  error.npmCode = 'TLOG_CREATE_ENTRY_ERROR';
+
+  return error;
+}
+
+test('retries a publish once after a transparency log conflict that published nothing', async () => {
+  const workspace = createWorkspace('package');
+  const calls = [];
+  let publishCount = 0;
+
+  const summary = await executePublication({
+    dryRun: false,
+    log: quietLog,
+    operations: {
+      async pack() {
+        return { manifest: packedManifest(workspace), tarballPath: 'package.tgz' };
+      },
+      async publish() {
+        publishCount += 1;
+        calls.push(`publish:${publishCount}`);
+
+        if (publishCount === 1) {
+          throw transparencyLogConflict();
+        }
+      },
+      async query() {
+        calls.push('query');
+
+        return publishCount < 2
+          ? { state: 'missing' }
+          : { metadata: registryManifest(workspace), state: 'found' };
+      },
+      async sleep() {
+        calls.push('sleep');
+      },
+    },
+    provenanceInitialDelayMs: 0,
+    provenanceMaxDelayMs: 0,
+    provenanceMaxRetries: 1,
+    publishRetryDelayMs: 0,
+    workspaces: [workspace],
+  });
+
+  assert.deepEqual(summary.published, [workspace.name]);
+  // The first sleep is the retry delay; the second is the provenance wait before its query.
+  assert.deepEqual(calls, ['query', 'publish:1', 'query', 'sleep', 'publish:2', 'sleep', 'query']);
+});
+
+test('stops after a second transparency log conflict', async () => {
+  const workspace = createWorkspace('package');
+  let publishCount = 0;
+
+  await assert.rejects(
+    executePublication({
+      dryRun: false,
+      log: quietLog,
+      operations: {
+        async pack() {
+          return { manifest: packedManifest(workspace), tarballPath: 'package.tgz' };
+        },
+        async publish() {
+          publishCount += 1;
+
+          throw transparencyLogConflict();
+        },
+        async query() {
+          return { state: 'missing' };
+        },
+        async sleep() {},
+      },
+      publishRetryDelayMs: 0,
+      workspaces: [workspace],
+    }),
+    /npm publish failed/,
+  );
+
+  assert.equal(publishCount, 2);
+});
+
+test('does not retry other publish failures', async () => {
+  const workspace = createWorkspace('package');
+  let publishCount = 0;
+
+  await assert.rejects(
+    executePublication({
+      dryRun: false,
+      log: quietLog,
+      operations: {
+        async pack() {
+          return { manifest: packedManifest(workspace), tarballPath: 'package.tgz' };
+        },
+        async publish() {
+          publishCount += 1;
+
+          const error = new Error('npm publish failed with exit 1');
+
+          error.npmCode = 'E403';
+
+          throw error;
+        },
+        async query() {
+          return { state: 'missing' };
+        },
+        async sleep() {},
+      },
+      publishRetryDelayMs: 0,
+      workspaces: [workspace],
+    }),
+    /npm publish failed/,
+  );
+
+  assert.equal(publishCount, 1);
 });
 
 test('polls until registry provenance becomes visible', async () => {

@@ -40,6 +40,10 @@ const REGISTRY_FIELDS = [
 const DEFAULT_PROVENANCE_MAX_RETRIES = 10;
 const DEFAULT_PROVENANCE_INITIAL_DELAY_MS = 5_000;
 const DEFAULT_PROVENANCE_MAX_DELAY_MS = 120_000;
+// Sigstore can record a provenance entry and still fail npm's request, which then reports this
+// conflict without publishing; a fresh publish signs a new entry.
+const TRANSPARENCY_LOG_CONFLICT = 'TLOG_CREATE_ENTRY_ERROR';
+const DEFAULT_PUBLISH_RETRY_DELAY_MS = 30_000;
 const PUBLISHED_DEPENDENCY_FIELDS = ['dependencies', 'optionalDependencies', 'peerDependencies'];
 
 function sleep(milliseconds) {
@@ -97,6 +101,11 @@ function npmErrorCode(result) {
   }
 
   return undefined;
+}
+
+/** Reads the code from an `npm error code <CODE>` line in npm's publish output. */
+export function publishErrorCode(output) {
+  return output?.match(/npm error code (\S+)/)?.[1];
 }
 
 function commandFailure(command, args, result) {
@@ -461,18 +470,28 @@ export function createPublisherOperations({ env, npmTag = 'latest', runtimeDirec
 
     publish(tarballPath) {
       const args = buildPublishArgs({ npmTag, tarballPath });
+      // Capture stderr to read npm's error code, then pass it through to the log.
       const result = spawnCommand('npm', args, {
         cwd: runtimeDirectory,
+        encoding: 'utf8',
         env: npmEnvironment,
-        stdio: 'inherit',
+        stdio: ['inherit', 'inherit', 'pipe'],
       });
+
+      if (result.stderr) {
+        process.stderr.write(result.stderr);
+      }
 
       if (result.error) {
         throw result.error;
       }
 
       if (result.status !== 0) {
-        throw new Error(`npm publish failed with exit ${result.status}`);
+        const error = new Error(`npm publish failed with exit ${result.status}`);
+
+        error.npmCode = publishErrorCode(result.stderr);
+
+        throw error;
       }
     },
 
@@ -565,6 +584,7 @@ export async function executePublication({
   provenanceMaxDelayMs = DEFAULT_PROVENANCE_MAX_DELAY_MS,
   provenanceMaxRetries = DEFAULT_PROVENANCE_MAX_RETRIES,
   provenanceExceptions = new Set(),
+  publishRetryDelayMs = DEFAULT_PUBLISH_RETRY_DELAY_MS,
   workspaces,
 }) {
   const ordered = topologicallySortWorkspaces(workspaces);
@@ -636,26 +656,46 @@ export async function executePublication({
       validatePackedManifest({ internalNames, manifest: packed.manifest, workspace });
       log.log(`publishing with npm OIDC: ${workspace.name}@${workspace.manifest.version}`);
 
-      try {
-        await operations.publish(packed.tarballPath, workspace);
-      } catch (publishError) {
-        const raced = await operations.query(workspace);
+      let raceRecovered = false;
 
-        if (raced.state !== 'found') {
-          throw publishError;
+      for (let attempt = 1; ; attempt += 1) {
+        try {
+          await operations.publish(packed.tarballPath, workspace);
+
+          break;
+        } catch (publishError) {
+          const raced = await operations.query(workspace);
+
+          if (raced.state === 'found') {
+            await waitForVerifiedPackage({
+              initialMetadata: raced.metadata,
+              internalNames,
+              log,
+              operations,
+              provenanceInitialDelayMs,
+              provenanceMaxDelayMs,
+              provenanceMaxRetries,
+              workspace,
+            });
+
+            raceRecovered = true;
+
+            break;
+          }
+
+          if (attempt > 1 || publishError.npmCode !== TRANSPARENCY_LOG_CONFLICT) {
+            throw publishError;
+          }
+
+          log.log(
+            `retrying publish after a transparency log conflict: ${workspace.name}@${workspace.manifest.version}`,
+          );
+
+          await operations.sleep(publishRetryDelayMs);
         }
+      }
 
-        await waitForVerifiedPackage({
-          initialMetadata: raced.metadata,
-          internalNames,
-          log,
-          operations,
-          provenanceInitialDelayMs,
-          provenanceMaxDelayMs,
-          provenanceMaxRetries,
-          workspace,
-        });
-
+      if (raceRecovered) {
         summary.raceRecovered.push(workspace.name);
         log.log(`publish race recovered: ${workspace.name}@${workspace.manifest.version}`);
 
