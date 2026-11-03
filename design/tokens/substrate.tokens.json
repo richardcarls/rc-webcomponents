@@ -2856,6 +2856,57 @@
           }
         },
         {
+          "name": "core/breadcrumbs-current-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-breadcrumbs-current-color)"
+          },
+          "cssVar": "--rc-breadcrumbs-current-color",
+          "description": "Applied where rc-breadcrumbs is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/breadcrumbs-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-breadcrumbs-gap)"
+          },
+          "cssVar": "--rc-breadcrumbs-gap",
+          "description": "Applied where rc-breadcrumbs is themed.",
+          "values": {
+            "Value": 6
+          }
+        },
+        {
+          "name": "core/breadcrumbs-separator-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-breadcrumbs-separator-color)"
+          },
+          "cssVar": "--rc-breadcrumbs-separator-color",
+          "description": "Applied where rc-breadcrumbs is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/border-color",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "core/control-block-size",
           "type": "FLOAT",
           "scopes": [
@@ -2940,6 +2991,38 @@
               "alias": "radius/md",
               "collection": "Radius"
             }
+          }
+        },
+        {
+          "name": "core/data-table-cell-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-data-table-cell-padding-block)"
+          },
+          "cssVar": "--rc-data-table-cell-padding-block",
+          "description": "Applied where rc-data-table is themed.",
+          "values": {
+            "Value": 10
+          }
+        },
+        {
+          "name": "core/data-table-cell-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-data-table-cell-padding-inline)"
+          },
+          "cssVar": "--rc-data-table-cell-padding-inline",
+          "description": "Applied where rc-data-table is themed.",
+          "values": {
+            "Value": 12
           }
         },
         {
@@ -3298,6 +3381,39 @@
             "Value": {
               "alias": "core/motion-spatial-easing-fast",
               "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "core/pagination-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-pagination-gap)"
+          },
+          "cssVar": "--rc-pagination-gap",
+          "description": "Applied where rc-pagination is themed.",
+          "values": {
+            "Value": 4
+          }
+        },
+        {
+          "name": "core/pagination-item-min-inline-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-pagination-item-min-inline-size)"
+          },
+          "cssVar": "--rc-pagination-item-min-inline-size",
+          "description": "Applied where rc-pagination is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/control-block-size",
+              "collection": "Size"
             }
           }
         },
@@ -8058,6 +8174,11 @@
         "property": "--rc-bottom-sheet-radius",
         "raw": "var(--substrate-radius-xl, 1rem) var(--substrate-radius-xl, 1rem) 0 0",
         "name": "bottom-sheet/radius"
+      },
+      {
+        "property": "--rc-breadcrumbs-separator",
+        "raw": "'/'",
+        "name": "core/breadcrumbs-separator"
       },
       {
         "property": "--rc-button-border",

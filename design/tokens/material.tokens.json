@@ -7663,6 +7663,57 @@
           }
         },
         {
+          "name": "core/breadcrumbs-current-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-breadcrumbs-current-color)"
+          },
+          "cssVar": "--rc-breadcrumbs-current-color",
+          "description": "Applied where rc-breadcrumbs is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/breadcrumbs-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-breadcrumbs-gap)"
+          },
+          "cssVar": "--rc-breadcrumbs-gap",
+          "description": "Applied where rc-breadcrumbs is themed.",
+          "values": {
+            "Value": 4
+          }
+        },
+        {
+          "name": "core/breadcrumbs-separator-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-breadcrumbs-separator-color)"
+          },
+          "cssVar": "--rc-breadcrumbs-separator-color",
+          "description": "Applied where rc-breadcrumbs is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface-variant",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "core/control-block-size",
           "type": "FLOAT",
           "scopes": [
@@ -7735,6 +7786,53 @@
               "alias": "shape/corner-full",
               "collection": "Shape"
             }
+          }
+        },
+        {
+          "name": "core/data-table-cell-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-data-table-cell-padding-block)"
+          },
+          "cssVar": "--rc-data-table-cell-padding-block",
+          "description": "Applied where rc-data-table is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "core/data-table-cell-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-data-table-cell-padding-inline)"
+          },
+          "cssVar": "--rc-data-table-cell-padding-inline",
+          "description": "Applied where rc-data-table is themed.",
+          "values": {
+            "Value": 16
+          }
+        },
+        {
+          "name": "core/data-table-sort-indicator-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-data-table-sort-indicator-gap)"
+          },
+          "cssVar": "--rc-data-table-sort-indicator-gap",
+          "description": "Applied where rc-data-table is themed.",
+          "values": {
+            "Value": 8
           }
         },
         {
@@ -8374,6 +8472,36 @@
               "alias": "color/on-surface",
               "collection": "Color"
             }
+          }
+        },
+        {
+          "name": "core/pagination-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-pagination-gap)"
+          },
+          "cssVar": "--rc-pagination-gap",
+          "description": "Applied where rc-pagination is themed.",
+          "values": {
+            "Value": 4
+          }
+        },
+        {
+          "name": "core/pagination-item-min-inline-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-pagination-item-min-inline-size)"
+          },
+          "cssVar": "--rc-pagination-item-min-inline-size",
+          "description": "Applied where rc-pagination is themed.",
+          "values": {
+            "Value": 40
           }
         },
         {
@@ -14843,6 +14971,11 @@
         "raw": "var(--rc-shadow-level1)",
         "name": "bottom-sheet/shadow",
         "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-breadcrumbs-separator",
+        "raw": "'\\203A'",
+        "name": "core/breadcrumbs-separator"
       },
       {
         "property": "--rc-button-font",
