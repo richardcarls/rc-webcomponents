@@ -140,6 +140,9 @@ tag. Leave the provenance exception empty. The publisher verifies and skips corr
 then publishes only missing versions.
 
 Registry, authentication, parsing, or invalid immutable-version errors stop the run immediately.
+The one exception is a `TLOG_CREATE_ENTRY_ERROR` transparency log conflict: Sigstore recorded the
+provenance entry but npm's request failed, so nothing was published. When the version is still
+missing, the publisher waits 30 seconds and publishes that package once more before stopping.
 After a successful publish, provenance verification retries with exponentially increasing delays
 for roughly 12.5 minutes before treating a still-missing attestation as a transient failure. The
 workflow logs each scheduled retry; let that bounded wait finish before manually rerunning it.
