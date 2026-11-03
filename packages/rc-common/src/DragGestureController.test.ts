@@ -78,6 +78,10 @@ test('reports immediate drag lifecycle, deltas, and recent velocity', async () =
   firePointer($handle, 'pointerdown', { clientX: 10, clientY: 20 });
   await new Promise((resolve) => setTimeout(resolve, 12));
   firePointer($handle, 'pointermove', { clientX: 30, clientY: 25 });
+
+  // Synchronous events share a timestamp, and a slow timer can push pointerdown out of the
+  // velocity window, so the last two samples need their own interval.
+  await new Promise((resolve) => setTimeout(resolve, 12));
   firePointer($handle, 'pointerup', { clientX: 40, clientY: 30 });
 
   expect($host.onStart).toHaveBeenCalledOnce();
