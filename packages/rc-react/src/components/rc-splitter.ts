@@ -10,11 +10,11 @@ import { RCSplitter as RCSplitterElement } from '@rcarls/rc-webcomponents/rc-spl
 import '@rcarls/rc-webcomponents/rc-splitter/define';
 
 /** React wrapper for `<rc-splitter>`. Registers the element when this module loads. */
-export const RcSplitter = createComponent({
+export const RCSplitter = createComponent({
   tagName: 'rc-splitter',
   elementClass: RCSplitterElement,
   react: React,
-  displayName: 'RcSplitter',
+  displayName: 'RCSplitter',
   events: {
     onRcSplitterChange: 'rc-splitter-change' as EventName<
       HTMLElementEventMap['rc-splitter-change']

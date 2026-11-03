@@ -52,5 +52,5 @@ export const elementLoaders = {
   'rc-virtual-scroller': () => import('@rcarls/rc-webcomponents/rc-virtual-scroller/define'),
 } as const satisfies Record<string, () => Promise<unknown>>;
 
-/** A custom element tag `<RcRegister>` can load. */
-export type RcElementTag = keyof typeof elementLoaders;
+/** A custom element tag `<RCRegister>` can load. */
+export type RCElementTag = keyof typeof elementLoaders;

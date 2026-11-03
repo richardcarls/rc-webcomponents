@@ -10,9 +10,9 @@ import { RCNavigationBar as RCNavigationBarElement } from '@rcarls/rc-webcompone
 import '@rcarls/rc-webcomponents/rc-navigation-bar/define';
 
 /** React wrapper for `<rc-navigation-bar>`. Registers the element when this module loads. */
-export const RcNavigationBar = createComponent({
+export const RCNavigationBar = createComponent({
   tagName: 'rc-navigation-bar',
   elementClass: RCNavigationBarElement,
   react: React,
-  displayName: 'RcNavigationBar',
+  displayName: 'RCNavigationBar',
 });

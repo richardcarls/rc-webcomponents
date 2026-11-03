@@ -6,7 +6,8 @@ Docs: [https://richardcarls.github.io/rc-webcomponents/guide/react](https://rich
 
 Each wrapper is a [`@lit/react`](https://lit.dev/docs/frameworks/react/) component that
 registers its element when its module loads, sets element properties from props, and maps
-every custom event to an `on` prop in camel case. Every module is a React client component, and
+every custom event to an `on` prop in camel case. Each wrapper has the same name as the element
+class it wraps, such as `RCSelect`. Every module is a React client component, and
 every module imports safely during a server render.
 
 ## Installation
@@ -22,16 +23,16 @@ Import wrappers from the subpath named after the component package:
 ```tsx
 'use client';
 
-import { RcSelect } from '@rcarls/rc-react/rc-select';
+import { RCSelect } from '@rcarls/rc-react/rc-select';
 
 export function StatusPicker() {
   return (
-    <RcSelect popup-mode="dialog" onRcSelectChange={(event) => console.log(event.detail.value)}>
+    <RCSelect popup-mode="dialog" onRcSelectChange={(event) => console.log(event.detail.value)}>
       <select name="status" aria-label="Status">
         <option>Draft</option>
         <option>Published</option>
       </select>
-    </RcSelect>
+    </RCSelect>
   );
 }
 ```
@@ -42,13 +43,13 @@ hydration. Pass the attribute form, such as `popup-mode`, for state the server m
 
 ## Plain tags from server components
 
-`RcRegister` registers elements that a page renders as plain tags, for example from a React
+`RCRegister` registers elements that a page renders as plain tags, for example from a React
 Server Component. Render it once in the root layout with every tag the page uses:
 
 ```tsx
-import { RcRegister } from '@rcarls/rc-react';
+import { RCRegister } from '@rcarls/rc-react';
 
-<RcRegister tags={['rc-app-bar', 'rc-card', 'rc-chip']} />;
+<RCRegister tags={['rc-app-bar', 'rc-card', 'rc-chip']} />;
 ```
 
 Each definition loads as its own chunk once the page has hydrated.

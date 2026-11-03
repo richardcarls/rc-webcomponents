@@ -10,11 +10,11 @@ import { RCSwitch as RCSwitchElement } from '@rcarls/rc-webcomponents/rc-switch'
 import '@rcarls/rc-webcomponents/rc-switch/define';
 
 /** React wrapper for `<rc-switch>`. Registers the element when this module loads. */
-export const RcSwitch = createComponent({
+export const RCSwitch = createComponent({
   tagName: 'rc-switch',
   elementClass: RCSwitchElement,
   react: React,
-  displayName: 'RcSwitch',
+  displayName: 'RCSwitch',
   events: {
     onRcSwitchChange: 'rc-switch-change' as EventName<HTMLElementEventMap['rc-switch-change']>,
   },

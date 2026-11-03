@@ -10,9 +10,9 @@ import { RCMenubar as RCMenubarElement } from '@rcarls/rc-webcomponents/rc-menub
 import '@rcarls/rc-webcomponents/rc-menubar/define';
 
 /** React wrapper for `<rc-menubar>`. Registers the element when this module loads. */
-export const RcMenubar = createComponent({
+export const RCMenubar = createComponent({
   tagName: 'rc-menubar',
   elementClass: RCMenubarElement,
   react: React,
-  displayName: 'RcMenubar',
+  displayName: 'RCMenubar',
 });

@@ -10,11 +10,11 @@ import { RCCombobox as RCComboboxElement } from '@rcarls/rc-webcomponents/rc-com
 import '@rcarls/rc-webcomponents/rc-combobox/define';
 
 /** React wrapper for `<rc-combobox>`. Registers the element when this module loads. */
-export const RcCombobox = createComponent({
+export const RCCombobox = createComponent({
   tagName: 'rc-combobox',
   elementClass: RCComboboxElement,
   react: React,
-  displayName: 'RcCombobox',
+  displayName: 'RCCombobox',
   events: {
     onRcComboboxCreate: 'rc-combobox-create' as EventName<
       HTMLElementEventMap['rc-combobox-create']

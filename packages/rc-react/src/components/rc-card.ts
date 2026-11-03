@@ -10,9 +10,9 @@ import { RCCard as RCCardElement } from '@rcarls/rc-webcomponents/rc-card';
 import '@rcarls/rc-webcomponents/rc-card/define';
 
 /** React wrapper for `<rc-card>`. Registers the element when this module loads. */
-export const RcCard = createComponent({
+export const RCCard = createComponent({
   tagName: 'rc-card',
   elementClass: RCCardElement,
   react: React,
-  displayName: 'RcCard',
+  displayName: 'RCCard',
 });

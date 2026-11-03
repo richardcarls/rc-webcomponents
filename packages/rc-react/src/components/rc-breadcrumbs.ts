@@ -10,9 +10,9 @@ import { RCBreadcrumbs as RCBreadcrumbsElement } from '@rcarls/rc-webcomponents/
 import '@rcarls/rc-webcomponents/rc-breadcrumbs/define';
 
 /** React wrapper for `<rc-breadcrumbs>`. Registers the element when this module loads. */
-export const RcBreadcrumbs = createComponent({
+export const RCBreadcrumbs = createComponent({
   tagName: 'rc-breadcrumbs',
   elementClass: RCBreadcrumbsElement,
   react: React,
-  displayName: 'RcBreadcrumbs',
+  displayName: 'RCBreadcrumbs',
 });

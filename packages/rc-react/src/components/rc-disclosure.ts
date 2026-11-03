@@ -10,11 +10,11 @@ import { RCDisclosure as RCDisclosureElement } from '@rcarls/rc-webcomponents/rc
 import '@rcarls/rc-webcomponents/rc-disclosure/define';
 
 /** React wrapper for `<rc-disclosure>`. Registers the element when this module loads. */
-export const RcDisclosure = createComponent({
+export const RCDisclosure = createComponent({
   tagName: 'rc-disclosure',
   elementClass: RCDisclosureElement,
   react: React,
-  displayName: 'RcDisclosure',
+  displayName: 'RCDisclosure',
   events: {
     onRcDisclosureToggle: 'rc-disclosure-toggle' as EventName<
       HTMLElementEventMap['rc-disclosure-toggle']

@@ -28,10 +28,10 @@ test('every wrapper renders its tag on the server', async () => {
 });
 
 test('the server markup carries attributes but not event handlers', async () => {
-  const { RcSelect } = await import('@rcarls/rc-react/rc-select');
+  const { RCSelect } = await import('@rcarls/rc-react/rc-select');
   const html = renderToString(
     createElement(
-      RcSelect,
+      RCSelect,
       { 'popup-mode': 'dialog', onRcSelectChange() {} },
       createElement('select', { name: 'status' }),
     ),
@@ -40,8 +40,8 @@ test('the server markup carries attributes but not event handlers', async () => 
   assert.equal(html, '<rc-select popup-mode="dialog"><select name="status"></select></rc-select>');
 });
 
-test('RcRegister renders nothing on the server', async () => {
-  const { RcRegister } = await import('@rcarls/rc-react');
+test('RCRegister renders nothing on the server', async () => {
+  const { RCRegister } = await import('@rcarls/rc-react');
 
-  assert.equal(renderToString(createElement(RcRegister, { tags: ['rc-card'] })), '');
+  assert.equal(renderToString(createElement(RCRegister, { tags: ['rc-card'] })), '');
 });

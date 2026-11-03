@@ -10,11 +10,11 @@ import { RCTextarea as RCTextareaElement } from '@rcarls/rc-webcomponents/rc-tex
 import '@rcarls/rc-webcomponents/rc-textarea/define';
 
 /** React wrapper for `<rc-textarea>`. Registers the element when this module loads. */
-export const RcTextarea = createComponent({
+export const RCTextarea = createComponent({
   tagName: 'rc-textarea',
   elementClass: RCTextareaElement,
   react: React,
-  displayName: 'RcTextarea',
+  displayName: 'RCTextarea',
   events: {
     onRcTextareaBlur: 'rc-textarea-blur' as EventName<HTMLElementEventMap['rc-textarea-blur']>,
     onRcTextareaChange: 'rc-textarea-change' as EventName<

@@ -10,9 +10,9 @@ import { RCScroller as RCScrollerElement } from '@rcarls/rc-webcomponents/rc-scr
 import '@rcarls/rc-webcomponents/rc-scroller/define';
 
 /** React wrapper for `<rc-scroller>`. Registers the element when this module loads. */
-export const RcScroller = createComponent({
+export const RCScroller = createComponent({
   tagName: 'rc-scroller',
   elementClass: RCScrollerElement,
   react: React,
-  displayName: 'RcScroller',
+  displayName: 'RCScroller',
 });

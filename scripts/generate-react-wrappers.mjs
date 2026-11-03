@@ -1,8 +1,9 @@
 /**
  * Generates `@rcarls/rc-react`: one `@lit/react` wrapper module per component
- * package, plus the tag-to-definition map behind `<RcRegister>`.
+ * package, plus the tag-to-definition map behind `<RCRegister>`.
  *
- * Wrappers are client components. Each module registers its elements when it
+ * Each wrapper takes the name of the element class it wraps, so `<rc-select>`
+ * is `RCSelect` in both packages. Wrappers are client components. Each module registers its elements when it
  * loads, and maps every documented custom event to a camelCased `on` prop.
  *
  *   node scripts/generate-react-wrappers.mjs          write the files
@@ -25,8 +26,7 @@ const MANIFEST_PATH = join(PACKAGE_ROOT, 'package.json');
 const pascalCase = (name) =>
   name.replace(/(^|-)([a-z0-9])/g, (_, __, letter) => letter.toUpperCase());
 
-/** `rc-select` becomes `RcSelect`; `rc-select-change` becomes `onRcSelectChange`. */
-export const componentName = (tag) => pascalCase(tag);
+/** The DOM event `rc-select-change` becomes the `onRcSelectChange` prop. */
 export const eventProp = (event) => `on${pascalCase(event)}`;
 
 const directoryOf = (packageName) => packageName.replace('@rcarls/', '');
@@ -58,11 +58,11 @@ export function wrapperModule(directory, elements) {
     const eventMap = events ? `\n  events: {\n${events}\n  },` : '';
 
     return `/** React wrapper for \`<${element.tag}>\`. Registers the element when this module loads. */
-export const ${componentName(element.tag)} = createComponent({
+export const ${element.className} = createComponent({
   tagName: '${element.tag}',
   elementClass: ${element.className}Element,
   react: React,
-  displayName: '${componentName(element.tag)}',${eventMap}
+  displayName: '${element.className}',${eventMap}
 });`;
   });
   const hasEvents = elements.some((element) => element.events.length > 0);
@@ -98,8 +98,8 @@ export const elementLoaders = {
 ${entries.join('\n')}
 } as const satisfies Record<string, () => Promise<unknown>>;
 
-/** A custom element tag \`<RcRegister>\` can load. */
-export type RcElementTag = keyof typeof elementLoaders;
+/** A custom element tag \`<RCRegister>\` can load. */
+export type RCElementTag = keyof typeof elementLoaders;
 `;
 }
 

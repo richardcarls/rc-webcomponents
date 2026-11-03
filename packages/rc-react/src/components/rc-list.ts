@@ -13,22 +13,22 @@ import {
 import '@rcarls/rc-webcomponents/rc-list/define';
 
 /** React wrapper for `<rc-list>`. Registers the element when this module loads. */
-export const RcList = createComponent({
+export const RCList = createComponent({
   tagName: 'rc-list',
   elementClass: RCListElement,
   react: React,
-  displayName: 'RcList',
+  displayName: 'RCList',
   events: {
     onRcListReorder: 'rc-list-reorder' as EventName<HTMLElementEventMap['rc-list-reorder']>,
   },
 });
 
 /** React wrapper for `<rc-list-item>`. Registers the element when this module loads. */
-export const RcListItem = createComponent({
+export const RCListItem = createComponent({
   tagName: 'rc-list-item',
   elementClass: RCListItemElement,
   react: React,
-  displayName: 'RcListItem',
+  displayName: 'RCListItem',
   events: {
     onRcListItemToggle: 'rc-list-item-toggle' as EventName<
       HTMLElementEventMap['rc-list-item-toggle']

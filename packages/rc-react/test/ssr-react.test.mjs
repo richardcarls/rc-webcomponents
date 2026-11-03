@@ -10,13 +10,13 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 
 const h = (...args) => React.createElement(...args);
-const { RcButton } = await import('@rcarls/rc-react/rc-button');
-const { RcSelect } = await import('@rcarls/rc-react/rc-select');
+const { RCButton } = await import('@rcarls/rc-react/rc-button');
+const { RCSelect } = await import('@rcarls/rc-react/rc-select');
 
 await import('@rcarls/rc-webcomponents/rc-card/define');
 
 test('a wrapper renders its declarative shadow root', () => {
-  const html = renderToString(h(RcButton, null, h('button', { type: 'button' }, 'Save')));
+  const html = renderToString(h(RCButton, null, h('button', { type: 'button' }, 'Save')));
 
   assert.match(html, /^<rc-button><template shadowroot="open" shadowrootmode="open">/);
   assert.match(html, /<button type="button">Save<\/button><\/rc-button>$/);
@@ -24,7 +24,7 @@ test('a wrapper renders its declarative shadow root', () => {
 
 test('a wrapper renders element properties on the server', () => {
   const html = renderToString(
-    h(RcSelect, { popupMode: 'dialog' }, h('select', { 'aria-label': 'Status' })),
+    h(RCSelect, { popupMode: 'dialog' }, h('select', { 'aria-label': 'Status' })),
   );
 
   assert.match(html, /<rc-select[^>]* popup-mode="dialog"/);

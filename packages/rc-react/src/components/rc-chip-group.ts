@@ -10,11 +10,11 @@ import { RCChipGroup as RCChipGroupElement } from '@rcarls/rc-webcomponents/rc-c
 import '@rcarls/rc-webcomponents/rc-chip-group/define';
 
 /** React wrapper for `<rc-chip-group>`. Registers the element when this module loads. */
-export const RcChipGroup = createComponent({
+export const RCChipGroup = createComponent({
   tagName: 'rc-chip-group',
   elementClass: RCChipGroupElement,
   react: React,
-  displayName: 'RcChipGroup',
+  displayName: 'RCChipGroup',
   events: {
     onRcChipGroupToggle: 'rc-chip-group-toggle' as EventName<
       HTMLElementEventMap['rc-chip-group-toggle']

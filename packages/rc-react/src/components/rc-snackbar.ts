@@ -10,11 +10,11 @@ import { RCSnackbar as RCSnackbarElement } from '@rcarls/rc-webcomponents/rc-sna
 import '@rcarls/rc-webcomponents/rc-snackbar/define';
 
 /** React wrapper for `<rc-snackbar>`. Registers the element when this module loads. */
-export const RcSnackbar = createComponent({
+export const RCSnackbar = createComponent({
   tagName: 'rc-snackbar',
   elementClass: RCSnackbarElement,
   react: React,
-  displayName: 'RcSnackbar',
+  displayName: 'RCSnackbar',
   events: {
     onRcSnackbarAction: 'rc-snackbar-action' as EventName<
       HTMLElementEventMap['rc-snackbar-action']

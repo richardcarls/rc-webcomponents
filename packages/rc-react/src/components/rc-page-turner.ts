@@ -13,11 +13,11 @@ import {
 import '@rcarls/rc-webcomponents/rc-page-turner/define';
 
 /** React wrapper for `<rc-page-turner>`. Registers the element when this module loads. */
-export const RcPageTurner = createComponent({
+export const RCPageTurner = createComponent({
   tagName: 'rc-page-turner',
   elementClass: RCPageTurnerElement,
   react: React,
-  displayName: 'RcPageTurner',
+  displayName: 'RCPageTurner',
   events: {
     onRcPageTurnerChange: 'rc-page-turner-change' as EventName<
       HTMLElementEventMap['rc-page-turner-change']
@@ -26,9 +26,9 @@ export const RcPageTurner = createComponent({
 });
 
 /** React wrapper for `<rc-page-turner-page>`. Registers the element when this module loads. */
-export const RcPageTurnerPage = createComponent({
+export const RCPageTurnerPage = createComponent({
   tagName: 'rc-page-turner-page',
   elementClass: RCPageTurnerPageElement,
   react: React,
-  displayName: 'RcPageTurnerPage',
+  displayName: 'RCPageTurnerPage',
 });

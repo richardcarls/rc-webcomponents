@@ -72,11 +72,11 @@ duplicate costs only a few bytes of parsing.
 
 Register the components a page uses in one client entry, rather than repeating
 the list in every component that renders a tag. In a React app,
-`@rcarls/rc-react` provides `RcRegister`, which a server component can render
+`@rcarls/rc-react` provides `RCRegister`, which a server component can render
 because it takes plain tag names:
 
 ```tsx title="app/layout.tsx"
-import { RcRegister } from '@rcarls/rc-react';
+import { RCRegister } from '@rcarls/rc-react';
 import './globals.css';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -84,7 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         {children}
-        <RcRegister tags={['rc-app-bar', 'rc-card', 'rc-chip']} />
+        <RCRegister tags={['rc-app-bar', 'rc-card', 'rc-chip']} />
       </body>
     </html>
   );
@@ -92,7 +92,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 ```
 
 Server components can then render `<rc-card>` and the other tags directly.
-`RcRegister` loads each definition after hydration, so React has already
+`RCRegister` loads each definition after hydration, so React has already
 matched the server markup before any element upgrades and starts adding its own
 attributes, such as `aria-controls` or a generated `id`. The
 [React guide](./react#server-rendering-and-nextjs) covers the wrapper

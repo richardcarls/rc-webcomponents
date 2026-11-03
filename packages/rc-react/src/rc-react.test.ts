@@ -3,9 +3,9 @@ import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, expect, test, vi } from 'vitest';
 
-import type { RCDisclosure } from '@rcarls/rc-webcomponents/rc-disclosure';
-import { RcDisclosure } from './components/rc-disclosure.js';
-import { RcRegister } from './register.js';
+import type { RCDisclosure as RCDisclosureElement } from '@rcarls/rc-webcomponents/rc-disclosure';
+import { RCDisclosure } from './components/rc-disclosure.js';
+import { RCRegister } from './register.js';
 
 let root: Root | undefined;
 let $container: HTMLElement | undefined;
@@ -35,9 +35,9 @@ const details = () =>
   );
 
 test('a wrapper registers its element and exposes the instance through its ref', () => {
-  const ref = createRef<RCDisclosure>();
+  const ref = createRef<RCDisclosureElement>();
 
-  mount(createElement(RcDisclosure, { ref }, details()));
+  mount(createElement(RCDisclosure, { ref }, details()));
 
   expect(customElements.get('rc-disclosure')).toBeDefined();
   expect(ref.current?.localName).toBe('rc-disclosure');
@@ -45,19 +45,19 @@ test('a wrapper registers its element and exposes the instance through its ref',
 });
 
 test('a wrapper sets element properties from props', async () => {
-  const ref = createRef<RCDisclosure>();
+  const ref = createRef<RCDisclosureElement>();
 
-  mount(createElement(RcDisclosure, { ref, open: true }, details()));
+  mount(createElement(RCDisclosure, { ref, open: true }, details()));
 
   expect(ref.current?.open).toBe(true);
   await vi.waitFor(() => expect(ref.current?.querySelector('details')?.open).toBe(true));
 });
 
 test('a wrapper maps custom events to camelCased handler props', async () => {
-  const ref = createRef<RCDisclosure>();
+  const ref = createRef<RCDisclosureElement>();
   const onToggle = vi.fn();
 
-  mount(createElement(RcDisclosure, { ref, onRcDisclosureToggle: onToggle }, details()));
+  mount(createElement(RCDisclosure, { ref, onRcDisclosureToggle: onToggle }, details()));
 
   ref.current!.querySelector('summary')!.click();
 
@@ -65,10 +65,10 @@ test('a wrapper maps custom events to camelCased handler props', async () => {
   expect(onToggle.mock.calls[0]?.[0].detail).toEqual({ open: true });
 });
 
-test('RcRegister loads the definitions for the tags it is given', async () => {
+test('RCRegister loads the definitions for the tags it is given', async () => {
   expect(customElements.get('rc-progress')).toBeUndefined();
 
-  mount(createElement(RcRegister, { tags: ['rc-progress'] }));
+  mount(createElement(RCRegister, { tags: ['rc-progress'] }));
 
   await vi.waitFor(() => expect(customElements.get('rc-progress')).toBeDefined());
 });

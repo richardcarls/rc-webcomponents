@@ -10,11 +10,11 @@ import { RCProgress as RCProgressElement } from '@rcarls/rc-webcomponents/rc-pro
 import '@rcarls/rc-webcomponents/rc-progress/define';
 
 /** React wrapper for `<rc-progress>`. Registers the element when this module loads. */
-export const RcProgress = createComponent({
+export const RCProgress = createComponent({
   tagName: 'rc-progress',
   elementClass: RCProgressElement,
   react: React,
-  displayName: 'RcProgress',
+  displayName: 'RCProgress',
   events: {
     onRcProgressComplete: 'rc-progress-complete' as EventName<
       HTMLElementEventMap['rc-progress-complete']

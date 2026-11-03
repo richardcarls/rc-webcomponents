@@ -10,11 +10,11 @@ import { RCAdaptiveMenu as RCAdaptiveMenuElement } from '@rcarls/rc-webcomponent
 import '@rcarls/rc-webcomponents/rc-adaptive-menu/define';
 
 /** React wrapper for `<rc-adaptive-menu>`. Registers the element when this module loads. */
-export const RcAdaptiveMenu = createComponent({
+export const RCAdaptiveMenu = createComponent({
   tagName: 'rc-adaptive-menu',
   elementClass: RCAdaptiveMenuElement,
   react: React,
-  displayName: 'RcAdaptiveMenu',
+  displayName: 'RCAdaptiveMenu',
   events: {
     onRcAdaptiveMenuToggle: 'rc-adaptive-menu-toggle' as EventName<
       HTMLElementEventMap['rc-adaptive-menu-toggle']

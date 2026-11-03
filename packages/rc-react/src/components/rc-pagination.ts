@@ -10,11 +10,11 @@ import { RCPagination as RCPaginationElement } from '@rcarls/rc-webcomponents/rc
 import '@rcarls/rc-webcomponents/rc-pagination/define';
 
 /** React wrapper for `<rc-pagination>`. Registers the element when this module loads. */
-export const RcPagination = createComponent({
+export const RCPagination = createComponent({
   tagName: 'rc-pagination',
   elementClass: RCPaginationElement,
   react: React,
-  displayName: 'RcPagination',
+  displayName: 'RCPagination',
   events: {
     onRcPaginationChange: 'rc-pagination-change' as EventName<
       HTMLElementEventMap['rc-pagination-change']

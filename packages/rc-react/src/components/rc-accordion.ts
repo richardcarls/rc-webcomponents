@@ -10,9 +10,9 @@ import { RCAccordion as RCAccordionElement } from '@rcarls/rc-webcomponents/rc-a
 import '@rcarls/rc-webcomponents/rc-accordion/define';
 
 /** React wrapper for `<rc-accordion>`. Registers the element when this module loads. */
-export const RcAccordion = createComponent({
+export const RCAccordion = createComponent({
   tagName: 'rc-accordion',
   elementClass: RCAccordionElement,
   react: React,
-  displayName: 'RcAccordion',
+  displayName: 'RCAccordion',
 });

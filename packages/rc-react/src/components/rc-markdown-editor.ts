@@ -13,22 +13,22 @@ import {
 import '@rcarls/rc-webcomponents/rc-markdown-editor/define';
 
 /** React wrapper for `<rc-editor-toolbar>`. Registers the element when this module loads. */
-export const RcEditorToolbar = createComponent({
+export const RCEditorToolbar = createComponent({
   tagName: 'rc-editor-toolbar',
   elementClass: RCEditorToolbarElement,
   react: React,
-  displayName: 'RcEditorToolbar',
+  displayName: 'RCEditorToolbar',
   events: {
     onRcToolbarAction: 'rc-toolbar-action' as EventName<HTMLElementEventMap['rc-toolbar-action']>,
   },
 });
 
 /** React wrapper for `<rc-markdown-editor>`. Registers the element when this module loads. */
-export const RcMarkdownEditor = createComponent({
+export const RCMarkdownEditor = createComponent({
   tagName: 'rc-markdown-editor',
   elementClass: RCMarkdownEditorElement,
   react: React,
-  displayName: 'RcMarkdownEditor',
+  displayName: 'RCMarkdownEditor',
   events: {
     onRcChange: 'rc-change' as EventName<HTMLElementEventMap['rc-change']>,
     onRcFormattingChange: 'rc-formatting-change' as EventName<

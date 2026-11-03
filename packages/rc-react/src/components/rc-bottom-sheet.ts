@@ -10,11 +10,11 @@ import { RCBottomSheet as RCBottomSheetElement } from '@rcarls/rc-webcomponents/
 import '@rcarls/rc-webcomponents/rc-bottom-sheet/define';
 
 /** React wrapper for `<rc-bottom-sheet>`. Registers the element when this module loads. */
-export const RcBottomSheet = createComponent({
+export const RCBottomSheet = createComponent({
   tagName: 'rc-bottom-sheet',
   elementClass: RCBottomSheetElement,
   react: React,
-  displayName: 'RcBottomSheet',
+  displayName: 'RCBottomSheet',
   events: {
     onRcBottomSheetResizeStart: 'rc-bottom-sheet-resize-start' as EventName<
       HTMLElementEventMap['rc-bottom-sheet-resize-start']

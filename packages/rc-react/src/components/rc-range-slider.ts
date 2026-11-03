@@ -10,11 +10,11 @@ import { RCRangeSlider as RCRangeSliderElement } from '@rcarls/rc-webcomponents/
 import '@rcarls/rc-webcomponents/rc-range-slider/define';
 
 /** React wrapper for `<rc-range-slider>`. Registers the element when this module loads. */
-export const RcRangeSlider = createComponent({
+export const RCRangeSlider = createComponent({
   tagName: 'rc-range-slider',
   elementClass: RCRangeSliderElement,
   react: React,
-  displayName: 'RcRangeSlider',
+  displayName: 'RCRangeSlider',
   events: {
     onRcRangeSliderChange: 'rc-range-slider-change' as EventName<
       HTMLElementEventMap['rc-range-slider-change']
