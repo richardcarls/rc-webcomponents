@@ -10,9 +10,9 @@ import { RCTooltip as RCTooltipElement } from '@rcarls/rc-webcomponents/rc-toolt
 import '@rcarls/rc-webcomponents/rc-tooltip/define';
 
 /** React wrapper for `<rc-tooltip>`. Registers the element when this module loads. */
-export const RcTooltip = createComponent({
+export const RCTooltip = createComponent({
   tagName: 'rc-tooltip',
   elementClass: RCTooltipElement,
   react: React,
-  displayName: 'RcTooltip',
+  displayName: 'RCTooltip',
 });

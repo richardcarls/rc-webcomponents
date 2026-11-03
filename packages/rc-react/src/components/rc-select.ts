@@ -10,11 +10,11 @@ import { RCSelect as RCSelectElement } from '@rcarls/rc-webcomponents/rc-select'
 import '@rcarls/rc-webcomponents/rc-select/define';
 
 /** React wrapper for `<rc-select>`. Registers the element when this module loads. */
-export const RcSelect = createComponent({
+export const RCSelect = createComponent({
   tagName: 'rc-select',
   elementClass: RCSelectElement,
   react: React,
-  displayName: 'RcSelect',
+  displayName: 'RCSelect',
   events: {
     onRcSelectChange: 'rc-select-change' as EventName<HTMLElementEventMap['rc-select-change']>,
     onRcSelectClose: 'rc-select-close' as EventName<HTMLElementEventMap['rc-select-close']>,

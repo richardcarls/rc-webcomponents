@@ -13,11 +13,11 @@ import {
 import '@rcarls/rc-webcomponents/rc-carousel/define';
 
 /** React wrapper for `<rc-carousel>`. Registers the element when this module loads. */
-export const RcCarousel = createComponent({
+export const RCCarousel = createComponent({
   tagName: 'rc-carousel',
   elementClass: RCCarouselElement,
   react: React,
-  displayName: 'RcCarousel',
+  displayName: 'RCCarousel',
   events: {
     onRcCarouselChange: 'rc-carousel-change' as EventName<
       HTMLElementEventMap['rc-carousel-change']
@@ -26,9 +26,9 @@ export const RcCarousel = createComponent({
 });
 
 /** React wrapper for `<rc-carousel-item>`. Registers the element when this module loads. */
-export const RcCarouselItem = createComponent({
+export const RCCarouselItem = createComponent({
   tagName: 'rc-carousel-item',
   elementClass: RCCarouselItemElement,
   react: React,
-  displayName: 'RcCarouselItem',
+  displayName: 'RCCarouselItem',
 });

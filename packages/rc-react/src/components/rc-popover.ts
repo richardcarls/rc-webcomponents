@@ -10,11 +10,11 @@ import { RCPopover as RCPopoverElement } from '@rcarls/rc-webcomponents/rc-popov
 import '@rcarls/rc-webcomponents/rc-popover/define';
 
 /** React wrapper for `<rc-popover>`. Registers the element when this module loads. */
-export const RcPopover = createComponent({
+export const RCPopover = createComponent({
   tagName: 'rc-popover',
   elementClass: RCPopoverElement,
   react: React,
-  displayName: 'RcPopover',
+  displayName: 'RCPopover',
   events: {
     onRcPopoverToggle: 'rc-popover-toggle' as EventName<HTMLElementEventMap['rc-popover-toggle']>,
   },

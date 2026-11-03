@@ -10,11 +10,11 @@ import { RCTransferList as RCTransferListElement } from '@rcarls/rc-webcomponent
 import '@rcarls/rc-webcomponents/rc-transfer-list/define';
 
 /** React wrapper for `<rc-transfer-list>`. Registers the element when this module loads. */
-export const RcTransferList = createComponent({
+export const RCTransferList = createComponent({
   tagName: 'rc-transfer-list',
   elementClass: RCTransferListElement,
   react: React,
-  displayName: 'RcTransferList',
+  displayName: 'RCTransferList',
   events: {
     onRcTransferListChange: 'rc-transfer-list-change' as EventName<
       HTMLElementEventMap['rc-transfer-list-change']

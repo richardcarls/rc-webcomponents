@@ -10,11 +10,11 @@ import { RCAppBar as RCAppBarElement } from '@rcarls/rc-webcomponents/rc-app-bar
 import '@rcarls/rc-webcomponents/rc-app-bar/define';
 
 /** React wrapper for `<rc-app-bar>`. Registers the element when this module loads. */
-export const RcAppBar = createComponent({
+export const RCAppBar = createComponent({
   tagName: 'rc-app-bar',
   elementClass: RCAppBarElement,
   react: React,
-  displayName: 'RcAppBar',
+  displayName: 'RCAppBar',
   events: {
     onRcAppBarScroll: 'rc-app-bar-scroll' as EventName<HTMLElementEventMap['rc-app-bar-scroll']>,
   },

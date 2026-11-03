@@ -10,11 +10,11 @@ import { RCSlider as RCSliderElement } from '@rcarls/rc-webcomponents/rc-slider'
 import '@rcarls/rc-webcomponents/rc-slider/define';
 
 /** React wrapper for `<rc-slider>`. Registers the element when this module loads. */
-export const RcSlider = createComponent({
+export const RCSlider = createComponent({
   tagName: 'rc-slider',
   elementClass: RCSliderElement,
   react: React,
-  displayName: 'RcSlider',
+  displayName: 'RCSlider',
   events: {
     onRcSliderChange: 'rc-slider-change' as EventName<HTMLElementEventMap['rc-slider-change']>,
     onRcSliderInput: 'rc-slider-input' as EventName<HTMLElementEventMap['rc-slider-input']>,

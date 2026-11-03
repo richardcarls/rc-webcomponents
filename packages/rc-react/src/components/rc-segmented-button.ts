@@ -10,11 +10,11 @@ import { RCSegmentedButton as RCSegmentedButtonElement } from '@rcarls/rc-webcom
 import '@rcarls/rc-webcomponents/rc-segmented-button/define';
 
 /** React wrapper for `<rc-segmented-button>`. Registers the element when this module loads. */
-export const RcSegmentedButton = createComponent({
+export const RCSegmentedButton = createComponent({
   tagName: 'rc-segmented-button',
   elementClass: RCSegmentedButtonElement,
   react: React,
-  displayName: 'RcSegmentedButton',
+  displayName: 'RCSegmentedButton',
   events: {
     onRcSegmentedButtonChange: 'rc-segmented-button-change' as EventName<
       HTMLElementEventMap['rc-segmented-button-change']

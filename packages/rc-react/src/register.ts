@@ -2,11 +2,11 @@
 
 import { useEffect } from 'react';
 
-import { elementLoaders, type RcElementTag } from './loaders.js';
+import { elementLoaders, type RCElementTag } from './loaders.js';
 
-export interface RcRegisterProps {
+export interface RCRegisterProps {
   /** The custom element tags this page renders directly, such as `rc-card`. */
-  tags: readonly RcElementTag[];
+  tags: readonly RCElementTag[];
 }
 
 /**
@@ -19,16 +19,16 @@ export interface RcRegisterProps {
  * The wrapper components from this package's subpaths register themselves and
  * do not need it.
  */
-export function RcRegister({ tags }: RcRegisterProps): null {
+export function RCRegister({ tags }: RCRegisterProps): null {
   const key = [...new Set(tags)].sort().join(' ');
 
   useEffect(() => {
     for (const tag of key.split(' ')) {
-      const load = elementLoaders[tag as RcElementTag];
+      const load = elementLoaders[tag as RCElementTag];
 
       if (!load) {
         if (import.meta.env.DEV) {
-          console.warn(`[rc-react] <RcRegister> has no definition for "${tag}".`);
+          console.warn(`[rc-react] <RCRegister> has no definition for "${tag}".`);
         }
 
         continue;
@@ -36,7 +36,7 @@ export function RcRegister({ tags }: RcRegisterProps): null {
 
       load().catch((error: unknown) => {
         if (import.meta.env.DEV) {
-          console.error(`[rc-react] <RcRegister> could not load "${tag}".`, error);
+          console.error(`[rc-react] <RCRegister> could not load "${tag}".`, error);
         }
       });
     }

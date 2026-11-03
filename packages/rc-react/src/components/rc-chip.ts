@@ -10,11 +10,11 @@ import { RCChip as RCChipElement } from '@rcarls/rc-webcomponents/rc-chip';
 import '@rcarls/rc-webcomponents/rc-chip/define';
 
 /** React wrapper for `<rc-chip>`. Registers the element when this module loads. */
-export const RcChip = createComponent({
+export const RCChip = createComponent({
   tagName: 'rc-chip',
   elementClass: RCChipElement,
   react: React,
-  displayName: 'RcChip',
+  displayName: 'RCChip',
   events: {
     onRcChipChange: 'rc-chip-change' as EventName<HTMLElementEventMap['rc-chip-change']>,
     onRcChipRemove: 'rc-chip-remove' as EventName<HTMLElementEventMap['rc-chip-remove']>,

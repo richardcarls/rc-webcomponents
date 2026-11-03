@@ -10,9 +10,9 @@ import { RCToolbar as RCToolbarElement } from '@rcarls/rc-webcomponents/rc-toolb
 import '@rcarls/rc-webcomponents/rc-toolbar/define';
 
 /** React wrapper for `<rc-toolbar>`. Registers the element when this module loads. */
-export const RcToolbar = createComponent({
+export const RCToolbar = createComponent({
   tagName: 'rc-toolbar',
   elementClass: RCToolbarElement,
   react: React,
-  displayName: 'RcToolbar',
+  displayName: 'RCToolbar',
 });

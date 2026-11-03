@@ -10,9 +10,9 @@ import { RCFab as RCFabElement } from '@rcarls/rc-webcomponents/rc-fab';
 import '@rcarls/rc-webcomponents/rc-fab/define';
 
 /** React wrapper for `<rc-fab>`. Registers the element when this module loads. */
-export const RcFab = createComponent({
+export const RCFab = createComponent({
   tagName: 'rc-fab',
   elementClass: RCFabElement,
   react: React,
-  displayName: 'RcFab',
+  displayName: 'RCFab',
 });

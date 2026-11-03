@@ -10,11 +10,11 @@ import { RCVirtualScroller as RCVirtualScrollerElement } from '@rcarls/rc-webcom
 import '@rcarls/rc-webcomponents/rc-virtual-scroller/define';
 
 /** React wrapper for `<rc-virtual-scroller>`. Registers the element when this module loads. */
-export const RcVirtualScroller = createComponent({
+export const RCVirtualScroller = createComponent({
   tagName: 'rc-virtual-scroller',
   elementClass: RCVirtualScrollerElement,
   react: React,
-  displayName: 'RcVirtualScroller',
+  displayName: 'RCVirtualScroller',
   events: {
     onRcVirtualScrollerRange: 'rc-virtual-scroller-range' as EventName<
       HTMLElementEventMap['rc-virtual-scroller-range']

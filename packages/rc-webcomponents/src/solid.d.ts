@@ -33,7 +33,7 @@ import type { RCFabMenu } from '@rcarls/rc-fab-menu';
 import type { RCField } from '@rcarls/rc-field';
 import type { RCList, RCListItem } from '@rcarls/rc-list';
 import type { RCListbox } from '@rcarls/rc-listbox';
-import type { RcEditorToolbar, RcMarkdownEditor } from '@rcarls/rc-markdown-editor';
+import type { RCEditorToolbar, RCMarkdownEditor } from '@rcarls/rc-markdown-editor';
 import type { RCMenu } from '@rcarls/rc-menu';
 import type { RCMenuButton } from '@rcarls/rc-menu-button';
 import type { RCMenubar } from '@rcarls/rc-menubar';
@@ -409,35 +409,35 @@ declare module 'solid-js' {
       >;
 
       'rc-editor-toolbar': RCElementProps<
-        RcEditorToolbar,
+        RCEditorToolbar,
         {
-          'active-blockquote'?: RCAttribute<RcEditorToolbar['activeBlockquote']>;
-          'active-bold'?: RCAttribute<RcEditorToolbar['activeBold']>;
-          'active-bullet-list'?: RCAttribute<RcEditorToolbar['activeBulletList']>;
-          'active-code'?: RCAttribute<RcEditorToolbar['activeCode']>;
-          'active-code-block'?: RCAttribute<RcEditorToolbar['activeCodeBlock']>;
-          'active-heading'?: RCAttribute<RcEditorToolbar['activeHeading']>;
-          'active-italic'?: RCAttribute<RcEditorToolbar['activeItalic']>;
-          'active-link'?: RCAttribute<RcEditorToolbar['activeLink']>;
-          'active-ordered-list'?: RCAttribute<RcEditorToolbar['activeOrderedList']>;
-          'active-strikethrough'?: RCAttribute<RcEditorToolbar['activeStrikethrough']>;
-          'active-underline'?: RCAttribute<RcEditorToolbar['activeUnderline']>;
-          'code-language'?: RCAttribute<RcEditorToolbar['codeLanguage']>;
-          'source-mode'?: RCAttribute<RcEditorToolbar['sourceMode']>;
-          'prop:activeBlockquote'?: RcEditorToolbar['activeBlockquote'];
-          'prop:activeBold'?: RcEditorToolbar['activeBold'];
-          'prop:activeBulletList'?: RcEditorToolbar['activeBulletList'];
-          'prop:activeCode'?: RcEditorToolbar['activeCode'];
-          'prop:activeCodeBlock'?: RcEditorToolbar['activeCodeBlock'];
-          'prop:activeHeading'?: RcEditorToolbar['activeHeading'];
-          'prop:activeItalic'?: RcEditorToolbar['activeItalic'];
-          'prop:activeLink'?: RcEditorToolbar['activeLink'];
-          'prop:activeOrderedList'?: RcEditorToolbar['activeOrderedList'];
-          'prop:activeStrikethrough'?: RcEditorToolbar['activeStrikethrough'];
-          'prop:activeUnderline'?: RcEditorToolbar['activeUnderline'];
-          'prop:codeLanguage'?: RcEditorToolbar['codeLanguage'];
-          'prop:messages'?: RcEditorToolbar['messages'];
-          'prop:sourceMode'?: RcEditorToolbar['sourceMode'];
+          'active-blockquote'?: RCAttribute<RCEditorToolbar['activeBlockquote']>;
+          'active-bold'?: RCAttribute<RCEditorToolbar['activeBold']>;
+          'active-bullet-list'?: RCAttribute<RCEditorToolbar['activeBulletList']>;
+          'active-code'?: RCAttribute<RCEditorToolbar['activeCode']>;
+          'active-code-block'?: RCAttribute<RCEditorToolbar['activeCodeBlock']>;
+          'active-heading'?: RCAttribute<RCEditorToolbar['activeHeading']>;
+          'active-italic'?: RCAttribute<RCEditorToolbar['activeItalic']>;
+          'active-link'?: RCAttribute<RCEditorToolbar['activeLink']>;
+          'active-ordered-list'?: RCAttribute<RCEditorToolbar['activeOrderedList']>;
+          'active-strikethrough'?: RCAttribute<RCEditorToolbar['activeStrikethrough']>;
+          'active-underline'?: RCAttribute<RCEditorToolbar['activeUnderline']>;
+          'code-language'?: RCAttribute<RCEditorToolbar['codeLanguage']>;
+          'source-mode'?: RCAttribute<RCEditorToolbar['sourceMode']>;
+          'prop:activeBlockquote'?: RCEditorToolbar['activeBlockquote'];
+          'prop:activeBold'?: RCEditorToolbar['activeBold'];
+          'prop:activeBulletList'?: RCEditorToolbar['activeBulletList'];
+          'prop:activeCode'?: RCEditorToolbar['activeCode'];
+          'prop:activeCodeBlock'?: RCEditorToolbar['activeCodeBlock'];
+          'prop:activeHeading'?: RCEditorToolbar['activeHeading'];
+          'prop:activeItalic'?: RCEditorToolbar['activeItalic'];
+          'prop:activeLink'?: RCEditorToolbar['activeLink'];
+          'prop:activeOrderedList'?: RCEditorToolbar['activeOrderedList'];
+          'prop:activeStrikethrough'?: RCEditorToolbar['activeStrikethrough'];
+          'prop:activeUnderline'?: RCEditorToolbar['activeUnderline'];
+          'prop:codeLanguage'?: RCEditorToolbar['codeLanguage'];
+          'prop:messages'?: RCEditorToolbar['messages'];
+          'prop:sourceMode'?: RCEditorToolbar['sourceMode'];
         },
         'rc-toolbar-action'
       >;
@@ -556,21 +556,21 @@ declare module 'solid-js' {
       >;
 
       'rc-markdown-editor': RCElementProps<
-        RcMarkdownEditor,
+        RCMarkdownEditor,
         {
-          'default-source-mode'?: RCAttribute<RcMarkdownEditor['defaultSourceMode']>;
-          'default-value'?: RCAttribute<RcMarkdownEditor['defaultValue']>;
-          'hide-toolbar'?: RCAttribute<RcMarkdownEditor['hideToolbar']>;
-          'read-only'?: RCAttribute<RcMarkdownEditor['readOnly']>;
-          'source-mode'?: RCAttribute<RcMarkdownEditor['sourceMode']>;
-          value?: RCAttribute<RcMarkdownEditor['value']>;
-          'prop:defaultSourceMode'?: RcMarkdownEditor['defaultSourceMode'];
-          'prop:defaultValue'?: RcMarkdownEditor['defaultValue'];
-          'prop:hideToolbar'?: RcMarkdownEditor['hideToolbar'];
-          'prop:messages'?: RcMarkdownEditor['messages'];
-          'prop:readOnly'?: RcMarkdownEditor['readOnly'];
-          'prop:sourceMode'?: RcMarkdownEditor['sourceMode'];
-          'prop:value'?: RcMarkdownEditor['value'];
+          'default-source-mode'?: RCAttribute<RCMarkdownEditor['defaultSourceMode']>;
+          'default-value'?: RCAttribute<RCMarkdownEditor['defaultValue']>;
+          'hide-toolbar'?: RCAttribute<RCMarkdownEditor['hideToolbar']>;
+          'read-only'?: RCAttribute<RCMarkdownEditor['readOnly']>;
+          'source-mode'?: RCAttribute<RCMarkdownEditor['sourceMode']>;
+          value?: RCAttribute<RCMarkdownEditor['value']>;
+          'prop:defaultSourceMode'?: RCMarkdownEditor['defaultSourceMode'];
+          'prop:defaultValue'?: RCMarkdownEditor['defaultValue'];
+          'prop:hideToolbar'?: RCMarkdownEditor['hideToolbar'];
+          'prop:messages'?: RCMarkdownEditor['messages'];
+          'prop:readOnly'?: RCMarkdownEditor['readOnly'];
+          'prop:sourceMode'?: RCMarkdownEditor['sourceMode'];
+          'prop:value'?: RCMarkdownEditor['value'];
         },
         'rc-change' | 'rc-formatting-change' | 'rc-mode-change'
       >;

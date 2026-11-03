@@ -10,11 +10,11 @@ import { RCNavigationRail as RCNavigationRailElement } from '@rcarls/rc-webcompo
 import '@rcarls/rc-webcomponents/rc-navigation-rail/define';
 
 /** React wrapper for `<rc-navigation-rail>`. Registers the element when this module loads. */
-export const RcNavigationRail = createComponent({
+export const RCNavigationRail = createComponent({
   tagName: 'rc-navigation-rail',
   elementClass: RCNavigationRailElement,
   react: React,
-  displayName: 'RcNavigationRail',
+  displayName: 'RCNavigationRail',
   events: {
     onRcNavigationRailToggle: 'rc-navigation-rail-toggle' as EventName<
       HTMLElementEventMap['rc-navigation-rail-toggle']

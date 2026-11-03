@@ -33,7 +33,7 @@ import type { RCFabMenu } from '@rcarls/rc-fab-menu';
 import type { RCField } from '@rcarls/rc-field';
 import type { RCList, RCListItem } from '@rcarls/rc-list';
 import type { RCListbox } from '@rcarls/rc-listbox';
-import type { RcEditorToolbar, RcMarkdownEditor } from '@rcarls/rc-markdown-editor';
+import type { RCEditorToolbar, RCMarkdownEditor } from '@rcarls/rc-markdown-editor';
 import type { RCMenu } from '@rcarls/rc-menu';
 import type { RCMenuButton } from '@rcarls/rc-menu-button';
 import type { RCMenubar } from '@rcarls/rc-menubar';
@@ -312,22 +312,22 @@ declare module 'vue' {
     >;
 
     'rc-editor-toolbar': RCVueElement<
-      RcEditorToolbar,
+      RCEditorToolbar,
       {
-        activeBlockquote?: RcEditorToolbar['activeBlockquote'];
-        activeBold?: RcEditorToolbar['activeBold'];
-        activeBulletList?: RcEditorToolbar['activeBulletList'];
-        activeCode?: RcEditorToolbar['activeCode'];
-        activeCodeBlock?: RcEditorToolbar['activeCodeBlock'];
-        activeHeading?: RcEditorToolbar['activeHeading'];
-        activeItalic?: RcEditorToolbar['activeItalic'];
-        activeLink?: RcEditorToolbar['activeLink'];
-        activeOrderedList?: RcEditorToolbar['activeOrderedList'];
-        activeStrikethrough?: RcEditorToolbar['activeStrikethrough'];
-        activeUnderline?: RcEditorToolbar['activeUnderline'];
-        codeLanguage?: RcEditorToolbar['codeLanguage'];
-        messages?: RcEditorToolbar['messages'];
-        sourceMode?: RcEditorToolbar['sourceMode'];
+        activeBlockquote?: RCEditorToolbar['activeBlockquote'];
+        activeBold?: RCEditorToolbar['activeBold'];
+        activeBulletList?: RCEditorToolbar['activeBulletList'];
+        activeCode?: RCEditorToolbar['activeCode'];
+        activeCodeBlock?: RCEditorToolbar['activeCodeBlock'];
+        activeHeading?: RCEditorToolbar['activeHeading'];
+        activeItalic?: RCEditorToolbar['activeItalic'];
+        activeLink?: RCEditorToolbar['activeLink'];
+        activeOrderedList?: RCEditorToolbar['activeOrderedList'];
+        activeStrikethrough?: RCEditorToolbar['activeStrikethrough'];
+        activeUnderline?: RCEditorToolbar['activeUnderline'];
+        codeLanguage?: RCEditorToolbar['codeLanguage'];
+        messages?: RCEditorToolbar['messages'];
+        sourceMode?: RCEditorToolbar['sourceMode'];
       },
       'rc-toolbar-action'
     >;
@@ -424,15 +424,15 @@ declare module 'vue' {
     >;
 
     'rc-markdown-editor': RCVueElement<
-      RcMarkdownEditor,
+      RCMarkdownEditor,
       {
-        defaultSourceMode?: RcMarkdownEditor['defaultSourceMode'];
-        defaultValue?: RcMarkdownEditor['defaultValue'];
-        hideToolbar?: RcMarkdownEditor['hideToolbar'];
-        messages?: RcMarkdownEditor['messages'];
-        readOnly?: RcMarkdownEditor['readOnly'];
-        sourceMode?: RcMarkdownEditor['sourceMode'];
-        value?: RcMarkdownEditor['value'];
+        defaultSourceMode?: RCMarkdownEditor['defaultSourceMode'];
+        defaultValue?: RCMarkdownEditor['defaultValue'];
+        hideToolbar?: RCMarkdownEditor['hideToolbar'];
+        messages?: RCMarkdownEditor['messages'];
+        readOnly?: RCMarkdownEditor['readOnly'];
+        sourceMode?: RCMarkdownEditor['sourceMode'];
+        value?: RCMarkdownEditor['value'];
       },
       'rc-change' | 'rc-formatting-change' | 'rc-mode-change'
     >;

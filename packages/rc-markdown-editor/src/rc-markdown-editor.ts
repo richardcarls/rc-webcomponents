@@ -339,7 +339,7 @@ declare module '@rcarls/rc-common' {
  * @cssprop [--rc-markdown-editor-src-list-color=light-dark(#7a5c0a, #d4ac48)] - Source-mode list marker token color
  * @cssprop [--rc-markdown-editor-src-dim-color=GrayText] - Source-mode strikethrough token color
  */
-export class RcMarkdownEditor extends LitElement {
+export class RCMarkdownEditor extends LitElement {
   static override styles = rmeStyles;
 
   /** Built-in text overrides; unset keys fall back to registered text, then English. */

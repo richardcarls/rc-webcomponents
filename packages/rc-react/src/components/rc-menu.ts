@@ -10,11 +10,11 @@ import { RCMenu as RCMenuElement } from '@rcarls/rc-webcomponents/rc-menu';
 import '@rcarls/rc-webcomponents/rc-menu/define';
 
 /** React wrapper for `<rc-menu>`. Registers the element when this module loads. */
-export const RcMenu = createComponent({
+export const RCMenu = createComponent({
   tagName: 'rc-menu',
   elementClass: RCMenuElement,
   react: React,
-  displayName: 'RcMenu',
+  displayName: 'RCMenu',
   events: {
     onRcMenuActivate: 'rc-menu-activate' as EventName<HTMLElementEventMap['rc-menu-activate']>,
     onRcMenuClose: 'rc-menu-close' as EventName<HTMLElementEventMap['rc-menu-close']>,

@@ -10,11 +10,11 @@ import { RCDataTable as RCDataTableElement } from '@rcarls/rc-webcomponents/rc-d
 import '@rcarls/rc-webcomponents/rc-data-table/define';
 
 /** React wrapper for `<rc-data-table>`. Registers the element when this module loads. */
-export const RcDataTable = createComponent({
+export const RCDataTable = createComponent({
   tagName: 'rc-data-table',
   elementClass: RCDataTableElement,
   react: React,
-  displayName: 'RcDataTable',
+  displayName: 'RCDataTable',
   events: {
     onRcDataTableSort: 'rc-data-table-sort' as EventName<HTMLElementEventMap['rc-data-table-sort']>,
   },

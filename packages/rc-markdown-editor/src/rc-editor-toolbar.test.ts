@@ -4,14 +4,14 @@ import { html } from 'lit';
 
 import { registerMessages } from '@rcarls/rc-common';
 import './define.js';
-import type { RcEditorToolbar } from './rc-editor-toolbar.js';
+import type { RCEditorToolbar } from './rc-editor-toolbar.js';
 import type { EditorToolbarActionDetail } from './types.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
-describe('RcEditorToolbar', () => {
+describe('RCEditorToolbar', () => {
   test('renders 11 default buttons plus heading select', async () => {
     const screen = render(html` <rc-editor-toolbar data-testid="host"></rc-editor-toolbar> `);
-    const host = screen.getByTestId('host').element() as RcEditorToolbar;
+    const host = screen.getByTestId('host').element() as RCEditorToolbar;
 
     await host.updateComplete;
 
@@ -25,7 +25,7 @@ describe('RcEditorToolbar', () => {
 
   test('all default buttons have a non-empty aria-label', async () => {
     const screen = render(html` <rc-editor-toolbar data-testid="host"></rc-editor-toolbar> `);
-    const host = screen.getByTestId('host').element() as RcEditorToolbar;
+    const host = screen.getByTestId('host').element() as RCEditorToolbar;
 
     await host.updateComplete;
 
@@ -38,7 +38,7 @@ describe('RcEditorToolbar', () => {
 
   test('clicking Bold dispatches rc-toolbar-action with action "bold"', async () => {
     const screen = render(html` <rc-editor-toolbar data-testid="host"></rc-editor-toolbar> `);
-    const host = screen.getByTestId('host').element() as RcEditorToolbar;
+    const host = screen.getByTestId('host').element() as RCEditorToolbar;
 
     await host.updateComplete;
 
@@ -59,7 +59,7 @@ describe('RcEditorToolbar', () => {
 
   test('dispatches correct action for each default button', async () => {
     const screen = render(html` <rc-editor-toolbar data-testid="host"></rc-editor-toolbar> `);
-    const host = screen.getByTestId('host').element() as RcEditorToolbar;
+    const host = screen.getByTestId('host').element() as RCEditorToolbar;
 
     await host.updateComplete;
 
@@ -107,7 +107,7 @@ describe('RcEditorToolbar', () => {
 
   test('the heading select shows the active level and dispatches a heading change', async () => {
     const screen = render(html` <rc-editor-toolbar data-testid="host"></rc-editor-toolbar> `);
-    const host = screen.getByTestId('host').element() as RcEditorToolbar;
+    const host = screen.getByTestId('host').element() as RCEditorToolbar;
     const details: EditorToolbarActionDetail[] = [];
 
     host.addEventListener('rc-toolbar-action', (event) => {
@@ -142,7 +142,7 @@ describe('RcEditorToolbar', () => {
 
   test('has no automated accessibility violations', async () => {
     const screen = render(html` <rc-editor-toolbar data-testid="host"></rc-editor-toolbar> `);
-    const host = screen.getByTestId('host').element() as RcEditorToolbar;
+    const host = screen.getByTestId('host').element() as RCEditorToolbar;
 
     await host.updateComplete;
 
@@ -161,7 +161,7 @@ describe('localization', () => {
 
   test('renders registered text for its own lang, with overrides on top', async () => {
     const screen = render(html`<rc-editor-toolbar lang="ar" dir="rtl"></rc-editor-toolbar>`);
-    const host = (await screen.container.querySelector('rc-editor-toolbar')) as RcEditorToolbar;
+    const host = (await screen.container.querySelector('rc-editor-toolbar')) as RCEditorToolbar;
 
     await host.updateComplete;
 

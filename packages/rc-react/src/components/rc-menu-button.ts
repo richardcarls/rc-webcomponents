@@ -10,11 +10,11 @@ import { RCMenuButton as RCMenuButtonElement } from '@rcarls/rc-webcomponents/rc
 import '@rcarls/rc-webcomponents/rc-menu-button/define';
 
 /** React wrapper for `<rc-menu-button>`. Registers the element when this module loads. */
-export const RcMenuButton = createComponent({
+export const RCMenuButton = createComponent({
   tagName: 'rc-menu-button',
   elementClass: RCMenuButtonElement,
   react: React,
-  displayName: 'RcMenuButton',
+  displayName: 'RCMenuButton',
   events: {
     onRcMenuButtonToggle: 'rc-menu-button-toggle' as EventName<
       HTMLElementEventMap['rc-menu-button-toggle']

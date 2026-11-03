@@ -10,9 +10,9 @@ import { RCField as RCFieldElement } from '@rcarls/rc-webcomponents/rc-field';
 import '@rcarls/rc-webcomponents/rc-field/define';
 
 /** React wrapper for `<rc-field>`. Registers the element when this module loads. */
-export const RcField = createComponent({
+export const RCField = createComponent({
   tagName: 'rc-field',
   elementClass: RCFieldElement,
   react: React,
-  displayName: 'RcField',
+  displayName: 'RCField',
 });

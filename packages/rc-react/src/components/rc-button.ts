@@ -10,11 +10,11 @@ import { RCButton as RCButtonElement } from '@rcarls/rc-webcomponents/rc-button'
 import '@rcarls/rc-webcomponents/rc-button/define';
 
 /** React wrapper for `<rc-button>`. Registers the element when this module loads. */
-export const RcButton = createComponent({
+export const RCButton = createComponent({
   tagName: 'rc-button',
   elementClass: RCButtonElement,
   react: React,
-  displayName: 'RcButton',
+  displayName: 'RCButton',
   events: {
     onRcButtonToggle: 'rc-button-toggle' as EventName<HTMLElementEventMap['rc-button-toggle']>,
   },

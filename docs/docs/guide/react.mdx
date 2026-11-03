@@ -113,22 +113,34 @@ registers the element when it loads:
 ```tsx
 'use client';
 
-import { RcSelect } from '@rcarls/rc-react/rc-select';
+import { RCSelect } from '@rcarls/rc-react/rc-select';
 
 export function StatusPicker() {
   return (
-    <RcSelect popup-mode="dialog" onRcSelectChange={(event) => console.log(event.detail.value)}>
+    <RCSelect popup-mode="dialog" onRcSelectChange={(event) => console.log(event.detail.value)}>
       <select name="status" aria-label="Status">
         <option value="draft">Draft</option>
         <option value="published">Published</option>
       </select>
-    </RcSelect>
+    </RCSelect>
   );
 }
 ```
 
-Wrapper refs resolve to the element instance, typed as its class. Event props are the event
-name in camel case: `rc-select-change` becomes `onRcSelectChange`.
+Each wrapper has the same name as the element class it wraps, so `<rc-select>` is `RCSelect`
+in both packages. Wrapper refs resolve to the element instance, typed as that class; a module
+that imports both names aliases the element type:
+
+```tsx
+import { useRef } from 'react';
+
+import type { RCSelect as RCSelectElement } from '@rcarls/rc-webcomponents/rc-select';
+import { RCSelect } from '@rcarls/rc-react/rc-select';
+
+const ref = useRef<RCSelectElement>(null);
+```
+
+Event props are the event name in camel case: `rc-select-change` becomes `onRcSelectChange`.
 
 ## Server rendering and Next.js
 
@@ -140,10 +152,10 @@ server render:
   properties are set in the browser after hydration, so pass the attribute form for state
   the server markup needs.
 - Plain tags from a React Server Component render as written and upgrade once their
-  definitions load. Render `RcRegister` once in the root layout with every such tag:
+  definitions load. Render `RCRegister` once in the root layout with every such tag:
 
 ```tsx title="app/layout.tsx"
-import { RcRegister } from '@rcarls/rc-react';
+import { RCRegister } from '@rcarls/rc-react';
 import './globals.css';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -151,14 +163,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         {children}
-        <RcRegister tags={['rc-app-bar', 'rc-card', 'rc-chip']} />
+        <RCRegister tags={['rc-app-bar', 'rc-card', 'rc-chip']} />
       </body>
     </html>
   );
 }
 ```
 
-`RcRegister` loads each definition as its own chunk after hydration, so React matches the
+`RCRegister` loads each definition as its own chunk after hydration, so React matches the
 server markup before any element upgrades and adds its own attributes.
 
 To keep the native markup laid out before upgrade, load the static base and pre-upgrade
@@ -211,7 +223,7 @@ three places:
   all of them. Bundle all of them rather than a list: a package left out, such as
   `@lit/react`, loads a second copy of React.
 - **Register the elements on the server in `entry.server.tsx`**, after the patch, and in the
-  browser with `RcRegister`. A `define` import in a route module also runs in the browser
+  browser with `RCRegister`. A `define` import in a route module also runs in the browser
   before React hydrates, and React's development build then reports the attributes the
   elements wrote on their native children, such as `role="switch"` or a page link's
   `aria-label`.
@@ -239,7 +251,7 @@ import '@rcarls/rc-webcomponents/rc-switch/define';
 
 ```tsx title="app/root.tsx"
 import '@lit-labs/ssr-react/enable-lit-ssr.js';
-import { RcRegister } from '@rcarls/rc-react';
+import { RCRegister } from '@rcarls/rc-react';
 import { Links, Meta, Scripts, ScrollRestoration } from 'react-router';
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -251,7 +263,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
-        <RcRegister tags={['rc-chip', 'rc-switch']} />
+        <RCRegister tags={['rc-chip', 'rc-switch']} />
         <ScrollRestoration />
         <Scripts />
       </body>

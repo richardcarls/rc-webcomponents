@@ -10,11 +10,11 @@ import { RCListbox as RCListboxElement } from '@rcarls/rc-webcomponents/rc-listb
 import '@rcarls/rc-webcomponents/rc-listbox/define';
 
 /** React wrapper for `<rc-listbox>`. Registers the element when this module loads. */
-export const RcListbox = createComponent({
+export const RCListbox = createComponent({
   tagName: 'rc-listbox',
   elementClass: RCListboxElement,
   react: React,
-  displayName: 'RcListbox',
+  displayName: 'RCListbox',
   events: {
     onRcListboxChange: 'rc-listbox-change' as EventName<HTMLElementEventMap['rc-listbox-change']>,
   },

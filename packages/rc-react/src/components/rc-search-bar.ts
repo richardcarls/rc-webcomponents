@@ -10,11 +10,11 @@ import { RCSearchBar as RCSearchBarElement } from '@rcarls/rc-webcomponents/rc-s
 import '@rcarls/rc-webcomponents/rc-search-bar/define';
 
 /** React wrapper for `<rc-search-bar>`. Registers the element when this module loads. */
-export const RcSearchBar = createComponent({
+export const RCSearchBar = createComponent({
   tagName: 'rc-search-bar',
   elementClass: RCSearchBarElement,
   react: React,
-  displayName: 'RcSearchBar',
+  displayName: 'RCSearchBar',
   events: {
     onRcSearchBarClear: 'rc-search-bar-clear' as EventName<
       HTMLElementEventMap['rc-search-bar-clear']

@@ -10,11 +10,11 @@ import { RCFabMenu as RCFabMenuElement } from '@rcarls/rc-webcomponents/rc-fab-m
 import '@rcarls/rc-webcomponents/rc-fab-menu/define';
 
 /** React wrapper for `<rc-fab-menu>`. Registers the element when this module loads. */
-export const RcFabMenu = createComponent({
+export const RCFabMenu = createComponent({
   tagName: 'rc-fab-menu',
   elementClass: RCFabMenuElement,
   react: React,
-  displayName: 'RcFabMenu',
+  displayName: 'RCFabMenu',
   events: {
     onRcFabMenuToggle: 'rc-fab-menu-toggle' as EventName<HTMLElementEventMap['rc-fab-menu-toggle']>,
     onRcMenuButtonToggle: 'rc-menu-button-toggle' as EventName<

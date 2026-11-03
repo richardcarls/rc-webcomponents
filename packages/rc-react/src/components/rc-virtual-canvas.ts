@@ -10,11 +10,11 @@ import { RCVirtualCanvas as RCVirtualCanvasElement } from '@rcarls/rc-webcompone
 import '@rcarls/rc-webcomponents/rc-virtual-canvas/define';
 
 /** React wrapper for `<rc-virtual-canvas>`. Registers the element when this module loads. */
-export const RcVirtualCanvas = createComponent({
+export const RCVirtualCanvas = createComponent({
   tagName: 'rc-virtual-canvas',
   elementClass: RCVirtualCanvasElement,
   react: React,
-  displayName: 'RcVirtualCanvas',
+  displayName: 'RCVirtualCanvas',
   events: {
     onRcVirtualCanvasPointer: 'rc-virtual-canvas-pointer' as EventName<
       HTMLElementEventMap['rc-virtual-canvas-pointer']

@@ -10,11 +10,11 @@ import { RCDialog as RCDialogElement } from '@rcarls/rc-webcomponents/rc-dialog'
 import '@rcarls/rc-webcomponents/rc-dialog/define';
 
 /** React wrapper for `<rc-dialog>`. Registers the element when this module loads. */
-export const RcDialog = createComponent({
+export const RCDialog = createComponent({
   tagName: 'rc-dialog',
   elementClass: RCDialogElement,
   react: React,
-  displayName: 'RcDialog',
+  displayName: 'RCDialog',
   events: {
     onRcDialogCancel: 'rc-dialog-cancel' as EventName<HTMLElementEventMap['rc-dialog-cancel']>,
     onRcDialogClose: 'rc-dialog-close' as EventName<HTMLElementEventMap['rc-dialog-close']>,
