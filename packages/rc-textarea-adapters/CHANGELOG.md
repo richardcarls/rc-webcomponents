@@ -1,5 +1,16 @@
 # @rcarls/rc-textarea-adapters
 
+## 0.7.0
+
+### Minor Changes
+
+- 253ba66: Correct package dependency declarations and prevent bundled Markdown implementation types from
+  leaking into the editor declarations.
+
+  BREAKING CHANGE: `@rcarls/rc-textarea-adapters` now treats `@rcarls/rc-textarea` as a peer instead
+  of installing it as a runtime dependency. Both textarea extension packages require a compatible
+  pre-1 `@rcarls/rc-textarea` release; install it alongside either extension package when upgrading.
+
 ## 0.6.0
 
 ### Patch Changes

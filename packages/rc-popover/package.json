@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Anchored non-modal surface around a native trigger and consumer-owned content.",
   "repository": {
     "type": "git",

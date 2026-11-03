@@ -1,5 +1,24 @@
 # @rcarls/rc-virtual-canvas
 
+## 0.7.0
+
+### Patch Changes
+
+- 5c006de: Ship component CSS minified. Package builds now run the CSS in Lit `css` styles
+  and light-DOM structural styles through Lightning CSS, removing comments and
+  whitespace while keeping source maps that resolve to each template. Rendered
+  styles are unchanged.
+
+  `@rcarls/rc-common` adds `cssText`, an identity tag that marks a plain CSS
+  string for minification. `rc-chip`, `rc-disclosure`, and `rc-accordion` now
+  depend on `@rcarls/rc-common` for it.
+
+- 1740c28: Map browser client coordinates to content CSS pixels independently of the canvas
+  backing-store resolution. Pointer coordinates no longer double under a 2x
+  backing store, and CSS zoom no longer changes the meaning of content positions.
+  `canvasScaleX` and `canvasScaleY` now report backing-store pixels per local CSS
+  pixel, so they remain accurate when an ancestor applies CSS zoom.
+
 ## 0.6.0
 
 ### Patch Changes

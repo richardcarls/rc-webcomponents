@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Headless virtualization wrapper that reports the visible index range for a consumer-owned list or grid and reserves the off-range scroll space.",
   "repository": {
     "type": "git",
