@@ -263,11 +263,11 @@ function localHeight(target: HTMLElement): number {
  * Dragging the resize handle past a decisive velocity in either direction
  * (a "swipe" or "fling," distinct from a slow deliberate drag) settles at
  * the next `snap-points` entry beyond the release height in that direction,
- * as Material's Android bottom sheet steps from collapsed to half-expanded
- * to expanded, regardless of how close the release position was to some
- * other point. Below that velocity, the sheet settles to whichever declared
- * snap point is nearest the release height. All settling, whether from a
- * drag or from `snapTo()`, animates over `--rc-bottom-sheet-snap-duration`,
+ * as Material's Android bottom sheet uses the release position when choosing
+ * between half-expanded and expanded. A longer swipe can cross a snap point.
+ * Below that velocity, the sheet settles to whichever declared snap point is
+ * nearest the release height. All settling, whether from a drag or from
+ * `snapTo()`, animates over `--rc-bottom-sheet-snap-duration`,
  * follows `--rc-bottom-sheet-snap-easing`, and is skipped for
  * `prefers-reduced-motion: reduce`.
  *
@@ -385,8 +385,9 @@ export class RCBottomSheet extends RCDialog {
    * Whitespace-separated CSS heights in ascending order.
    *
    * Each height becomes an addressable snap target. Slow releases choose the
-   * nearest target, while decisive swipes choose the first or last target.
-   * Any CSS length works, including `calc()` and `var()`, and is resolved in
+   * nearest target, while decisive swipes choose the next target beyond the
+   * release height in their direction. Any CSS length works, including
+   * `calc()`, `var()`, and container query units, and is resolved in
    * the sheet's own context when a snap is applied, so a custom property the
    * page animates (for example from a scroll timeline) is read at its current
    * value. Percentages are of the viewport height.
@@ -397,7 +398,8 @@ export class RCBottomSheet extends RCDialog {
   /**
    * Whether a downward pointer resize of at least 96 pixels requests close.
    *
-   * When false, a decisive downward swipe settles at the first snap point.
+   * When false, a decisive downward swipe settles at the next snap point
+   * below the release height.
    */
   @property({ type: Boolean, attribute: 'swipe-dismiss' })
   swipeDismiss = true;
