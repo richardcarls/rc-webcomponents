@@ -709,14 +709,16 @@ const touchPointer = (type: string, clientX = 0, clientY = 0) =>
     cancelable: true,
   });
 
+// Desktop Firefox ships with touch events off, so it has no Touch or
+// TouchEvent constructor; a plain Event carrying the fields the controller
+// reads stands in on every engine.
 const touchEvent = ($target: Element, type: string, clientX = 0, clientY = 0) => {
-  const touch = new Touch({ identifier: 0, target: $target, clientX, clientY });
+  const touch = { identifier: 0, target: $target, clientX, clientY };
+  const event = new Event(type, { bubbles: true, composed: true });
 
-  return new TouchEvent(type, {
+  return Object.assign(event, {
     touches: type === 'touchend' ? [] : [touch],
     changedTouches: [touch],
-    bubbles: true,
-    composed: true,
   });
 };
 
