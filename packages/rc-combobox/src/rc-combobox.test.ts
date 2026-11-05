@@ -699,6 +699,122 @@ test('touch pointerdown alone (no pointerup) does not select, so scrolling is no
   expect($host.selectedValues).toEqual([]);
 });
 
+const touchPointer = (type: string, clientX = 0, clientY = 0) =>
+  new PointerEvent(type, {
+    pointerType: 'touch',
+    pointerId: 0,
+    clientX,
+    clientY,
+    bubbles: true,
+    cancelable: true,
+  });
+
+const touchEvent = ($target: Element, type: string, clientX = 0, clientY = 0) => {
+  const touch = new Touch({ identifier: 0, target: $target, clientX, clientY });
+
+  return new TouchEvent(type, {
+    touches: type === 'touchend' ? [] : [touch],
+    changedTouches: [touch],
+    bubbles: true,
+    composed: true,
+  });
+};
+
+const click = () => new MouseEvent('click', { bubbles: true, cancelable: true });
+
+async function openWithOptions(opts?: Parameters<typeof makeCombobox>[0]) {
+  const screen = render(makeCombobox(opts));
+  const $host = await getHost(screen);
+
+  $host.openPopup();
+  await $host.updateComplete;
+
+  const $listbox = $host.renderRoot.querySelector('rc-listbox')!;
+
+  return {
+    $host,
+    $apple: $listbox.querySelector<HTMLElement>('[data-value="apple"]')!,
+    $banana: $listbox.querySelector<HTMLElement>('[data-value="banana"]')!,
+  };
+}
+
+test('touch tap the browser cancels (pointercancel + touchend + click) still selects', async () => {
+  // Firefox Android cancels a stationary tap inside a scrollable listbox,
+  // then confirms it with click.
+  const { $host, $apple } = await openWithOptions();
+
+  $apple.dispatchEvent(touchPointer('pointerdown'));
+  $apple.dispatchEvent(touchPointer('pointercancel'));
+  $apple.dispatchEvent(touchEvent($apple, 'touchend'));
+  $apple.dispatchEvent(click());
+  await $host.updateComplete;
+
+  expect($host.selectedValues).toEqual(['apple']);
+});
+
+test('touch scroll the browser cancels (no click) does not select', async () => {
+  const { $host, $apple, $banana } = await openWithOptions();
+
+  $apple.dispatchEvent(touchPointer('pointerdown'));
+  $apple.dispatchEvent(touchPointer('pointercancel'));
+  $apple.dispatchEvent(touchEvent($apple, 'touchend'));
+  await $host.updateComplete;
+
+  expect($host.open).toBe(true);
+  expect($host.selectedValues).toEqual([]);
+
+  // A later click elsewhere must not resurrect the canceled touch.
+  $banana.dispatchEvent(click());
+  await $host.updateComplete;
+
+  expect($host.selectedValues).toEqual([]);
+});
+
+test('canceled touch that then scrolls past the tap threshold ignores a click on the same option', async () => {
+  const { $host, $apple } = await openWithOptions();
+
+  $apple.dispatchEvent(touchPointer('pointerdown', 10, 10));
+  $apple.dispatchEvent(touchPointer('pointercancel', 10, 10));
+  $apple.dispatchEvent(touchEvent($apple, 'touchmove', 10, 40));
+  $apple.dispatchEvent(click());
+  await $host.updateComplete;
+
+  expect($host.selectedValues).toEqual([]);
+});
+
+test('delayed click on the same option after a canceled touch ends does not select', async () => {
+  // e.g. a screen reader activation, which sends click without pointer events.
+  const { $host, $apple } = await openWithOptions();
+
+  $apple.dispatchEvent(touchPointer('pointerdown'));
+  $apple.dispatchEvent(touchPointer('pointercancel'));
+  $apple.dispatchEvent(touchEvent($apple, 'touchend'));
+  await new Promise((resolve) => setTimeout(resolve, 650));
+  $apple.dispatchEvent(click());
+  await $host.updateComplete;
+
+  expect($host.selectedValues).toEqual([]);
+});
+
+test('touch tap with pointerup is not activated twice by the follow-up click', async () => {
+  const screen = render(makeCombobox({ multiple: true }));
+  const $host = await getHost(screen);
+
+  $host.openPopup();
+  await $host.updateComplete;
+
+  const $option = $host.renderRoot
+    .querySelector('rc-listbox')!
+    .querySelector<HTMLElement>('[data-value="apple"]')!;
+
+  $option.dispatchEvent(touchPointer('pointerdown'));
+  $option.dispatchEvent(touchPointer('pointerup'));
+  $option.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+  await $host.updateComplete;
+
+  expect($host.selectedValues).toEqual(['apple']);
+});
+
 test('composition input events (mobile IME) still filter the listbox', async () => {
   const screen = render(makeCombobox());
   const $host = await getHost(screen);
