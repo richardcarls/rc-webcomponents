@@ -606,12 +606,12 @@ test('a slow drag release settles to the nearest point gradually, not instantly'
   $host.close();
 });
 
-test('a fast upward swipe jumps to the topmost snap point regardless of release proximity', async () => {
+test('a fast upward swipe steps to the next snap point above the release height', async () => {
   const screen = render(html`
     <rc-bottom-sheet data-testid="host" snap-points="200px 320px 460px">
       <dialog
         aria-labelledby="sheet-title"
-        style="position: fixed; left: 100px; top: 240px; width: 360px; height: 280px; margin: 0;"
+        style="position: fixed; left: 100px; top: 320px; width: 360px; height: 200px; margin: 0;"
       >
         <h2 id="sheet-title">Filter recipes</h2>
         <button type="button" data-rc-bottom-sheet-handle>Resize sheet</button>
@@ -631,17 +631,18 @@ test('a fast upward swipe jumps to the topmost snap point regardless of release 
   firePointerEvent($handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
   await wait(20);
   // Fast: 40px in ~20ms is ~2000px/s, well past the 500px/s threshold. The
-  // release lands near the 320px point, which nearest-point would pick —
-  // the swipe should override that and jump to the topmost point instead.
+  // release at 240px lands nearest the 200px point it started from; the
+  // swipe overrides that and steps to the next point up, as Material's
+  // Android sheet steps from collapsed to half-expanded, not to the top.
   firePointerEvent($handle, 'pointermove', { clientX: start.left + 20, clientY: start.top - 40 });
   firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 40 });
 
-  await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(460));
+  await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(320));
 
   $host.close();
 });
 
-test('a fast downward swipe collapses to the lowest snap point regardless of release proximity', async () => {
+test('a fast downward swipe steps to the next snap point below the release height', async () => {
   const snapSpy = vi.fn();
   const screen = render(html`
     <rc-bottom-sheet
@@ -671,16 +672,16 @@ test('a fast downward swipe collapses to the lowest snap point regardless of rel
 
   firePointerEvent($handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
   await wait(20);
-  // Release lands near the 320px point; the fast downward swipe should
-  // override nearest-point selection and collapse all the way to 200px.
+  // The release at 380px lands nearest the 460px point; the fast downward
+  // swipe overrides that and steps to the next point down, not the lowest.
   firePointerEvent($handle, 'pointermove', { clientX: start.left + 20, clientY: start.top + 40 });
   firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top + 40 });
 
   expect(snapSpy).not.toHaveBeenCalled();
 
-  await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(200));
+  await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(320));
   await vi.waitFor(() => expect(snapSpy).toHaveBeenCalledTimes(1));
-  expect(snapSpy.mock.calls[0][0].detail).toEqual({ index: 0, height: 200, trigger: 'drag' });
+  expect(snapSpy.mock.calls[0][0].detail).toEqual({ index: 1, height: 320, trigger: 'drag' });
 
   $host.close();
 });

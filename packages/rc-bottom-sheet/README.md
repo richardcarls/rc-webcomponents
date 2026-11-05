@@ -76,11 +76,13 @@ maximum block size only when scrolling cannot reveal it, returning to its snap
 point once focus leaves the sheet.
 
 List `snap-points` as CSS heights in ascending order. Any length works,
-including `calc()` and `var()`; each is resolved inside the sheet when a snap
-applies, so a custom property the page animates is read at its current value.
-Percentages are of the viewport height. Slow drag releases settle at the
-nearest point; a swipe at `swipe-velocity` or faster settles at
-the first or last point. Settling animates unless the user prefers reduced
+including `calc()`, `var()`, and container query units; each is resolved inside
+the sheet when a snap applies, so a custom property the page animates is read at
+its current value. Percentages are of the viewport height. Slow drag releases
+settle at the nearest point; a swipe at `swipe-velocity` or faster settles at
+the next point beyond the release in its direction, so a sheet with three points
+steps from collapsed to half-expanded to expanded as Material's Android sheet
+does. Settling animates unless the user prefers reduced
 motion. `rc-bottom-sheet-resize-start` fires as an interactive resize begins,
 before the sheet geometry changes, so consumers can prepare content that the
 drag will reveal.

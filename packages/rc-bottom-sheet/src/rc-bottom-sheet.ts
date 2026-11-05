@@ -5,8 +5,8 @@ import { DialogGeometry } from '@rcarls/rc-dialog/geometry';
 import {
   cssText,
   cssZoom,
-  findExtremeSnapIndex,
   findNearestSnapIndex,
+  findNextSnapIndex,
   parseCssTime,
   type ResizeDirection,
   type ResizeLifecycleDetail,
@@ -261,14 +261,14 @@ function localHeight(target: HTMLElement): number {
  * the viewport block-end by default, while themes provide its visual surface.
  *
  * Dragging the resize handle past a decisive velocity in either direction
- * (a "swipe" or "fling," distinct from a slow deliberate drag) snaps
- * straight to the extreme `snap-points` entry in that direction — swipe up
- * to fully expand, swipe down to fully collapse — regardless of how close
- * the release position was to some other point. Below that velocity, the
- * sheet settles to whichever declared snap point is nearest the release
- * height. All settling, whether from a drag or from `snapTo()`, animates
- * over `--rc-bottom-sheet-snap-duration`, follows
- * `--rc-bottom-sheet-snap-easing`, and is skipped for
+ * (a "swipe" or "fling," distinct from a slow deliberate drag) settles at
+ * the next `snap-points` entry beyond the release height in that direction,
+ * as Material's Android bottom sheet steps from collapsed to half-expanded
+ * to expanded, regardless of how close the release position was to some
+ * other point. Below that velocity, the sheet settles to whichever declared
+ * snap point is nearest the release height. All settling, whether from a
+ * drag or from `snapTo()`, animates over `--rc-bottom-sheet-snap-duration`,
+ * follows `--rc-bottom-sheet-snap-easing`, and is skipped for
  * `prefers-reduced-motion: reduce`.
  *
  * Opening and closing themselves fade the surface and its backdrop through
@@ -307,8 +307,9 @@ function localHeight(target: HTMLElement): number {
  * @attr resize-handle - CSS selector, scoped to the inner `<dialog>`, for explicit resize
  *   handles. Defaults to `[data-rc-bottom-sheet-handle]`; inherited from `rc-dialog`.
  * @attr snap-points - Whitespace-separated CSS heights, in ascending order, addressable by
- *   `snapTo()` and settled to on drag release. Accepts `calc()` and `var()`, resolved in the
- *   sheet's context when each snap applies; percentages are of the viewport height.
+ *   `snapTo()` and settled to on drag release. Accepts `calc()`, `var()`, and container query
+ *   units, resolved in the sheet's context when each snap applies; percentages are of the
+ *   viewport height.
  * @attr swipe-dismiss - Whether a decisive downward swipe of at least 96 pixels requests close.
  * @attr swipe-velocity - Minimum release velocity, in pixels per second, that counts as a
  *   decisive swipe rather than a slow deliberate drag.
@@ -403,9 +404,9 @@ export class RCBottomSheet extends RCDialog {
 
   /**
    * Minimum release velocity, in pixels per second, that counts as a decisive
-   * swipe rather than a slow deliberate drag. A swipe jumps straight to the
-   * extreme `snap-points` entry in its direction; below this, the release
-   * settles to the nearest point instead.
+   * swipe rather than a slow deliberate drag. A swipe settles at the next
+   * `snap-points` entry beyond the release height in its direction; below
+   * this, the release settles to the nearest point instead.
    */
   @property({ type: Number, attribute: 'swipe-velocity' })
   swipeVelocity = 500;
@@ -558,10 +559,11 @@ export class RCBottomSheet extends RCDialog {
       distance >= MIN_SWIPE_DISTANCE &&
       Math.abs(velocity) >= this.swipeVelocity
     ) {
-      // Decisive fling: jump to the extreme point in the swipe direction,
-      // regardless of proximity to some other point. Height grows as the
-      // sheet is dragged upward, so a positive velocity is a swipe up.
-      const targetIndex = findExtremeSnapIndex(points, velocity > 0 ? 1 : -1);
+      // Decisive fling: settle at the next point beyond the release height
+      // in the swipe direction, regardless of proximity to some other point.
+      // Height grows as the sheet is dragged upward, so a positive velocity
+      // is a swipe up.
+      const targetIndex = findNextSnapIndex(points, detail.height, velocity > 0 ? 1 : -1);
 
       this._snapToIndex(targetIndex, 'animated', 'drag', points);
 
