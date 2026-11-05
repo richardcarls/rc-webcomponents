@@ -78,6 +78,31 @@ export class ItemsCollectionController implements ReactiveController {
     startY: number;
   } | null = null;
 
+  /**
+   * Time (in ms) after a canceled touch ends during which the browser's
+   * follow-up `click` still confirms it as a tap. Covers the tap-to-click
+   * delay browsers add while waiting for a possible double tap.
+   */
+  private static readonly _CANCELED_TAP_CLICK_WINDOW = 500;
+
+  /**
+   * Touch the browser canceled before it moved past the tap threshold.
+   * Firefox Android fires `pointercancel` instead of `pointerup` as soon as
+   * its scroller claims a touch, even for a stationary tap, yet still follows
+   * a real tap with `click`. That `click` confirms the tap. The record is
+   * dropped once the touch moves past the threshold (a scroll), and a click
+   * only counts while the touch is down or within
+   * `_CANCELED_TAP_CLICK_WINDOW` of `touchend`, so an unrelated later click
+   * (a screen reader activation, a script) cannot resurrect it.
+   */
+  private _canceledTouch: {
+    li: HTMLLIElement;
+    startX: number;
+    startY: number;
+    /** `timeStamp` after which a click no longer confirms; set on `touchend`. */
+    expiresAt: number;
+  } | null = null;
+
   constructor(host: ReactiveControllerHost & Element, options: ItemsCollectionControllerOptions) {
     this._host = host;
     this._idPrefix = options.idPrefix;
@@ -91,6 +116,9 @@ export class ItemsCollectionController implements ReactiveController {
     this._host.addEventListener('pointermove', this._onPointerMove);
     this._host.addEventListener('pointerup', this._onPointerUp);
     this._host.addEventListener('pointercancel', this._onPointerCancel);
+    this._host.addEventListener('touchmove', this._onTouchMove, { passive: true });
+    this._host.addEventListener('touchend', this._onTouchEnd, { passive: true });
+    this._host.addEventListener('click', this._onClick);
 
     if (!this._optionsInitialized) {
       this._bootstrapFromDom();
@@ -102,7 +130,11 @@ export class ItemsCollectionController implements ReactiveController {
     this._host.removeEventListener('pointermove', this._onPointerMove);
     this._host.removeEventListener('pointerup', this._onPointerUp);
     this._host.removeEventListener('pointercancel', this._onPointerCancel);
+    this._host.removeEventListener('touchmove', this._onTouchMove);
+    this._host.removeEventListener('touchend', this._onTouchEnd);
+    this._host.removeEventListener('click', this._onClick);
     this._pendingTouchActivation = null;
+    this._canceledTouch = null;
   }
 
   // -- Accessors --
@@ -527,6 +559,8 @@ export class ItemsCollectionController implements ReactiveController {
     const pointerEvent = e as PointerEvent;
     const li = this._resolveOptionLi(pointerEvent.target as Element | null);
 
+    this._canceledTouch = null;
+
     if (!li) {
       return;
     }
@@ -596,8 +630,57 @@ export class ItemsCollectionController implements ReactiveController {
   private _onPointerCancel = (e: Event): void => {
     const pointerEvent = e as PointerEvent;
 
-    if (this._pendingTouchActivation?.pointerId === pointerEvent.pointerId) {
+    const pending = this._pendingTouchActivation;
+
+    if (pending?.pointerId === pointerEvent.pointerId) {
+      // Still within the tap threshold: wait for the browser's `click` to
+      // tell a canceled tap from the start of a scroll.
+      this._canceledTouch = {
+        li: pending.li,
+        startX: pending.startX,
+        startY: pending.startY,
+        expiresAt: Number.POSITIVE_INFINITY,
+      };
+
       this._pendingTouchActivation = null;
+    }
+  };
+
+  // Pointer events stop after `pointercancel`, but touch events keep coming,
+  // so they track whether the canceled touch turned into a scroll.
+  private _onTouchMove = (e: Event): void => {
+    const canceled = this._canceledTouch;
+    const touch = (e as TouchEvent).changedTouches[0];
+
+    if (!canceled || !touch) {
+      return;
+    }
+
+    const distance = Math.hypot(touch.clientX - canceled.startX, touch.clientY - canceled.startY);
+
+    if (distance > ItemsCollectionController._TOUCH_TAP_THRESHOLD) {
+      this._canceledTouch = null;
+    }
+  };
+
+  private _onTouchEnd = (e: Event): void => {
+    if (this._canceledTouch) {
+      this._canceledTouch.expiresAt =
+        e.timeStamp + ItemsCollectionController._CANCELED_TAP_CLICK_WINDOW;
+    }
+  };
+
+  private _onClick = (e: Event): void => {
+    const canceled = this._canceledTouch;
+
+    this._canceledTouch = null;
+
+    if (
+      canceled &&
+      e.timeStamp <= canceled.expiresAt &&
+      this._resolveOptionLi(e.target as Element | null) === canceled.li
+    ) {
+      this._activateLi(canceled.li, e);
     }
   };
 }
