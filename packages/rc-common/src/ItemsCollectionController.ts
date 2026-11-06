@@ -307,7 +307,6 @@ export class ItemsCollectionController implements ReactiveController {
     }
 
     this._createLi.setAttribute('data-value', this._createOption.value);
-    this._createLi.setAttribute('data-kind', 'action');
     this._createLi.setAttribute('data-action', this._createOption.action);
     this._setLabelText(this._createLi, this._createOption.label);
   }
@@ -408,7 +407,6 @@ export class ItemsCollectionController implements ReactiveController {
     li.setAttribute('id', `${this._idPrefix}-${index}`);
     li.setAttribute('part', 'option');
     li.setAttribute('data-value', opt.value);
-    li.setAttribute('data-kind', opt.kind ?? 'option');
 
     if (opt.kind === 'action') {
       li.setAttribute('data-action', opt.action);
