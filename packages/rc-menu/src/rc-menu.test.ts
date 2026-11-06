@@ -438,3 +438,29 @@ test('RCMenu has no accessibility violations when active', async () => {
 
   await expectNoA11yViolations(host.element());
 });
+
+test('RCMenu reserves no scrollbar gutter when its items fit', async () => {
+  const screen = render(html`
+    <style>
+      .classic-scrollbars::-webkit-scrollbar {
+        inline-size: 15px;
+      }
+    </style>
+    <rc-menu label="View" data-testid="menu" class="classic-scrollbars">
+      <button role="menuitemradio" aria-checked="true">Grid</button>
+      <button role="menuitemradio" aria-checked="false">List</button>
+    </rc-menu>
+  `);
+  const menu = (await screen.getByTestId('menu').element()) as RCMenu;
+
+  await menu.updateComplete;
+
+  const item = menu.querySelector('button')!;
+  const style = getComputedStyle(menu);
+  const inlineEndPadding = parseFloat(style.paddingInlineEnd) + parseFloat(style.borderInlineEndWidth);
+
+  // The item reaches the menu's inline end, less only its own padding and border.
+  expect(
+    Math.round(menu.getBoundingClientRect().right - item.getBoundingClientRect().right),
+  ).toBe(Math.round(inlineEndPadding));
+});
