@@ -466,3 +466,19 @@ test('has no automated accessibility violations', async () => {
   await flushChip(host);
   await expectNoA11yViolations(host);
 });
+
+test('disabled and readonly chips settle after disabling the native control', async () => {
+  const screen = render(html`
+    <rc-chip data-testid="disabled" disabled><button type="button">Off</button></rc-chip>
+    <rc-chip data-testid="readonly" readonly><button type="button">Tag</button></rc-chip>
+  `);
+
+  for (const id of ['disabled', 'readonly']) {
+    const host = (await screen.getByTestId(id).element()) as RCChip;
+
+    await host.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(host.querySelector('button')?.disabled).toBe(true);
+  }
+});

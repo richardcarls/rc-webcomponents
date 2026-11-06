@@ -543,11 +543,12 @@ export class RCChip extends LitElement {
     }
 
     if (this.disabled || this.readonly) {
+      // Write only on a change: even an unchanged disabled write queues a
+      // mutation record, and the control observer calls back here.
       if (!$control.disabled) {
         this._disabledOwned = true;
+        $control.disabled = true;
       }
-
-      $control.disabled = true;
     } else if (this._disabledOwned) {
       $control.disabled = false;
       this._disabledOwned = false;
