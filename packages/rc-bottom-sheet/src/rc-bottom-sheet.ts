@@ -399,6 +399,11 @@ export class RCBottomSheet extends RCDialog {
    * the sheet's own context when a snap is applied, so a custom property the
    * page animates (for example from a scroll timeline) is read at its current
    * value. Percentages are of the viewport height.
+   *
+   * A single point pairs with the sheet's natural height (its content height,
+   * capped by its CSS block-size limits) as a second stop at index 1 when that
+   * is taller, so a peek can expand to fit. Without points, a drag resizes
+   * freely and stays where it is released.
    */
   @property({ type: String, attribute: 'snap-points' })
   snapPoints = '';
@@ -487,21 +492,76 @@ export class RCBottomSheet extends RCDialog {
     }
 
     const points = this._resolvedSnapPoints();
+    const next = this._nextActivationIndex(points);
 
-    if (points.length < 2) {
-      return;
+    if (next !== null) {
+      this._snapToIndex(next, 'animated', 'activate', points);
     }
-
-    const current = this._lastSnapIndex ?? findNearestSnapIndex(points, localHeight($dialog));
-    let next = current + this._activateDirection;
-
-    if (next < 0 || next >= points.length) {
-      this._activateDirection = this._activateDirection === 1 ? -1 : 1;
-      next = current + this._activateDirection;
-    }
-
-    this._snapToIndex(next, 'animated', 'activate', points);
   };
+
+  /**
+   * The snap index that activating the handle moves to: the next stop in the
+   * direction the sheet last moved, turning back at the first or last stop.
+   * Null without at least two stops.
+   */
+  private _nextActivationIndex(points: number[]): number | null {
+    const $dialog = this._$dialog;
+
+    if (!$dialog || points.length < 2) {
+      return null;
+    }
+
+    const current = Math.min(
+      this._lastSnapIndex ?? findNearestSnapIndex(points, localHeight($dialog)),
+      points.length - 1,
+    );
+    const next = current + this._activateDirection;
+
+    return next < 0 || next >= points.length ? current - this._activateDirection : next;
+  }
+
+  /**
+   * The snap index that activating the resize handle would move to next, or
+   * `null` when the sheet is closed or has fewer than two stops. Read it after
+   * `rc-bottom-sheet-snap` to label the handle, such as "Expand" or "Collapse".
+   */
+  get nextActivationIndex(): number | null {
+    return this.open ? this._nextActivationIndex(this._resolvedSnapPoints()) : null;
+  }
+
+  // The natural height of the open sheet, kept for while a snap animation
+  // owns its height and it can't be measured.
+  private _naturalHeight: number | undefined;
+
+  /**
+   * The open sheet's natural height: its content height, capped by its CSS
+   * block-size limits. Measured with the snap and drag geometry lifted, then
+   * restored.
+   */
+  private _measureNaturalHeight(): number | undefined {
+    const $dialog = this._$dialog;
+
+    if (!$dialog?.open) {
+      return undefined;
+    }
+
+    if (this._activeSnapAnimation) {
+      return this._naturalHeight;
+    }
+
+    const saved = $dialog.style.cssText;
+
+    for (const property of DOCK_RELEASED_PROPERTIES) {
+      $dialog.style.removeProperty(property);
+    }
+
+    $dialog.style.removeProperty('height');
+    $dialog.style.removeProperty('block-size');
+    this._naturalHeight = localHeight($dialog);
+    $dialog.style.cssText = saved;
+
+    return this._naturalHeight;
+  }
 
   private readonly _onFocusOut = (event: FocusEvent): void => {
     const $dialog = this._$dialog;
@@ -882,7 +942,19 @@ export class RCBottomSheet extends RCDialog {
       this._measureSnapPoints(measured, resolved, viewportHeight);
     }
 
-    return resolved.filter((point) => Number.isFinite(point) && point > 0);
+    const points = resolved.filter((point) => Number.isFinite(point) && point > 0);
+
+    // A single declared point pairs with the sheet's natural height, so the
+    // sheet has somewhere to expand to, such as a peek that opens to fit.
+    if (points.length === 1) {
+      const natural = this._measureNaturalHeight();
+
+      if (natural !== undefined && natural >= points[0] + 1) {
+        points.push(natural);
+      }
+    }
+
+    return points;
   }
 
   private _measureSnapPoints(

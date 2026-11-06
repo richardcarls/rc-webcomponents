@@ -65,7 +65,12 @@ viewport's bottom edge. Add an optional
 handle. Use `snap-points` to snap the sheet to declared CSS heights after
 resize gestures. Activating the handle without dragging it, with a click, tap,
 Enter, or Space, moves the sheet to the next snap point, continuing in the
-direction it last moved and turning back at the first or last point. Set `resize="none"` to hold the sheet at its current snap
+direction it last moved and turning back at the first or last point. A single
+snap point pairs with the sheet's natural height, its content height capped by
+its CSS block-size limits, so a peek can expand to fit; a drag or tap then moves
+between the two. Without snap points, a drag resizes freely and a tap does
+nothing. Read `nextActivationIndex` after `rc-bottom-sheet-snap` to label the
+handle with the direction it moves next, such as "Expand" or "Collapse". Set `resize="none"` to hold the sheet at its current snap
 point; the option is reactive, so restoring `resize="vertical"` re-enables
 dragging.
 
