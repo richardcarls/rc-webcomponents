@@ -90,7 +90,12 @@ drag will reveal.
 Call `snapTo(index)` to move programmatically. The
 `rc-bottom-sheet-snap` event fires after the sheet has settled and reports the
 selected `index`, effective target `height` after CSS size constraints, and
-whether the trigger was a drag or API call. Interrupted animations do not emit
+whether the trigger was a drag, handle activation, or API call.
+
+Activating the handle without dragging it (a click, tap, Enter, or Space) moves
+the sheet to the next snap point, continuing in the direction it last moved and
+turning back at the first or last point. Call `preventDefault()` in a click
+listener on the handle to step the sheet yourself instead. Interrupted animations do not emit
 a stale event. Constrained targets remain docked to the same block-end edge.
 
 Set `--rc-bottom-sheet-snap-duration` and

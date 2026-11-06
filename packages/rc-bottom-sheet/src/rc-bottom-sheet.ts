@@ -42,8 +42,11 @@ export interface RCBottomSheetSnapDetail {
   /** Effective target height in pixels, after CSS size constraints. */
   height: number;
 
-  /** Whether the snap came from a drag release or a `snapTo()` call. */
-  trigger: 'drag' | 'api';
+  /**
+   * What moved the sheet: a drag release, activating the resize handle (a
+   * click, tap, Enter, or Space that didn't drag), or a `snapTo()` call.
+   */
+  trigger: 'drag' | 'activate' | 'api';
 }
 
 const DEFAULT_SNAP_DURATION_MS = 300;
@@ -195,6 +198,8 @@ const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-bottom-sheet', LIG
 // Floor so a noisy near-zero-distance release can't misread as a decisive
 // fling; a real swipe travels at least this far even if it's very quick.
 const MIN_SWIPE_DISTANCE = 24;
+// Pointer travel, in pixels, below which a press on the handle is a tap.
+const MIN_TAP_SLOP = 4;
 
 // Space kept below a field the sheet grows to reveal above a keyboard.
 const FOCUS_REVEAL_MARGIN = 16;
@@ -266,8 +271,11 @@ function localHeight(target: HTMLElement): number {
  * as Material's Android bottom sheet uses the release position when choosing
  * between half-expanded and expanded. A longer swipe can cross a snap point.
  * Below that velocity, the sheet settles to whichever declared snap point is
- * nearest the release height. All settling, whether from a drag or from
- * `snapTo()`, animates over `--rc-bottom-sheet-snap-duration`,
+ * nearest the release height. Activating the handle without dragging it (a
+ * click, tap, Enter, or Space) steps to the next snap point, continuing in the
+ * direction the sheet last moved and turning back at the first or last point;
+ * a click listener on the handle that calls `preventDefault()` opts out. All
+ * settling, whether from a drag, the handle, or `snapTo()`, animates over `--rc-bottom-sheet-snap-duration`,
  * follows `--rc-bottom-sheet-snap-easing`, and is skipped for
  * `prefers-reduced-motion: reduce`.
  *
@@ -294,8 +302,8 @@ function localHeight(target: HTMLElement): number {
  * @fires rc-dialog-close - Inherited from `rc-dialog`; fired after the sheet closes.
  * @fires rc-bottom-sheet-resize-start - Fires when an interactive resize begins.
  *   `detail: { height, inputType }`
- * @fires rc-bottom-sheet-snap - Fires after a drag release or `snapTo()` call
- *   settles at its snap target. `detail: { index, height, trigger }`, with `height` in the
+ * @fires rc-bottom-sheet-snap - Fires after a drag release, handle activation, or
+ *   `snapTo()` call settles at its snap target. `detail: { index, height, trigger }`, with `height` in the
  *   sheet's own CSS pixels, the unit of its snap points.
  *
  * @attr closed-by - Proxied to the inner `<dialog closedby="...">` attribute. Defaults to `any`, so
@@ -448,6 +456,53 @@ export class RCBottomSheet extends RCDialog {
     this._revealFocusedField();
   };
 
+  // Which way activating the handle steps through the snap points: up (1)
+  // until the last point, then down (-1) until the first.
+  private _activateDirection: 1 | -1 = 1;
+  // Pointer travel of the last resize gesture, so the click that ends a drag
+  // doesn't also step.
+  private _lastGestureDistance = 0;
+
+  private readonly _onClick = (event: MouseEvent): void => {
+    const $dialog = this._$dialog;
+
+    if (event.defaultPrevented || !this.open || !$dialog || !this.resizeHandle) {
+      return;
+    }
+
+    const $handle =
+      event.target instanceof Element ? event.target.closest(this.resizeHandle) : null;
+
+    if (!$handle || !$dialog.contains($handle) || $handle.closest('rc-bottom-sheet') !== this) {
+      return;
+    }
+
+    // detail is 0 for keyboard activation, which never drags.
+    const dragged = event.detail > 0 && this._lastGestureDistance >= MIN_TAP_SLOP;
+
+    this._lastGestureDistance = 0;
+
+    if (dragged) {
+      return;
+    }
+
+    const points = this._resolvedSnapPoints();
+
+    if (points.length < 2) {
+      return;
+    }
+
+    const current = this._lastSnapIndex ?? findNearestSnapIndex(points, localHeight($dialog));
+    let next = current + this._activateDirection;
+
+    if (next < 0 || next >= points.length) {
+      this._activateDirection = this._activateDirection === 1 ? -1 : 1;
+      next = current + this._activateDirection;
+    }
+
+    this._snapToIndex(next, 'animated', 'activate', points);
+  };
+
   private readonly _onFocusOut = (event: FocusEvent): void => {
     const $dialog = this._$dialog;
 
@@ -473,6 +528,7 @@ export class RCBottomSheet extends RCDialog {
     window.addEventListener('resize', this._onWindowResize);
     this.addEventListener('focusin', this._onFocusIn);
     this.addEventListener('focusout', this._onFocusOut);
+    this.addEventListener('click', this._onClick);
   }
 
   override disconnectedCallback(): void {
@@ -480,6 +536,7 @@ export class RCBottomSheet extends RCDialog {
     window.removeEventListener('resize', this._onWindowResize);
     this.removeEventListener('focusin', this._onFocusIn);
     this.removeEventListener('focusout', this._onFocusOut);
+    this.removeEventListener('click', this._onClick);
   }
 
   /**
@@ -545,6 +602,9 @@ export class RCBottomSheet extends RCDialog {
   }
 
   protected override _onResizeEnd(detail: ResizeLifecycleDetail): void {
+    this._lastGestureDistance =
+      detail.inputType === 'pointer' ? Math.abs(detail.height - detail.startHeight) : 0;
+
     if (detail.inputType === 'pointer' && this.swipeDismiss && this._shouldSwipeDismiss(detail)) {
       this.requestClose();
 
@@ -583,7 +643,7 @@ export class RCBottomSheet extends RCDialog {
   }
 
   private _snapToNearestPoint(
-    trigger: 'drag' | 'api' = 'api',
+    trigger: RCBottomSheetSnapDetail['trigger'] = 'api',
     points = this._resolvedSnapPoints(),
   ): void {
     const $dialog = this._$dialog;
@@ -601,7 +661,7 @@ export class RCBottomSheet extends RCDialog {
   private _snapToIndex(
     index: number,
     behavior: 'animated' | 'instant',
-    trigger: 'drag' | 'api',
+    trigger: RCBottomSheetSnapDetail['trigger'],
     points = this._resolvedSnapPoints(),
   ): void {
     const $dialog = this._$dialog;
@@ -615,6 +675,10 @@ export class RCBottomSheet extends RCDialog {
     const dockedHeight = dockBlockBox($dialog);
     const clampedIndex = Math.max(0, Math.min(index, points.length - 1));
     const requestedHeight = points[clampedIndex];
+
+    if (this._lastSnapIndex !== null && clampedIndex !== this._lastSnapIndex) {
+      this._activateDirection = clampedIndex > this._lastSnapIndex ? 1 : -1;
+    }
 
     this._lastSnapIndex = clampedIndex;
 
