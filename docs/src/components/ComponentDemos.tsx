@@ -1,3 +1,9 @@
+import type { CSSProperties } from 'react';
+import type * as React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import hljs from 'highlight.js/lib/core';
+import rust from 'highlight.js/lib/languages/rust';
+
 import type { RCAppBar } from '@rcarls/rc-webcomponents/rc-app-bar';
 import type {
   RCBottomSheet,
@@ -38,12 +44,6 @@ import type {
   RCVirtualScroller,
   RCVirtualScrollerRangeDetail,
 } from '@rcarls/rc-webcomponents/rc-virtual-scroller';
-import type { CSSProperties } from 'react';
-import type * as React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import hljs from 'highlight.js/lib/core';
-import rust from 'highlight.js/lib/languages/rust';
-
 import type { RCTextareaPluginAPI } from '@rcarls/rc-textarea';
 import { FoldingActionController } from '@rcarls/rc-textarea/folding';
 
