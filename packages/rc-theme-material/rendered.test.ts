@@ -439,7 +439,7 @@ test('readonly Material chips keep visible space between wrapped rows', async ()
     <rc-chip-group layout="auto" max-rows="1" default-expanded style="inline-size: 12rem">
       ${Array.from(
         { length: 6 },
-        (_, index) => `<rc-chip readonly><span data-rc-chip-label>Chip ${index}</span></rc-chip>`,
+        (_, index) => `<rc-chip readonly><span data-rc-label>Chip ${index}</span></rc-chip>`,
       ).join('')}
     </rc-chip-group>
   `;
@@ -457,7 +457,7 @@ test('readonly Material chips keep visible space between wrapped rows', async ()
   const chipRows = [...new Set($chips.map(($chip) => $chip.getBoundingClientRect().top))];
 
   expect($chips.map(($chip) => $chip.getBoundingClientRect().height)).toEqual(Array(6).fill(48));
-  expect($chips[0].querySelector('[data-rc-chip-label]')!.getBoundingClientRect().height).toBe(32);
+  expect($chips[0].querySelector('[data-rc-label]')!.getBoundingClientRect().height).toBe(32);
   expect(chipRows.length).toBeGreaterThan(1);
   expect(chipRows[1] - chipRows[0]).toBe(48);
 
@@ -720,20 +720,20 @@ test('adaptive menu actions fit their container without unexpected overflow', as
       <rc-adaptive-menu max-shown="3" data-testid="adaptive-menu">
         <rc-button icon-only class="rc-icon-button--standard" data-priority="30">
           <button type="button" aria-label="Favorite">
-            <span data-rc-menu-leading aria-hidden="true">★</span>
-            <span data-rc-menu-label>Favorite</span>
+            <span data-rc-icon aria-hidden="true">★</span>
+            <span data-rc-label>Favorite</span>
           </button>
         </rc-button>
         <rc-button icon-only class="rc-icon-button--standard" data-priority="20">
           <button type="button" aria-label="Edit">
-            <span data-rc-menu-leading aria-hidden="true">✎</span>
-            <span data-rc-menu-label>Edit</span>
+            <span data-rc-icon aria-hidden="true">✎</span>
+            <span data-rc-label>Edit</span>
           </button>
         </rc-button>
         <rc-button icon-only class="rc-icon-button--standard" data-priority="10">
           <button type="button" aria-label="Share">
-            <span data-rc-menu-leading aria-hidden="true">↗</span>
-            <span data-rc-menu-label>Share</span>
+            <span data-rc-icon aria-hidden="true">↗</span>
+            <span data-rc-label>Share</span>
           </button>
         </rc-button>
       </rc-adaptive-menu>
@@ -759,7 +759,7 @@ test('adaptive menu actions fit their container without unexpected overflow', as
       // the same exemption.
       ignore: (element) =>
         element.matches(
-          'rc-adaptive-menu, rc-button[icon-only], rc-button[icon-only] *, [data-rc-menu-label]',
+          'rc-adaptive-menu, rc-button[icon-only], rc-button[icon-only] *, [data-rc-label]',
         ),
     }),
   ).toEqual([]);
@@ -776,20 +776,20 @@ test('a promoted action marked data-rc-action-show-label keeps its label visible
     <rc-adaptive-menu max-shown="2">
       <rc-button class="rc-button--tonal" data-priority="30" data-rc-action-show-label>
         <button type="button" aria-label="Edit recipe">
-          <span data-rc-menu-leading aria-hidden="true">✎</span>
-          <span data-rc-menu-label data-testid="shown">Edit</span>
+          <span data-rc-icon aria-hidden="true">✎</span>
+          <span data-rc-label data-testid="shown">Edit</span>
         </button>
       </rc-button>
       <rc-button icon-only class="rc-icon-button--standard" data-priority="20">
         <button type="button" aria-label="Favorite">
-          <span data-rc-menu-leading aria-hidden="true">★</span>
-          <span data-rc-menu-label data-testid="hidden">Favorite</span>
+          <span data-rc-icon aria-hidden="true">★</span>
+          <span data-rc-label data-testid="hidden">Favorite</span>
         </button>
       </rc-button>
       <rc-button icon-only class="rc-icon-button--standard" data-rc-action-show-label data-priority="10">
         <button type="button" aria-label="Share">
-          <span data-rc-menu-leading aria-hidden="true">↗</span>
-          <span data-rc-menu-label data-testid="overflowed">Share</span>
+          <span data-rc-icon aria-hidden="true">↗</span>
+          <span data-rc-label data-testid="overflowed">Share</span>
         </button>
       </rc-button>
     </rc-adaptive-menu>
@@ -825,14 +825,14 @@ test('adaptive overflow labels use Material menu-item typography', async () => {
     <rc-adaptive-menu>
       <rc-button icon-only class="rc-icon-button--standard" slot="overflow">
         <button type="button" aria-label="Settings">
-          <span data-rc-menu-leading aria-hidden="true">⚙</span>
-          <span data-rc-menu-label>Settings</span>
+          <span data-rc-icon aria-hidden="true">⚙</span>
+          <span data-rc-label>Settings</span>
         </button>
       </rc-button>
       <rc-menu-button icon-only slot="overflow">
         <button type="button" slot="trigger" aria-label="View">
-          <span data-rc-menu-leading aria-hidden="true">☷</span>
-          <span data-rc-menu-label>View</span>
+          <span data-rc-icon aria-hidden="true">☷</span>
+          <span data-rc-label>View</span>
         </button>
         <span slot="indicator" aria-hidden="true">›</span>
         <rc-menu label="View">
@@ -851,8 +851,8 @@ test('adaptive overflow labels use Material menu-item typography', async () => {
   menu!.openMenu();
   await settle(scope);
 
-  const labels = scope.querySelectorAll<HTMLElement>('[data-rc-menu-label]');
-  const icons = scope.querySelectorAll<HTMLElement>('[data-rc-menu-leading]');
+  const labels = scope.querySelectorAll<HTMLElement>('[data-rc-label]');
+  const icons = scope.querySelectorAll<HTMLElement>('[data-rc-icon]');
   const overflowTrigger = menu!.shadowRoot?.querySelector<HTMLElement>('#overflow-trigger');
   const overflowTarget = menu!.shadowRoot?.querySelector<HTMLElement>('#overflow-trigger-target');
 
@@ -940,14 +940,14 @@ test.runIf(isChromium).each(['light', 'dark'] as const)(
       <rc-adaptive-menu>
         <rc-button icon-only class="rc-icon-button--standard" slot="overflow">
           <button type="button" aria-label="Settings">
-            <span data-rc-menu-leading aria-hidden="true">⚙</span>
-            <span data-rc-menu-label>Settings</span>
+            <span data-rc-icon aria-hidden="true">⚙</span>
+            <span data-rc-label>Settings</span>
           </button>
         </rc-button>
         <rc-menu-button icon-only slot="overflow">
           <button type="button" slot="trigger" aria-label="View">
-            <span data-rc-menu-leading aria-hidden="true">☷</span>
-            <span data-rc-menu-label>View</span>
+            <span data-rc-icon aria-hidden="true">☷</span>
+            <span data-rc-label>View</span>
           </button>
           <span slot="indicator" aria-hidden="true">›</span>
           <rc-menu label="View">
@@ -1017,20 +1017,20 @@ test.runIf(isChromium).each(['light', 'dark'] as const)(
         <rc-adaptive-menu max-shown="2">
           <rc-button icon-only class="rc-icon-button--standard" data-priority="20">
             <button type="button" aria-label="Favorite">
-              <span data-rc-menu-leading aria-hidden="true">★</span>
-              <span data-rc-menu-label>Favorite</span>
+              <span data-rc-icon aria-hidden="true">★</span>
+              <span data-rc-label>Favorite</span>
             </button>
           </rc-button>
           <rc-button icon-only class="rc-icon-button--standard" data-priority="10">
             <button type="button" aria-label="Edit">
-              <span data-rc-menu-leading aria-hidden="true">✎</span>
-              <span data-rc-menu-label>Edit</span>
+              <span data-rc-icon aria-hidden="true">✎</span>
+              <span data-rc-label>Edit</span>
             </button>
           </rc-button>
           <rc-button icon-only class="rc-icon-button--standard" slot="overflow">
             <button type="button" aria-label="Delete">
-              <span data-rc-menu-leading aria-hidden="true">×</span>
-              <span data-rc-menu-label>Delete</span>
+              <span data-rc-icon aria-hidden="true">×</span>
+              <span data-rc-label>Delete</span>
             </button>
           </rc-button>
         </rc-adaptive-menu>
@@ -1061,7 +1061,7 @@ test('popups and their items keep the Material menu style inside foreign shadow 
   const label = Object.assign(document.createElement('span'), { textContent: 'Edit' });
   const action = document.createElement('button');
 
-  label.setAttribute('data-rc-menu-label', '');
+  label.setAttribute('data-rc-label', '');
   action.append(label);
   adaptiveMenu.append(action);
   menuButton.append(menu);

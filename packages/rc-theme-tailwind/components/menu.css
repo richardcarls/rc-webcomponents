@@ -20,7 +20,7 @@
     display: inline-block;
   }
 
-  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-menu [data-group-label] {
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-menu [role='group'] > [data-rc-label] {
     color: var(--tailwind-on-surface-muted, GrayText);
     font-size: 0.8em;
     font-weight: 650;

@@ -15,7 +15,7 @@ test('keeps consumer-authored links connected with author attributes intact', as
   const screen = render(html`
     <rc-navigation-bar data-testid="host">
       <a href="/recipes" data-testid="recipes" data-router-link aria-current="page">
-        <span data-rc-navigation-icon>R</span>
+        <span data-rc-icon>R</span>
         <span>Recipes</span>
       </a>
       <a href="/settings" target="_self">Settings</a>
@@ -71,7 +71,7 @@ test('positions the indicator on the aria-current link target', async () => {
     <rc-navigation-bar data-testid="host" style="display: block; inline-size: 240px;">
       <a href="/recipes" aria-current="page">
         <span
-          data-rc-navigation-icon
+          data-rc-icon
           style="display: inline-block; inline-size: 48px; block-size: 32px;"
           >R</span
         >
@@ -79,7 +79,7 @@ test('positions the indicator on the aria-current link target', async () => {
       </a>
       <a href="/settings">
         <span
-          data-rc-navigation-icon
+          data-rc-icon
           style="display: inline-block; inline-size: 48px; block-size: 32px;"
           >S</span
         >
@@ -107,7 +107,7 @@ test('positions the indicator over its target under CSS zoom', async () => {
       <a href="/settings" aria-current="page">
         <span
           data-testid="target"
-          data-rc-navigation-icon
+          data-rc-icon
           style="display: inline-block; inline-size: 48px; block-size: 32px;"
           >S</span
         >
@@ -138,7 +138,7 @@ test('updates the indicator when aria-current moves between links', async () => 
     <rc-navigation-bar data-testid="host" style="display: block; inline-size: 240px;">
       <a href="/recipes" data-testid="recipes" aria-current="page">
         <span
-          data-rc-navigation-icon
+          data-rc-icon
           style="display: inline-block; inline-size: 40px; block-size: 32px;"
           >R</span
         >
@@ -146,7 +146,7 @@ test('updates the indicator when aria-current moves between links', async () => 
       </a>
       <a href="/settings" data-testid="settings">
         <span
-          data-rc-navigation-icon
+          data-rc-icon
           style="display: inline-block; inline-size: 64px; block-size: 32px;"
           >S</span
         >
@@ -176,7 +176,7 @@ test('updates the indicator when active target geometry changes', async () => {
     <rc-navigation-bar data-testid="host" style="display: block; inline-size: 240px;">
       <a href="/recipes" aria-current="page">
         <span
-          data-rc-navigation-icon
+          data-rc-icon
           data-testid="target"
           style="display: inline-block; inline-size: 40px; block-size: 32px;"
           >R</span
@@ -261,7 +261,7 @@ test.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
           <rc-navigation-bar data-testid="host" style="display: block;">
             <a href="/recipes">
               <span
-                data-rc-navigation-icon
+                data-rc-icon
                 style="display: inline-block; inline-size: 48px; block-size: 32px;"
                 >R</span
               >
@@ -269,7 +269,7 @@ test.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
             <a href="/settings" aria-current="page">
               <span
                 data-testid="target"
-                data-rc-navigation-icon
+                data-rc-icon
                 style="display: inline-block; inline-size: 48px; block-size: 32px;"
                 >S</span
               >
@@ -309,7 +309,7 @@ test('follows the current link when the direction flips at runtime', async () =>
       <rc-navigation-bar data-testid="host" style="display: block; inline-size: 240px;">
         <a href="/recipes">
           <span
-            data-rc-navigation-icon
+            data-rc-icon
             style="display: inline-block; inline-size: 48px; block-size: 32px;"
             >R</span
           >
@@ -317,7 +317,7 @@ test('follows the current link when the direction flips at runtime', async () =>
         <a href="/settings" aria-current="page">
           <span
             data-testid="target"
-            data-rc-navigation-icon
+            data-rc-icon
             style="display: inline-block; inline-size: 48px; block-size: 32px;"
             >S</span
           >

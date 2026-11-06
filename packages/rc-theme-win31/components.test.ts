@@ -215,7 +215,7 @@ test('an empty compact icon slot keeps its square before the icon renders', () =
   const scope = renderScope();
   const chipIcon = document.createElement('span');
 
-  chipIcon.dataset.rcChipIcon = '';
+  chipIcon.dataset.rcIcon = '';
   scope.append(chipIcon);
 
   const { width, height } = chipIcon.getBoundingClientRect();

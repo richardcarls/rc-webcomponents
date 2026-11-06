@@ -20,7 +20,7 @@
     display: inline-block;
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-menu [data-group-label] {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-menu [role='group'] > [data-rc-label] {
     color: var(--substrate-on-surface-muted, GrayText);
     font-size: 0.8em;
     font-weight: 650;

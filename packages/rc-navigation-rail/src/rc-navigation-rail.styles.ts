@@ -63,8 +63,8 @@ export const navigationRailStyles = css`
     flex: none;
   }
 
-  :host(:not([expanded])) ::slotted([data-rc-navigation-collapse-icon]),
-  :host([expanded]) ::slotted([data-rc-navigation-expand-icon]) {
+  :host(:not([expanded])) ::slotted([data-rc-icon="selected"]),
+  :host([expanded]) ::slotted([data-rc-icon]:not([data-rc-icon="selected"])) {
     display: none;
   }
 

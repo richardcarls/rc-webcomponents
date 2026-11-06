@@ -41,15 +41,15 @@ or provide `active-selector` for router active classes.
 <nav aria-label="Main navigation">
   <rc-navigation-bar>
     <a href="/library" aria-current="page">
-      <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+      <span data-rc-icon aria-hidden="true">local_library</span>
       <span>Library</span>
     </a>
     <a href="/saved">
-      <span data-rc-navigation-icon aria-hidden="true">bookmark</span>
+      <span data-rc-icon aria-hidden="true">bookmark</span>
       <span>Saved</span>
     </a>
     <a href="/settings">
-      <span data-rc-navigation-icon aria-hidden="true">settings</span>
+      <span data-rc-icon aria-hidden="true">settings</span>
       <span>Settings</span>
     </a>
   </rc-navigation-bar>
@@ -62,7 +62,7 @@ just as `<search>` owns landmark semantics around `rc-search-bar`.
 positioning.
 
 The active indicator measures `[data-rc-navigation-indicator]`, then
-`[data-rc-navigation-icon]`, then the active link itself. Use
+`[data-rc-icon]`, then the active link itself. Use
 `indicator-target` when your markup needs a different measured element.
 The bundled themes set the tagged icon target's `line-height` equal to its
 `block-size`, keeping icon-font glyphs centered within the same box used for
@@ -129,11 +129,11 @@ const isExpanded = matchMedia('(min-width: 840px)').matches;
 <nav aria-label="Main navigation">
   <rc-navigation-bar>
     <a href="/library" aria-current="page">
-      <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+      <span data-rc-icon aria-hidden="true">local_library</span>
       <span>Library</span>
     </a>
     <a href="/settings">
-      <span data-rc-navigation-icon aria-hidden="true">settings</span>
+      <span data-rc-icon aria-hidden="true">settings</span>
       <span>Settings</span>
     </a>
   </rc-navigation-bar>
@@ -143,11 +143,11 @@ const isExpanded = matchMedia('(min-width: 840px)').matches;
 <nav aria-label="Main navigation">
   <rc-navigation-rail>
     <a href="/library" aria-current="page">
-      <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+      <span data-rc-icon aria-hidden="true">local_library</span>
       <span>Library</span>
     </a>
     <a href="/settings">
-      <span data-rc-navigation-icon aria-hidden="true">settings</span>
+      <span data-rc-icon aria-hidden="true">settings</span>
       <span>Settings</span>
     </a>
   </rc-navigation-rail>

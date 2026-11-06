@@ -159,8 +159,8 @@ test('warns instead of moving misplaced icon and label markers', async () => {
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   const screen = render(html`
     <rc-button data-testid="host">
-      <span data-rc-button-icon aria-hidden="true">+</span>
-      <span data-rc-button-label>Save</span>
+      <span data-rc-icon aria-hidden="true">+</span>
+      <span data-rc-label>Save</span>
     </rc-button>
   `);
   const host = (await screen.getByTestId('host').element()) as RCButton;
@@ -373,9 +373,9 @@ test('reflects icon and label presence from immediate button children', async ()
   const screen = render(html`
     <rc-button data-testid="host">
       <button type="button">
-        <span data-rc-button-icon aria-hidden="true">+</span>
-        <span data-rc-button-selected-icon aria-hidden="true">✓</span>
-        <span data-rc-button-label>Save</span>
+        <span data-rc-icon aria-hidden="true">+</span>
+        <span data-rc-icon="selected" aria-hidden="true">✓</span>
+        <span data-rc-label>Save</span>
       </button>
     </rc-button>
   `);
@@ -446,7 +446,7 @@ test('excludes data-rc-button-progress content from label detection', async () =
   const screen = render(html`
     <rc-button data-testid="host">
       <button type="button">
-        <span data-rc-button-icon aria-hidden="true">+</span>
+        <span data-rc-icon aria-hidden="true">+</span>
         <span data-rc-button-progress aria-hidden="true">Saving…</span>
       </button>
     </rc-button>
@@ -466,7 +466,7 @@ test('keeps a 32px visible icon-only button inside a clickable 48px target', asy
       style="--rc-button-block-size: 32px; --rc-button-icon-size: 32px;"
     >
       <button type="button">
-        <span data-rc-button-icon aria-hidden="true">+</span>
+        <span data-rc-icon aria-hidden="true">+</span>
       </button>
     </rc-button>
   `);
@@ -499,7 +499,7 @@ test('does not grow a visible icon-only button that already meets the touch targ
       style="--rc-button-block-size: 56px; --rc-button-icon-size: 56px;"
     >
       <button type="button">
-        <span data-rc-button-icon aria-hidden="true">+</span>
+        <span data-rc-icon aria-hidden="true">+</span>
       </button>
     </rc-button>
   `);
@@ -518,7 +518,7 @@ test('touch-target-overlap-inline-* defaults to 0px: no margin added', async () 
       style="--rc-button-block-size: 32px; --rc-button-icon-size: 32px;"
     >
       <button type="button">
-        <span data-rc-button-icon aria-hidden="true">+</span>
+        <span data-rc-icon aria-hidden="true">+</span>
       </button>
     </rc-button>
   `);
@@ -544,7 +544,7 @@ test('--rc-button-touch-target-overlap-inline-end shifts a 32px icon-only button
         "
       >
         <button type="button">
-          <span data-rc-button-icon aria-hidden="true">+</span>
+          <span data-rc-icon aria-hidden="true">+</span>
         </button>
       </rc-button>
     </div>
@@ -590,7 +590,7 @@ test('--rc-button-touch-target-overlap-inline-start mirrors the same behavior on
         "
       >
         <button type="button">
-          <span data-rc-button-icon aria-hidden="true">+</span>
+          <span data-rc-icon aria-hidden="true">+</span>
         </button>
       </rc-button>
     </div>
@@ -621,7 +621,7 @@ test('both touch-target-overlap-inline-* properties apply independently', async 
       "
     >
       <button type="button">
-        <span data-rc-button-icon aria-hidden="true">+</span>
+        <span data-rc-icon aria-hidden="true">+</span>
       </button>
     </rc-button>
   `);
@@ -645,7 +645,7 @@ test('touch-target-overlap-inline-end has no automated accessibility violations'
         "
       >
         <button type="button" aria-label="More actions">
-          <span data-rc-button-icon aria-hidden="true">+</span>
+          <span data-rc-icon aria-hidden="true">+</span>
         </button>
       </rc-button>
     </div>
@@ -665,9 +665,9 @@ test('selected icon switching follows controlled state and native button clicks'
     </style>
     <rc-button data-testid="host">
       <button type="button">
-        <span class="icon-font" data-rc-button-icon aria-hidden="true">♡</span>
-        <span class="icon-font" data-rc-button-selected-icon aria-hidden="true">♥</span>
-        <span data-rc-button-label>Save</span>
+        <span class="icon-font" data-rc-icon aria-hidden="true">♡</span>
+        <span class="icon-font" data-rc-icon="selected" aria-hidden="true">♥</span>
+        <span data-rc-label>Save</span>
       </button>
     </rc-button>
   `);
@@ -675,8 +675,8 @@ test('selected icon switching follows controlled state and native button clicks'
 
   await flushButton(host);
 
-  const icon = host.querySelector<HTMLElement>('[data-rc-button-icon]')!;
-  const selectedIcon = host.querySelector<HTMLElement>('[data-rc-button-selected-icon]')!;
+  const icon = host.querySelector<HTMLElement>('[data-rc-icon]')!;
+  const selectedIcon = host.querySelector<HTMLElement>('[data-rc-icon="selected"]')!;
 
   expect(getComputedStyle(icon).display).not.toBe('none');
   expect(getComputedStyle(selectedIcon).display).toBe('none');
@@ -707,9 +707,9 @@ test('toggle buttons manage aria-pressed and uncontrolled selected state', async
   const screen = render(html`
     <rc-button data-testid="host" toggle>
       <button type="button">
-        <span data-rc-button-icon aria-hidden="true">♡</span>
-        <span data-rc-button-selected-icon aria-hidden="true">♥</span>
-        <span data-rc-button-label>Save recipe</span>
+        <span data-rc-icon aria-hidden="true">♡</span>
+        <span data-rc-icon="selected" aria-hidden="true">♥</span>
+        <span data-rc-label>Save recipe</span>
       </button>
     </rc-button>
   `);
@@ -875,7 +875,7 @@ test('updates child classification after mutations', async () => {
   const screen = render(html`
     <rc-button data-testid="host">
       <button type="button" aria-label="Create">
-        <span data-rc-button-icon aria-hidden="true">+</span>
+        <span data-rc-icon aria-hidden="true">+</span>
       </button>
     </rc-button>
   `);
@@ -886,7 +886,7 @@ test('updates child classification after mutations', async () => {
 
   const label = document.createElement('span');
 
-  label.setAttribute('data-rc-button-label', '');
+  label.setAttribute('data-rc-label', '');
   label.textContent = 'Create';
   host.querySelector('button')!.append(label);
 
@@ -1028,8 +1028,8 @@ test('has no automated accessibility violations', async () => {
   const screen = render(html`
     <rc-button data-testid="host">
       <button type="button">
-        <span data-rc-button-icon aria-hidden="true">+</span>
-        <span data-rc-button-label>Save</span>
+        <span data-rc-icon aria-hidden="true">+</span>
+        <span data-rc-label>Save</span>
       </button>
     </rc-button>
   `);
@@ -1043,9 +1043,9 @@ test('selected toggle state has no automated accessibility violations', async ()
   const screen = render(html`
     <rc-button data-testid="host" toggle default-selected>
       <button type="button">
-        <span data-rc-button-icon aria-hidden="true">♡</span>
-        <span data-rc-button-selected-icon aria-hidden="true">♥</span>
-        <span data-rc-button-label>Save recipe</span>
+        <span data-rc-icon aria-hidden="true">♡</span>
+        <span data-rc-icon="selected" aria-hidden="true">♥</span>
+        <span data-rc-label>Save recipe</span>
       </button>
     </rc-button>
   `);

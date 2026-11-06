@@ -6,9 +6,9 @@ Progressive-enhancement action wrapper for a direct native `<button>` or
 ```html
 <rc-button toggle default-selected>
   <button type="button">
-    <span data-rc-button-icon aria-hidden="true">♡</span>
-    <span data-rc-button-selected-icon aria-hidden="true">♥</span>
-    <span data-rc-button-label>Save</span>
+    <span data-rc-icon aria-hidden="true">♡</span>
+    <span data-rc-icon="selected" aria-hidden="true">♥</span>
+    <span data-rc-label>Save</span>
   </button>
 </rc-button>
 ```

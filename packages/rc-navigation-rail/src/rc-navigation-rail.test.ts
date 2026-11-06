@@ -111,7 +111,7 @@ test('positions the indicator on the aria-current link target', async () => {
     <rc-navigation-rail data-testid="host">
       <a href="/recipes" aria-current="page">
         <span
-          data-rc-navigation-icon
+          data-rc-icon
           style="display: inline-block; inline-size: 56px; block-size: 32px;"
           >R</span
         >
@@ -164,7 +164,7 @@ test('updates the indicator when active target geometry changes', async () => {
     <rc-navigation-rail data-testid="host">
       <a href="/recipes" aria-current="page">
         <span
-          data-rc-navigation-icon
+          data-rc-icon
           data-testid="target"
           style="display: inline-block; inline-size: 56px; block-size: 32px;"
           >R</span
@@ -232,8 +232,8 @@ test('slotted native toggle stays connected and reflects expanded state', async 
   const screen = render(html`
     <rc-navigation-rail data-testid="host" @rc-navigation-rail-toggle=${toggleSpy}>
       <button slot="toggle" data-testid="toggle" type="button" aria-label="Toggle navigation">
-        <span data-rc-navigation-expand-icon>Menu</span>
-        <span data-rc-navigation-collapse-icon>Close</span>
+        <span data-rc-icon>Menu</span>
+        <span data-rc-icon="selected">Close</span>
       </button>
       <a href="/recipes">Recipes</a>
     </rc-navigation-rail>
@@ -246,11 +246,11 @@ test('slotted native toggle stays connected and reflects expanded state', async 
   expect($button.isConnected).toBe(true);
   expect($button.getAttribute('aria-expanded')).toBe('false');
 
-  expect($button.querySelector<HTMLElement>('[data-rc-navigation-expand-icon]')?.hidden).toBe(
+  expect($button.querySelector<HTMLElement>('[data-rc-icon]:not([data-rc-icon="selected"])')?.hidden).toBe(
     false,
   );
 
-  expect($button.querySelector<HTMLElement>('[data-rc-navigation-collapse-icon]')?.hidden).toBe(
+  expect($button.querySelector<HTMLElement>('[data-rc-icon="selected"]')?.hidden).toBe(
     true,
   );
 
@@ -260,9 +260,9 @@ test('slotted native toggle stays connected and reflects expanded state', async 
 
   expect(host.expanded).toBe(true);
   expect($button.getAttribute('aria-expanded')).toBe('true');
-  expect($button.querySelector<HTMLElement>('[data-rc-navigation-expand-icon]')?.hidden).toBe(true);
+  expect($button.querySelector<HTMLElement>('[data-rc-icon]:not([data-rc-icon="selected"])')?.hidden).toBe(true);
 
-  expect($button.querySelector<HTMLElement>('[data-rc-navigation-collapse-icon]')?.hidden).toBe(
+  expect($button.querySelector<HTMLElement>('[data-rc-icon="selected"]')?.hidden).toBe(
     false,
   );
 

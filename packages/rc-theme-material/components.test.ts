@@ -127,14 +127,20 @@ test('icons follow Material sizes by component context', () => {
   const navigationIcon = document.createElement('span');
   const chipIcon = document.createElement('span');
 
-  labeledIcon.dataset.rcButtonIcon = '';
+  const chip = document.createElement('rc-chip');
+
+  labeledIcon.dataset.rcIcon = '';
   iconButton.setAttribute('icon-only', '');
-  iconButtonIcon.dataset.rcButtonIcon = '';
-  navigationIcon.dataset.rcNavigationIcon = '';
-  chipIcon.dataset.rcChipIcon = '';
-  labeledButton.append(labeledIcon);
-  iconButton.append(iconButtonIcon);
-  scope.append(labeledButton, iconButton, navigationIcon, chipIcon);
+  iconButtonIcon.dataset.rcIcon = '';
+  navigationIcon.dataset.rcIcon = '';
+  chipIcon.dataset.rcIcon = '';
+  // The size comes from the icon's context: a button's native child, or a chip.
+  labeledButton.append(document.createElement('button'));
+  labeledButton.firstElementChild!.append(labeledIcon);
+  iconButton.append(document.createElement('button'));
+  iconButton.firstElementChild!.append(iconButtonIcon);
+  chip.append(chipIcon);
+  scope.append(labeledButton, iconButton, navigationIcon, chip);
 
   expect(getComputedStyle(labeledIcon).fontSize).toBe('18px');
   expect(getComputedStyle(iconButtonIcon).fontSize).toBe('24px');
@@ -147,9 +153,12 @@ test('empty icon slots keep their square before the icon renders', () => {
   const chipIcon = document.createElement('span');
   const navigationIcon = document.createElement('span');
 
-  chipIcon.dataset.rcChipIcon = '';
-  navigationIcon.dataset.rcNavigationIcon = '';
-  scope.append(chipIcon, navigationIcon);
+  const chip = document.createElement('rc-chip');
+
+  chipIcon.dataset.rcIcon = '';
+  navigationIcon.dataset.rcIcon = '';
+  chip.append(chipIcon);
+  scope.append(chip, navigationIcon);
 
   expect(chipIcon.getBoundingClientRect()).toMatchObject({ width: 18, height: 18 });
   expect(navigationIcon.getBoundingClientRect()).toMatchObject({ width: 24, height: 24 });
@@ -161,7 +170,7 @@ test('Material chips use the MD3 leading-icon spacing', () => {
   const $label = document.createElement('button');
   const $icon = document.createElement('span');
 
-  $icon.dataset.rcChipIcon = '';
+  $icon.dataset.rcIcon = '';
   $label.append($icon, 'Quick');
   $chip.append($label);
   $scope.append($chip);
@@ -606,9 +615,9 @@ test('icon consumers share the theme icon-font convention', () => {
   const buttonIcon = document.createElement('span');
 
   button.setAttribute('icon-only', '');
-  barIcon.dataset.rcNavigationIcon = '';
-  railIcon.dataset.rcNavigationIcon = '';
-  buttonIcon.dataset.rcButtonIcon = '';
+  barIcon.dataset.rcIcon = '';
+  railIcon.dataset.rcIcon = '';
+  buttonIcon.dataset.rcIcon = '';
   listIcon.dataset.rcIcon = '';
   bar.append(barIcon);
   rail.append(railIcon);

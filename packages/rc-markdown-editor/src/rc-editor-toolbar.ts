@@ -248,7 +248,7 @@ export class RCEditorToolbar extends LitElement {
           aria-label=${label}
           aria-pressed=${String(active)}
         >
-          <span data-rc-button-icon>${icon}</span>
+          <span data-rc-icon>${icon}</span>
         </button>
       </rc-button>
     `;

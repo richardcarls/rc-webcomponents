@@ -81,8 +81,8 @@
   }
 
   /* Section / group labels (optional, for menu segmentation) -------------- */
-  /* Add [data-group-label] as first child of role="group" for a visible heading. */
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu [data-group-label] {
+  /* Add [data-rc-label] as first child of role="group" for a visible heading. */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu [role='group'] > [data-rc-label] {
     padding-block-start: 0.75rem;
     padding-block-end: 0.25rem;
     font-family: var(--md-sys-typescale-label-small-font, inherit);

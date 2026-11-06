@@ -29,11 +29,11 @@ const LIGHT_DOM_CSS = cssText`
    * Icon-font utility classes commonly set display outside cascade layers.
    * Hiding the inactive icon is structural, so it must win that declaration.
    */
-  rc-button[selected] > button > [data-rc-button-icon] {
+  rc-button[selected] > button:has(> [data-rc-icon="selected"]) > [data-rc-icon]:not([data-rc-icon="selected"]) {
     display: none !important;
   }
 
-  rc-button:not([selected]) > button > [data-rc-button-selected-icon] {
+  rc-button:not([selected]) > button > [data-rc-icon="selected"] {
     display: none !important;
   }
 
@@ -111,9 +111,9 @@ export interface RCButtonToggleDetail {
  *   icon element without visible label content. Use with CSS selectors (e.g.
  *   `rc-button[has-icon]`).
  * @attr [has-selected-icon] - Present when the native button has a direct
- *   `[data-rc-button-selected-icon]` child.
+ *   `[data-rc-icon="selected"]` child.
  * @attr [has-label] - Present when the native button has visible label content, from either a
- *   `[data-rc-button-label]` child or bare text.
+ *   `[data-rc-label]` child or bare text.
  *
  * @cssprop [--rc-button-gap] - Gap between icon and label content.
  * @cssprop [--rc-button-block-size] - Minimum button block size.
@@ -347,7 +347,7 @@ export class RCButton extends LitElement {
 
     if (!$nextButton && !$nextAnchor && import.meta.env.DEV) {
       const $misplaced = this.querySelector(
-        ':scope > [data-rc-button-icon], :scope > [data-rc-button-selected-icon], :scope > [data-rc-button-label]',
+        ':scope > [data-rc-icon], :scope > [data-rc-label]',
       );
 
       console.warn(
@@ -406,10 +406,10 @@ export class RCButton extends LitElement {
 
   protected _classifyButton(): void {
     const $button = this._$button;
-    const hasMarkedIcon = !!$button?.querySelector(':scope > [data-rc-button-icon]');
-    const hasSelectedIcon = !!$button?.querySelector(':scope > [data-rc-button-selected-icon]');
+    const hasMarkedIcon = !!$button?.querySelector(':scope > [data-rc-icon]:not([data-rc-icon="selected"])');
+    const hasSelectedIcon = !!$button?.querySelector(':scope > [data-rc-icon="selected"]');
     const hasLabel = this._hasLabel($button);
-    // `data-rc-button-icon` is an opt-in marker, easy for a consumer's own
+    // `data-rc-icon` is an opt-in marker, easy for a consumer's own
     // icon wrapper to omit; a labelless button with element content that
     // carries no visible text (an <svg>, an <iconify-icon>, and similar) is
     // unambiguously icon-only. Falling back to this keeps classification
@@ -453,7 +453,7 @@ export class RCButton extends LitElement {
       return false;
     }
 
-    if ($button.querySelector(':scope > [data-rc-button-label]')) {
+    if ($button.querySelector(':scope > [data-rc-label]')) {
       return true;
     }
 
@@ -469,7 +469,7 @@ export class RCButton extends LitElement {
       // data-rc-button-progress marks consumer content that must not count as a label.
       if (
         $node.matches(
-          '[data-rc-button-icon], [data-rc-button-selected-icon], [data-rc-button-progress], [aria-hidden="true"]',
+          '[data-rc-icon], [data-rc-button-progress], [aria-hidden="true"]',
         )
       ) {
         continue;

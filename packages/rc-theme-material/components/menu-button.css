@@ -44,7 +44,7 @@
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-menu-button[icon-only]
     > [slot='trigger']
-    > :not([data-rc-menu-label]) {
+    > :not([data-rc-label]) {
     font-size: var(--rc-icon-button-icon-font-size, 1.5rem);
     line-height: var(--rc-icon-button-icon-font-size, 1.5rem) !important;
   }

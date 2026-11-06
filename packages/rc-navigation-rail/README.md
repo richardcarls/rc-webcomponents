@@ -25,18 +25,18 @@ import '@rcarls/rc-navigation-rail/define';
 <nav aria-label="Main navigation">
   <rc-navigation-rail>
     <button slot="toggle" type="button" aria-label="Toggle navigation">
-      <span data-rc-navigation-expand-icon aria-hidden="true">menu</span>
-      <span data-rc-navigation-collapse-icon aria-hidden="true">menu_open</span>
+      <span data-rc-icon aria-hidden="true">menu</span>
+      <span data-rc-icon="selected" aria-hidden="true">menu_open</span>
     </button>
     <a href="/recipes" aria-current="page">
       <span data-rc-navigation-indicator>
-        <span data-rc-navigation-icon aria-hidden="true">R</span>
+        <span data-rc-icon aria-hidden="true">R</span>
         <span>Recipes</span>
       </span>
     </a>
     <a href="/settings">
       <span data-rc-navigation-indicator>
-        <span data-rc-navigation-icon aria-hidden="true">S</span>
+        <span data-rc-icon aria-hidden="true">S</span>
         <span>Settings</span>
       </span>
     </a>
@@ -71,7 +71,7 @@ sync.
 | `expanded`        | `expanded`         | `boolean` | `false`                                                     | Whether the rail is expanded. Host writes are silent.        |
 | `defaultExpanded` | `default-expanded` | `boolean` | `false`                                                     | Initial expanded state for uncontrolled usage.               |
 | `activeSelector`  | `active-selector`  | `string`  | `a[aria-current]:not([aria-current="false"])`               | Selector used to find the active link.                       |
-| `indicatorTarget` | `indicator-target` | `string`  | `[data-rc-navigation-indicator], [data-rc-navigation-icon]` | Selector inside the active link used for indicator geometry. |
+| `indicatorTarget` | `indicator-target` | `string`  | `[data-rc-navigation-indicator], [data-rc-icon]` | Selector inside the active link used for indicator geometry. |
 
 | Method             | Description             |
 | ------------------ | ----------------------- |

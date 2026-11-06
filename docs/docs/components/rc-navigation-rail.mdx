@@ -43,15 +43,13 @@ breakpoint policy.
     <rc-button slot="toggle" icon-only>
       <button type="button" aria-label="Toggle navigation">
         <span
-          data-rc-button-icon
-          data-rc-navigation-expand-icon
+          data-rc-icon
           class="material-symbols-outlined"
           aria-hidden="true"
           >menu</span
         >
         <span
-          data-rc-button-selected-icon
-          data-rc-navigation-collapse-icon
+          data-rc-icon="selected"
           class="material-symbols-outlined"
           aria-hidden="true"
           >menu_open</span
@@ -60,13 +58,13 @@ breakpoint policy.
     </rc-button>
     <a href="/library" aria-current="page">
       <span data-rc-navigation-indicator>
-        <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+        <span data-rc-icon aria-hidden="true">local_library</span>
         <span>Library</span>
       </span>
     </a>
     <a href="/saved">
       <span data-rc-navigation-indicator>
-        <span data-rc-navigation-icon aria-hidden="true">bookmark</span>
+        <span data-rc-icon aria-hidden="true">bookmark</span>
         <span>Saved</span>
       </span>
     </a>
@@ -110,10 +108,10 @@ contains both.
 <nav aria-label="Main navigation">
   <rc-navigation-rail default-expanded>
     <button slot="toggle" type="button" aria-label="Toggle navigation">
-      <span data-rc-navigation-expand-icon class="material-symbols-outlined" aria-hidden="true"
+      <span data-rc-icon class="material-symbols-outlined" aria-hidden="true"
         >menu</span
       >
-      <span data-rc-navigation-collapse-icon class="material-symbols-outlined" aria-hidden="true"
+      <span data-rc-icon="selected" class="material-symbols-outlined" aria-hidden="true"
         >menu_open</span
       >
     </button>
@@ -129,18 +127,18 @@ Provide the collapse control in light DOM as either a native button or an
 `rc-button` wrapping a direct native button. The control remains a semantic,
 keyboard-operable button before custom element upgrade; the rail enhances it by
 synchronizing `aria-expanded`, switching the marked icons, and dispatching its
-toggle event. With `rc-button`, mark `menu` as `data-rc-button-icon` and
-`menu_open` as `data-rc-button-selected-icon`; the rail coordinates the
-wrapper's `selected` state.
+toggle event. Mark `menu` as `data-rc-icon` and `menu_open` as
+`data-rc-icon="selected"`: the selected icon shows while the rail is expanded,
+and the rail coordinates an `rc-button` wrapper's `selected` state.
 
 ```html
 <nav aria-label="Main navigation">
   <rc-navigation-rail>
     <button slot="toggle" type="button" aria-label="Toggle navigation">
-      <span data-rc-navigation-expand-icon class="material-symbols-outlined" aria-hidden="true"
+      <span data-rc-icon class="material-symbols-outlined" aria-hidden="true"
         >menu</span
       >
-      <span data-rc-navigation-collapse-icon class="material-symbols-outlined" aria-hidden="true"
+      <span data-rc-icon="selected" class="material-symbols-outlined" aria-hidden="true"
         >menu_open</span
       >
     </button>
@@ -175,13 +173,13 @@ router's active class.
   <rc-navigation-rail>
     <a href="/library" aria-current="page">
       <span data-rc-navigation-indicator>
-        <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+        <span data-rc-icon aria-hidden="true">local_library</span>
         <span>Library</span>
       </span>
     </a>
     <a href="/settings">
       <span data-rc-navigation-indicator>
-        <span data-rc-navigation-icon aria-hidden="true">settings</span>
+        <span data-rc-icon aria-hidden="true">settings</span>
         <span>Settings</span>
       </span>
     </a>
@@ -193,18 +191,18 @@ router's active class.
   <rc-navigation-rail expanded>
     <rc-fab slot="header" position="block-start-inline-start" style="--rc-fab-position: static">
       <button type="button" aria-label="New note">
-        <span data-rc-button-icon aria-hidden="true">add</span>
+        <span data-rc-icon aria-hidden="true">add</span>
       </button>
     </rc-fab>
     <a href="/library" aria-current="page">
       <span data-rc-navigation-indicator>
-        <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+        <span data-rc-icon aria-hidden="true">local_library</span>
         <span>Library</span>
       </span>
     </a>
     <a href="/settings">
       <span data-rc-navigation-indicator>
-        <span data-rc-navigation-icon aria-hidden="true">settings</span>
+        <span data-rc-icon aria-hidden="true">settings</span>
         <span>Settings</span>
       </span>
     </a>

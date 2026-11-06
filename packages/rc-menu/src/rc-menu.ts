@@ -128,8 +128,8 @@ const LIGHT_DOM_CSS = cssText`
     content: '•';
   }
 
-  rc-menu [data-rc-menu-leading],
-  rc-menu [data-rc-menu-trailing] {
+  rc-menu [data-rc-icon],
+  rc-menu [data-rc-label] ~ * {
     flex: none;
     display: inline-flex;
     align-items: center;
@@ -137,19 +137,19 @@ const LIGHT_DOM_CSS = cssText`
   }
 
   rc-menu :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'])
-    :is([data-rc-icon], [data-rc-menu-leading]) {
+    [data-rc-icon] {
     flex: none;
     font-size: var(--rc-item-icon-size, inherit);
     line-height: var(--rc-item-icon-size, inherit);
   }
 
-  rc-menu [data-rc-menu-label] {
+  rc-menu :not([role='group']) > [data-rc-label] {
     flex: 1 1 auto;
     min-inline-size: 0;
   }
 
-  /* Trailing label — keyboard shortcut or hint, pushed to the inline-end of the item */
-  rc-menu [data-rc-menu-trailing],
+  /* A keyboard shortcut is pushed to the inline end; other content after the label
+     already follows the growing label there. */
   rc-menu kbd {
     margin-inline-start: auto;
   }
@@ -178,7 +178,7 @@ const LIGHT_DOM_CSS = cssText`
   }
 
   /* Optional section label (non-interactive heading above a group of items) */
-  rc-menu [data-group-label] {
+  rc-menu [role='group'] > [data-rc-label] {
     padding-block: var(--rc-menu-group-label-padding-block, 0.1em);
     padding-inline: var(--rc-menu-item-padding-inline, 0.75em);
     color: var(--rc-menu-group-label-color, GrayText);
@@ -212,10 +212,10 @@ const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-menu', LIGHT_DOM_C
  *     (coexists with a leading icon the item supplies itself); `aria-checked` is initialized when missing and
  *     updated on activation.
  *   - `role="group"` divs group related items; label them with `aria-label` or `aria-labelledby`. Optionally
- *     add a visible `[data-group-label]` element as first child of the group for section headings.
+ *     add a visible `[data-rc-label]` element as first child of the group for section headings.
  *   - `role="separator"` / `<hr>` produce horizontal dividers between sections.
- *   - Within any item, use `[data-rc-menu-leading]`, `[data-rc-menu-label]`, and
- *     `[data-rc-menu-trailing]` to identify content columns. A `<kbd>` keyboard shortcut
+ *   - Within any item, mark the icon with `[data-rc-icon]` and the text with `[data-rc-label]`;
+ *     content after the label is a trailing column. A `<kbd>` keyboard shortcut
  *     is pushed to the inline-end edge.
  *   - Nested menu triggers supply their own trailing indicator through `rc-menu-button`'s `indicator` slot.
  *
@@ -251,14 +251,14 @@ const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-menu', LIGHT_DOM_C
  * @cssprop [--rc-menu-separator-border=1px solid ButtonBorder] - Separator border.
  * @cssprop [--rc-menu-separator-margin-block=var(--rc-control-gap)] - Separator block-axis margin.
  * @cssprop [--rc-menu-separator-margin-inline=0px] - Separator inline margin; set to match item padding for inset separators.
- * @cssprop [--rc-menu-group-label-padding-block=0.1em] - Block padding on `[data-group-label]` section headings.
- * @cssprop [--rc-menu-group-label-color=GrayText] - Text color of `[data-group-label]` section headings.
+ * @cssprop [--rc-menu-group-label-padding-block=0.1em] - Block padding on a group's `[data-rc-label]` section heading.
+ * @cssprop [--rc-menu-group-label-color=GrayText] - Text color of a group's `[data-rc-label]` section heading.
  * @cssprop [--rc-item-font-family=var(--rc-font-family)] - Item font family; shared with listbox and adaptive-menu items.
  * @cssprop [--rc-item-font-size=var(--rc-font-size)] - Item font size; shared with listbox and adaptive-menu items.
  * @cssprop [--rc-item-font-weight=inherit] - Item font weight; shared with listbox and adaptive-menu items.
  * @cssprop [--rc-item-line-height=var(--rc-line-height)] - Item line height; shared with listbox and adaptive-menu items.
  * @cssprop [--rc-item-letter-spacing=inherit] - Item letter spacing; shared with listbox and adaptive-menu items.
- * @cssprop [--rc-item-icon-size=inherit] - Size of icons marked with `data-rc-icon` or `data-rc-menu-leading`.
+ * @cssprop [--rc-item-icon-size=inherit] - Size of icons marked with `data-rc-icon` or `data-rc-icon`.
  */
 export class RCMenu extends LitElement {
   /** Writes the element's attributes again after a DOM morph removes them. */

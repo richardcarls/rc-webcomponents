@@ -1,11 +1,6 @@
 @layer rc-theme-tailwind.components {
   :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
-    :where(
-      [data-rc-icon],
-      [data-rc-button-icon],
-      [data-rc-button-selected-icon],
-      [data-rc-navigation-icon]
-    ) {
+    :where([data-rc-icon]) {
     display: inline-grid;
     place-items: center;
     font-size: var(--rc-icon-font-size, 1.5rem);

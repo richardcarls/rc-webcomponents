@@ -32,7 +32,7 @@
     --rc-chip-remove-offset-inline: 0.25rem;
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-chip:has([data-rc-chip-icon]) {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-chip:has([data-rc-icon]) {
     --rc-chip-gap: 0.5rem;
     --rc-chip-padding-inline-start: 0.5rem;
   }

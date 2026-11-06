@@ -593,9 +593,9 @@ test('styles overflowed rows from inherited item tokens inside a foreign shadow 
 
   host.setAttribute('max-shown', '0');
   action.type = 'button';
-  leading.setAttribute('data-rc-menu-leading', '');
+  leading.setAttribute('data-rc-icon', '');
   leading.textContent = '*';
-  label.setAttribute('data-rc-menu-label', '');
+  label.setAttribute('data-rc-label', '');
   label.textContent = 'Edit';
   action.append(leading, label);
   nestedTrigger.type = 'button';

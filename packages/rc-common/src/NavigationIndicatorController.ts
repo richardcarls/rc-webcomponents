@@ -162,7 +162,7 @@ export class NavigationIndicatorController implements ReactiveController {
 
     return (
       link.querySelector<HTMLElement>('[data-rc-navigation-indicator]') ??
-      link.querySelector<HTMLElement>('[data-rc-navigation-icon]') ??
+      link.querySelector<HTMLElement>('[data-rc-icon]') ??
       link
     );
   }

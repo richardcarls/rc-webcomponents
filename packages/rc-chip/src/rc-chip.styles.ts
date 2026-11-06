@@ -37,7 +37,7 @@ export const chipStyles = css`
   ::slotted(button),
   ::slotted(a),
   ::slotted(label),
-  ::slotted([data-rc-chip-label]) {
+  ::slotted([data-rc-label]) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -62,7 +62,7 @@ export const chipStyles = css`
   :host([selected]) ::slotted(button),
   :host([selected]) ::slotted(a),
   :host([selected]) ::slotted(label),
-  :host([selected]) ::slotted([data-rc-chip-label]) {
+  :host([selected]) ::slotted([data-rc-label]) {
     border-color: var(--rc-chip-selected-border-color, revert);
     background: var(--rc-chip-selected-bg, revert);
     color: var(--rc-chip-selected-color, revert);
@@ -146,7 +146,7 @@ export const chipStyles = css`
   :host([removable]) ::slotted(button),
   :host([removable]) ::slotted(a),
   :host([removable]) ::slotted(label),
-  :host([removable]) ::slotted([data-rc-chip-label]) {
+  :host([removable]) ::slotted([data-rc-label]) {
     padding-inline-end: var(
       --rc-chip-removable-padding-inline-end,
       calc(
@@ -163,7 +163,7 @@ export const chipStyles = css`
     ::slotted(button),
     ::slotted(a),
     ::slotted(label),
-    ::slotted([data-rc-chip-label]) {
+    ::slotted([data-rc-label]) {
       border-color: ButtonBorder;
       background: ButtonFace;
       color: ButtonText;
@@ -172,7 +172,7 @@ export const chipStyles = css`
     :host([selected]) ::slotted(button),
     :host([selected]) ::slotted(a),
     :host([selected]) ::slotted(label),
-    :host([selected]) ::slotted([data-rc-chip-label]) {
+    :host([selected]) ::slotted([data-rc-label]) {
       border-color: Highlight;
       background: Highlight;
       color: HighlightText;
