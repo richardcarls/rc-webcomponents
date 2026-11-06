@@ -86,6 +86,10 @@ horizontal row. The component uses actual rendered rows, so container size,
 text scaling, localization, and consumer content all participate in the
 decision without device-pixel-ratio special cases.
 
+The scrolling row hides its scrollbar, so a vertical mouse wheel over it scrolls
+the row along its inline axis. At either end of the row, the wheel scrolls the
+page as usual. Touch, touch-pad, and Shift+wheel scrolling stay native.
+
 ## Coordination modes
 
 - `kind="generic"` is layout-only and accepts any direct `HTMLElement`.

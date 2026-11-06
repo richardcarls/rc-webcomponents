@@ -486,7 +486,9 @@ test('disabled and readonly chips settle after disabling the native control', as
 test('shows a pointer over an interactive chip only', async () => {
   const screen = render(html`
     <rc-chip data-testid="button"><button type="button">Quick</button></rc-chip>
-    <rc-chip data-testid="filter"><label><input type="checkbox" />Vegan</label></rc-chip>
+    <rc-chip data-testid="filter"
+      ><label><input type="checkbox" />Vegan</label></rc-chip
+    >
     <rc-chip data-testid="disabled" disabled><button type="button">Off</button></rc-chip>
     <rc-chip data-testid="readonly" readonly><span data-rc-chip-label>Tag</span></rc-chip>
   `);
