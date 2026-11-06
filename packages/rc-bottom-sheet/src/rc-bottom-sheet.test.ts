@@ -1272,3 +1272,110 @@ test('a handle click the consumer prevents leaves the sheet where it is', async 
 
   $host.close();
 });
+
+async function openSheetWith(snapPoints: string, contentBlockSize: string) {
+  const screen = render(html`
+    <rc-bottom-sheet data-testid="host" snap-points=${snapPoints}>
+      <dialog
+        aria-labelledby="sheet-title"
+        style="position: fixed; left: 100px; top: auto; bottom: 0; width: 360px; margin: 0; padding: 0; max-height: 600px; box-sizing: border-box;"
+      >
+        <button
+          type="button"
+          data-rc-bottom-sheet-handle
+          data-rc-dialog-resize-axis="y"
+          data-rc-dialog-resize-origin="top"
+          style="display: block; block-size: 40px; inline-size: 100%;"
+        >
+          Resize sheet
+        </button>
+        <h2 id="sheet-title" style="margin: 0; block-size: ${contentBlockSize};">Filter recipes</h2>
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  return {
+    $host,
+    $dialog: $host.querySelector('dialog') as HTMLDialogElement,
+    $handle: $host.querySelector('[data-rc-bottom-sheet-handle]') as HTMLButtonElement,
+  };
+}
+
+test('a single snap point toggles with the natural height', async () => {
+  const { $host, $dialog, $handle } = await openSheetWith('120px', '360px');
+  // Opened without a snap, the sheet sits at its natural height.
+  const natural = sheetHeight($dialog);
+
+  expect(natural).toBeGreaterThan(400);
+  $host.snapTo(0, 'instant');
+  expect(sheetHeight($dialog)).toBe(120);
+  expect($host.nextActivationIndex).toBe(1);
+
+  clickHandle($handle);
+  await vi.waitFor(() => expect(sheetHeight($dialog)).toBe(natural));
+  await vi.waitFor(() => expect($host.nextActivationIndex).toBe(0));
+
+  clickHandle($handle);
+  await vi.waitFor(() => expect(sheetHeight($dialog)).toBe(120));
+
+  $host.close();
+});
+
+test('the natural height of a single snap point respects the CSS maximum', async () => {
+  const { $host, $dialog, $handle } = await openSheetWith('120px', '900px');
+
+  $host.snapTo(0, 'instant');
+  clickHandle($handle);
+  await vi.waitFor(() => expect(sheetHeight($dialog)).toBe(600));
+
+  $host.close();
+});
+
+test('a single snap point at or above the natural height has nowhere to step', async () => {
+  const { $host, $dialog, $handle } = await openSheetWith('300px', '100px');
+
+  $host.snapTo(0, 'instant');
+  expect($host.nextActivationIndex).toBeNull();
+  clickHandle($handle);
+  await wait(400);
+  expect(sheetHeight($dialog)).toBe(300);
+
+  $host.close();
+});
+
+test('without snap points a tap does nothing and a drag stays where released', async () => {
+  const { $host, $dialog, $handle } = await openSheetWith('', '200px');
+  const start = $dialog.getBoundingClientRect();
+
+  expect($host.nextActivationIndex).toBeNull();
+  clickHandle($handle);
+  await wait(100);
+  expect(sheetHeight($dialog)).toBe(Math.round(start.height));
+
+  firePointerEvent($handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
+  firePointerEvent($handle, 'pointermove', { clientX: start.left + 20, clientY: start.top - 37 });
+  firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 37 });
+  clickHandle($handle);
+  await wait(400);
+
+  expect(sheetHeight($dialog)).toBe(Math.round(start.height + 37));
+
+  $host.close();
+});
+
+test('nextActivationIndex follows the stepping order and is null while closed', async () => {
+  const { $host, $handle } = await openHandleSheet();
+
+  expect($host.nextActivationIndex).toBe(1);
+  clickHandle($handle);
+  await vi.waitFor(() => expect($host.nextActivationIndex).toBe(2));
+  clickHandle($handle);
+  await vi.waitFor(() => expect($host.nextActivationIndex).toBe(1));
+
+  $host.close();
+  expect($host.nextActivationIndex).toBeNull();
+});

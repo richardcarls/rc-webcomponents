@@ -95,7 +95,12 @@ whether the trigger was a drag, handle activation, or API call.
 Activating the handle without dragging it (a click, tap, Enter, or Space) moves
 the sheet to the next snap point, continuing in the direction it last moved and
 turning back at the first or last point. Call `preventDefault()` in a click
-listener on the handle to step the sheet yourself instead. Interrupted animations do not emit
+listener on the handle to step the sheet yourself instead. `nextActivationIndex`
+reports where the next activation goes, for labeling the handle.
+
+A single snap point pairs with the sheet's natural height (content height capped
+by its CSS block-size limits) as a second stop, so a peek can expand to fit.
+Without snap points, a drag resizes freely. Interrupted animations do not emit
 a stale event. Constrained targets remain docked to the same block-end edge.
 
 Set `--rc-bottom-sheet-snap-duration` and
