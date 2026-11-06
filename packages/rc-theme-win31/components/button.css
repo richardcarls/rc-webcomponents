@@ -48,7 +48,7 @@
    * The default button in a dialog carried a second frame, which is how Enter
    * was advertised before a focus ring could be relied on.
    */
-  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-button[data-rc-win31-default] > button {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-button.rc-button--default > button {
     outline: calc(2 * var(--win31-unit)) solid var(--win31-color-frame);
     outline-offset: var(--win31-unit);
   }

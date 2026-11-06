@@ -342,7 +342,7 @@ export const comboboxStyles = css`
     display: none;
   }
 
-  rc-listbox [part~='option'][data-active]:not([aria-disabled='true']) {
+  rc-listbox [part~='option'][data-rc-active]:not([aria-disabled='true']) {
     outline: var(--rc-focus-ring, 2px solid var(--rc-accent, Highlight));
     outline-offset: -2px;
   }

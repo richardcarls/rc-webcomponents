@@ -33,7 +33,7 @@ lower-priority actions into an overflow menu.
 
 ## Usage
 
-Place native buttons as direct children and name the menu with `label`. Higher `data-priority`
+Place native buttons as direct children and name the menu with `label`. Higher `data-rc-action-priority`
 values stay visible first, up to `max-shown`; the rest move to the overflow menu, as does any
 action with `slot="overflow"`. A theme may show promoted actions with an icon as icon-only; mark an
 action `data-rc-action-show-label` to keep its label visible while it is promoted, such as a pane's
@@ -41,11 +41,11 @@ primary action on a wide screen. The marker has no effect in the overflow menu.
 
 ```html
 <rc-adaptive-menu label="Document actions" max-shown="3">
-  <button type="button" data-priority="30">
+  <button type="button" data-rc-action-priority="30">
     <span data-rc-icon aria-hidden="true">★</span>
     <span data-rc-label>Favorite</span>
   </button>
-  <button type="button" data-priority="20">
+  <button type="button" data-rc-action-priority="20">
     <span data-rc-icon aria-hidden="true">✎</span>
     <span data-rc-label>Edit</span>
   </button>
@@ -65,13 +65,13 @@ Clicking either presentation invokes the same authored control.
 ## Action contract
 
 Actions must be direct native buttons or links, or direct `rc-button`,
-`rc-chip`, or `rc-menu-button` wrappers. Larger numeric `data-priority` values
+`rc-chip`, or `rc-menu-button` wrappers. Larger numeric `data-rc-action-priority` values
 are promoted first, up to `max-shown` authored actions; DOM order breaks ties.
 An authored `slot="overflow"` keeps an action overflow-only, regardless of
 `max-shown`.
 
 `max-shown` is a static declarative cap, re-evaluated whenever it or an
-authored action's `data-priority` changes. The component performs no runtime
+authored action's `data-rc-action-priority` changes. The component performs no runtime
 size measurement of any kind, so promoted actions are not guaranteed to
 visually fit any particular container. A consumer whose promoted count needs
 to react to available space, such as a responsive breakpoint or a window size

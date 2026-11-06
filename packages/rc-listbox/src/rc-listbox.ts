@@ -129,7 +129,7 @@ const LIGHT_DOM_CSS = cssText`
     color: var(--rc-listbox-hover-color, inherit);
   }
 
-  rc-listbox li[role='option'][data-active] {
+  rc-listbox li[role='option'][data-rc-active] {
     background: var(--rc-listbox-active-bg, color-mix(in srgb, Highlight 8%, transparent));
     color: var(--rc-listbox-active-color, var(--rc-listbox-hover-color, inherit));
   }

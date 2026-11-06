@@ -86,7 +86,7 @@ levels. Icon-only buttons use `rc-icon-button--standard`,
 `rc-field` uses the Material 3 filled text-field treatment by default. Add
 `rc-field--outlined` for the outlined variant.
 
-Add `data-tone="danger"` to any of those variants for the corresponding error
+Add `data-rc-tone="error"` to any of those variants for the corresponding error
 or error-container color roles. These classes and data attributes are theme
 hooks; they do not change the component's native-button behavior or public API.
 
@@ -95,7 +95,7 @@ hooks; they do not change the component's native-button behavior or public API.
   <button type="button">Save draft</button>
 </rc-button>
 
-<rc-button class="rc-button--outlined" data-tone="danger">
+<rc-button class="rc-button--outlined" data-rc-tone="error">
   <button type="button">Delete</button>
 </rc-button>
 ```

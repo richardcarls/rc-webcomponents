@@ -84,9 +84,9 @@ const LIGHT_DOM_CSS = cssText`
   }
 
   /* Virtual cursor (set by ActiveDescendantController) */
-  rc-menu [role='menuitem'][data-active],
-  rc-menu [role='menuitemcheckbox'][data-active],
-  rc-menu [role='menuitemradio'][data-active] {
+  rc-menu [role='menuitem'][data-rc-active],
+  rc-menu [role='menuitemcheckbox'][data-rc-active],
+  rc-menu [role='menuitemradio'][data-rc-active] {
     background: var(--rc-menu-active-bg, color-mix(in srgb, Highlight 8%, transparent));
     color: var(--rc-menu-active-color, inherit);
   }

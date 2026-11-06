@@ -54,7 +54,7 @@ async function expectActiveMenuItem(item: Locator) {
 
   expect($menu).toBeTruthy();
   await expect.element($menu as HTMLElement).toHaveFocus();
-  await expect.element(item).toHaveAttribute('data-active');
+  await expect.element(item).toHaveAttribute('data-rc-active');
 }
 
 test('popup fades in and out through CSS alone, with no JavaScript gating the timing', async () => {
@@ -80,6 +80,7 @@ test('popup fades in and out through CSS alone, with no JavaScript gating the ti
   host.open = true;
 
   await new Promise((resolve) => requestAnimationFrame(resolve));
+
   await Promise.all(
     popup.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
   );
@@ -91,6 +92,7 @@ test('popup fades in and out through CSS alone, with no JavaScript gating the ti
   host.open = false;
 
   await new Promise((resolve) => requestAnimationFrame(resolve));
+
   await Promise.all(
     popup.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
   );
@@ -934,6 +936,7 @@ test('RCMenuButton opens its popup at the block end in vertical text', async () 
     expect(popup.getBoundingClientRect().right).toBeLessThanOrEqual(
       root.getBoundingClientRect().left,
     );
+
     expect(popup.getBoundingClientRect().top).toBeCloseTo(root.getBoundingClientRect().top, 0);
   });
 });

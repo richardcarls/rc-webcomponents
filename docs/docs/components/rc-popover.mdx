@@ -63,12 +63,12 @@ when focus was in the panel. `open` is a silent controlled host property;
 
 The Material theme styles this optional composition. Use a named non-modal
 dialog when the content has a link or button; a `role="tooltip"` must not
-contain focusable controls. The `data-rc-material-rich-tooltip` marker is a
-public theme opt-in. Direct `h2`, `p`, and optional `footer` children receive
+contain focusable controls. The `rc-popover--rich` class is the
+theme opt-in. Direct `h2`, `p`, and optional `footer` children receive
 title, body, and action spacing. The author controls the action's behavior.
 
 ```html
-<rc-popover data-rc-material-rich-tooltip open-on-hover open-on-focus>
+<rc-popover class="rc-popover--rich" open-on-hover open-on-focus>
   <button slot="trigger" type="button" popovertarget="feature-tip" aria-haspopup="dialog">
     Feature info
   </button>

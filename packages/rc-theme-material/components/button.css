@@ -88,7 +88,7 @@
     --rc-button-progress-color: var(--md-sys-color-on-surface-variant, ButtonText);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button[data-tone='danger'] {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button[data-rc-tone='error'] {
     --rc-button-bg: var(--md-sys-color-error, ButtonFace);
     --rc-button-color: var(--md-sys-color-on-error, ButtonText);
     --rc-button-state-layer-bg: var(--md-sys-color-on-error, currentColor);
@@ -104,7 +104,7 @@
       .rc-icon-button--standard,
       .rc-icon-button--tonal,
       .rc-icon-button--outlined
-    )[data-tone='danger'] {
+    )[data-rc-tone='error'] {
     --rc-button-bg: transparent;
     --rc-button-color: var(--md-sys-color-error, ButtonText);
     --rc-button-state-layer-bg: var(--md-sys-color-error, currentColor);
@@ -113,14 +113,14 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-button:is(.rc-button--tonal, .rc-icon-button--tonal)[data-tone='danger'] {
+    rc-button:is(.rc-button--tonal, .rc-icon-button--tonal)[data-rc-tone='error'] {
     --rc-button-bg: var(--md-sys-color-error-container, ButtonFace);
     --rc-button-color: var(--md-sys-color-on-error-container, ButtonText);
     --rc-button-state-layer-bg: var(--md-sys-color-on-error-container, currentColor);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-button:is(.rc-button--outlined, .rc-icon-button--outlined)[data-tone='danger'] {
+    rc-button:is(.rc-button--outlined, .rc-icon-button--outlined)[data-rc-tone='error'] {
     --rc-button-border: 1px solid var(--md-sys-color-error, ButtonBorder);
   }
 

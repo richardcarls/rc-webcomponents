@@ -218,8 +218,8 @@ test('data-rc-native="off" opts a subtree out', async () => {
 
 test('native styles preserve an overflowed adaptive-menu row after its marker is assigned', async () => {
   const markup = `<rc-adaptive-menu max-shown="1" style="--rc-adaptive-menu-item-gap: 17px">
-    <button type="button" id="promoted" data-priority="10">Promoted action</button>
-    <button type="button" id="overflowed" data-priority="1">Overflow action</button>
+    <button type="button" id="promoted" data-rc-action-priority="10">Promoted action</button>
+    <button type="button" id="overflowed" data-rc-action-priority="1">Overflow action</button>
   </rc-adaptive-menu>`;
   const unstyled = themed(markup);
 
@@ -278,7 +278,7 @@ test('native styles preserve FAB-menu triggers and grouped field controls', asyn
 
 test('native menu protection preserves authored active and current states', async () => {
   const markup = `<rc-menu style="--rc-menu-item-gap: 13px">
-    <button id="active" type="button" role="menuitem" data-active>Active</button>
+    <button id="active" type="button" role="menuitem" data-rc-active>Active</button>
     <button id="current" type="button" role="menuitem" aria-current="true">Current</button>
   </rc-menu>`;
   const unstyled = themed(markup);
@@ -327,8 +327,8 @@ test('a themed shadow root gets native styles and keeps the RC boundary', async 
     <button type="button" id="shadow-plain">Plain</button>
     <rc-menu><button role="menuitem" type="button" id="shadow-owned">Owned</button></rc-menu>
     <rc-adaptive-menu max-shown="1">
-      <button data-priority="10" type="button">Promoted</button>
-      <button data-priority="1" type="button" id="shadow-overflowed">Overflow</button>
+      <button data-rc-action-priority="10" type="button">Promoted</button>
+      <button data-rc-action-priority="1" type="button" id="shadow-overflowed">Overflow</button>
     </rc-adaptive-menu>
   `;
 

@@ -1977,7 +1977,7 @@ export function TooltipDemo() {
 export function PopoverDemo() {
   return (
     <DemoFrame>
-      <rc-popover data-rc-material-rich-tooltip open-on-hover open-on-focus>
+      <rc-popover className="rc-popover--rich" open-on-hover open-on-focus>
         <button
           slot="trigger"
           type="button"
@@ -2624,7 +2624,7 @@ export function AdaptiveMenuDemo() {
   const [maxShown, setMaxShown] = useState(3);
 
   const action = (label: string, icon: string, priority: number) => (
-    <rc-button icon-only className="rc-icon-button--standard" data-priority={priority}>
+    <rc-button icon-only className="rc-icon-button--standard" data-rc-action-priority={priority}>
       <button type="button" aria-label={label} onClick={() => setClicked(label)}>
         <span data-rc-icon className="material-symbols-outlined" aria-hidden="true">
           {icon}

@@ -118,21 +118,21 @@ on through `move-handle`:
     </header>
     <p>Save changes before closing?</p>
     <footer>
-      <rc-button data-rc-win31-default><button>OK</button></rc-button>
+      <rc-button class="rc-button--default"><button>OK</button></rc-button>
       <rc-button><button>Cancel</button></rc-button>
     </footer>
   </dialog>
 </rc-dialog>
 ```
 
-## Theme markers
+## Theme variants and markers
 
-Three authored markers are public API for this theme:
+These authored classes and marker are public API for this theme:
 
-| Marker                   | Applies to   | Effect                                         |
+| Class or marker          | Applies to   | Effect                                         |
 | ------------------------ | ------------ | ---------------------------------------------- |
-| `data-rc-win31-default`  | `rc-button`  | The heavier frame of a dialog's default button |
-| `data-rc-win31-toggle`   | `rc-switch`  | The sliding variant instead of the checkbox    |
+| `.rc-button--default`    | `rc-button`  | The heavier frame of a dialog's default button |
+| `.rc-switch--toggle`     | `rc-switch`  | The sliding variant instead of the checkbox    |
 | `data-rc-win31-inactive` | `rc-app-bar` | The muted inactive caption pair                |
 
 ## Fonts

@@ -347,7 +347,7 @@ test('loop clones the lead/trail slides but excludes them from the real item cou
 
   await settle(carousel);
 
-  const clones = carousel.querySelectorAll('[data-clone]');
+  const clones = carousel.querySelectorAll('[data-rc-clone]');
 
   expect(clones).toHaveLength(2);
 
@@ -359,7 +359,7 @@ test('loop clones the lead/trail slides but excludes them from the real item cou
   // real item and its clone share one — query the light DOM directly
   // (excluding clones) rather than through the ambiguous testid locator.
   const [first, second] = Array.from(
-    carousel.querySelectorAll<HTMLElement>('rc-carousel-item:not([data-clone])'),
+    carousel.querySelectorAll<HTMLElement>('rc-carousel-item:not([data-rc-clone])'),
   );
 
   expect(first?.getAttribute('aria-label')).toBe('1 of 2');
@@ -635,7 +635,7 @@ test('consumer slide sizing composes with loop clones', async () => {
     throw new Error('Expected the carousel track to render.');
   }
 
-  expect(carousel.querySelectorAll('[data-clone]')).toHaveLength(2);
+  expect(carousel.querySelectorAll('[data-rc-clone]')).toHaveLength(2);
   expect(getComputedStyle(track).gridAutoColumns).toBe('min(75%, 300px)');
 });
 

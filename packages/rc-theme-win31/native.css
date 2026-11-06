@@ -208,12 +208,12 @@
 
   :where(.rc-theme-win31:not([data-rc-native='off']))
     rc-menu
-    :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'])[data-active]:not(
+    :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'])[data-rc-active]:not(
       :where([data-rc-native='off'], [data-rc-native='off'] *)
     ),
   :host(:not([data-rc-native='off']).rc-theme-win31)
     rc-menu
-    :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'])[data-active]:not(
+    :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'])[data-rc-active]:not(
       :where([data-rc-native='off'], [data-rc-native='off'] *)
     ) {
     background: var(--rc-menu-active-bg, color-mix(in srgb, Highlight 8%, transparent));

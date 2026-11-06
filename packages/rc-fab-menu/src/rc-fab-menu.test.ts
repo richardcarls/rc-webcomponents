@@ -122,7 +122,7 @@ test('opens with keyboard and dispatches rc-fab-menu-toggle', async () => {
   await userEvent.keyboard('{Enter}');
 
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
-  await expect.element(itemOne).toHaveAttribute('data-active');
+  await expect.element(itemOne).toHaveAttribute('data-rc-active');
   expect(toggleSpy).toHaveBeenCalledTimes(1);
   expect(toggleSpy.mock.calls[0]?.[0].detail.open).toBe(true);
 });
