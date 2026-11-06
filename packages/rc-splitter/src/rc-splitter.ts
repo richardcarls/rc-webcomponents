@@ -305,7 +305,6 @@ export class RCSplitter extends LitElement {
     const d = CHEVRON_PATHS[points];
 
     return html`<svg
-      data-points=${points}
       aria-hidden="true"
       viewBox="0 0 10 10"
       width="10"
