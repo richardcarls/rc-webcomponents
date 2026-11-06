@@ -560,7 +560,7 @@ export function ListDemo() {
               </span>
               <span className="list-demo-copy">
                 Apple pie
-                <small data-rc-list-supporting>Updated yesterday</small>
+                <small>Updated yesterday</small>
               </span>
               <span slot="trailing">42 min</span>
             </rc-list-item>
@@ -570,7 +570,7 @@ export function ListDemo() {
               </span>
               <span className="list-demo-copy">
                 Mushroom risotto with roasted garlic
-                <small data-rc-list-supporting>Updated Friday</small>
+                <small>Updated Friday</small>
               </span>
               <span slot="trailing">35 min</span>
             </rc-list-item>

@@ -687,7 +687,7 @@ test('segmented Material list rows render with 16px inline content padding', asy
   iconList.setAttribute('variant', 'segmented');
   item.textContent = 'Padded setting';
   leading.slot = 'leading';
-  leading.dataset.rcListLeading = '';
+  leading.dataset.rcIcon = '';
   leading.textContent = '★';
   iconItem.textContent = 'Icon setting';
   iconItem.prepend(leading);
@@ -1006,11 +1006,11 @@ test.runIf(isChromium).each(['light', 'dark'] as const)(
       <rc-list variant="segmented">
         <rc-list-item>
           <span data-rc-list-headline>Theme</span>
-          <small data-rc-list-supporting>Use device setting</small>
+          <small>Use device setting</small>
         </rc-list-item>
         <rc-list-item>
           <span data-rc-list-headline>Sync</span>
-          <small data-rc-list-supporting>Connected to cloud storage</small>
+          <small>Connected to cloud storage</small>
         </rc-list-item>
       </rc-list>
       <div style="inline-size:184px;justify-self:end">

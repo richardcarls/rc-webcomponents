@@ -23,7 +23,7 @@
     },
     {
       "id": "list.leading-icon",
-      "selector": "rc-list-item > [slot='leading'][data-rc-list-leading]",
+      "selector": "rc-list-item > [slot='leading']:is(svg, [data-rc-icon])",
       "geometry": {
         "inlineSize": "24px",
         "blockSize": "24px",
