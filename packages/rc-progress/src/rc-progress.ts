@@ -427,9 +427,6 @@ export class RCProgress extends LitElement {
         part="root"
         class="rc-progress-root"
         data-display=${this.display ?? nothing}
-        data-orientation=${this.orientation}
-        data-disabled=${this.disabled ? '' : nothing}
-        data-has-value-text=${this.valueText ? '' : nothing}
       >
         ${this.display === 'inline-start' ? valueDisplay : nothing}
 

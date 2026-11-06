@@ -21,8 +21,8 @@ Consumers can decorate the track with a real named slot:
 ```
 
 The component exposes `root`, `control`, `track`, `progress`, and
-`value-display` CSS parts. The root part reflects `data-readonly`,
-`data-disabled`, and `data-has-value-text`.
+`value-display` CSS parts. Style states through the reflected host attributes,
+such as `rc-slider[disabled]::part(root)`.
 
 Native input styling stays with the consumer:
 

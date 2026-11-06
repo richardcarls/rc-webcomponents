@@ -593,7 +593,6 @@ export class RCRangeSlider extends LitElement {
         part="root"
         class="rc-range-slider-root"
         data-display=${this.display ?? nothing}
-        data-orientation=${this.orientation}
       >
         ${this.display === 'inline-start' ? valuesContainer : nothing}
 
