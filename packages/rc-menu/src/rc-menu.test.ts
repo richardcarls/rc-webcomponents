@@ -352,7 +352,7 @@ test('RCMenu groups a shortcut and selection indicator at the trailing edge', as
     <rc-menu label="View" data-testid="host">
       <button type="button" role="menuitemcheckbox" aria-checked="true" data-testid="notes">
         <span>Notes</span>
-        <span data-menu-shortcut data-testid="shortcut">Ctrl+N</span>
+        <kbd data-testid="shortcut">Ctrl+N</kbd>
       </button>
     </rc-menu>
   `);

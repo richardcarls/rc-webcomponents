@@ -61,9 +61,9 @@ In horizontal mode the toolbar is a plain shrink-to-fit flex row:
 own preferred width is ordinary CSS, sized to only the actions actually
 promoted. No JS-computed intrinsic-size hint is involved.
 
-Use `data-rc-menu-leading`, `data-rc-menu-label`,
-`data-rc-menu-trailing`, and `data-rc-menu-shortcut` to expose menu content
-regions to themes shared with `rc-menu`.
+Use `data-rc-menu-leading`, `data-rc-menu-label`, `data-rc-menu-trailing`,
+and a `<kbd>` shortcut to expose menu content regions to themes shared with
+`rc-menu`.
 
 The visible overflow button and its activation area can be sized independently
 with `--rc-adaptive-menu-trigger-*` and

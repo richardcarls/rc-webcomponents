@@ -381,10 +381,6 @@ export class RCSlider extends LitElement {
         part="root"
         class="rc-slider-root"
         data-display=${this.display ?? nothing}
-        data-orientation=${this.orientation}
-        data-readonly=${this.readonly ? '' : nothing}
-        data-disabled=${this.disabled ? '' : nothing}
-        data-has-value-text=${this.valueText ? '' : nothing}
       >
         ${this.display === 'inline-start' ? valueDisplay : nothing}
 

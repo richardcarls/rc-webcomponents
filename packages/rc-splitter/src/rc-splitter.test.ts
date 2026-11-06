@@ -1510,8 +1510,23 @@ describe('localization', () => {
 
 type ChevronSide = 'left' | 'right' | 'up' | 'down';
 
-function chevronSide(host: RCSplitter): string | null | undefined {
-  return host.shadowRoot!.querySelector('#collapse-button svg')?.getAttribute('data-points');
+/** The side the collapse chevron's apex points to, read from its path geometry. */
+function chevronSide(host: RCSplitter): ChevronSide | undefined {
+  const d = host.shadowRoot!.querySelector('#collapse-button svg path')?.getAttribute('d');
+  const [x1, y1, apexX, apexY, x2, y2] = (d?.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
+
+  if ([x1, y1, apexX, apexY, x2, y2].some((value) => value === undefined)) {
+    return undefined;
+  }
+
+  const midX = (x1! + x2!) / 2;
+  const midY = (y1! + y2!) / 2;
+
+  if (apexX !== midX) {
+    return apexX! < midX ? 'left' : 'right';
+  }
+
+  return apexY! < midY ? 'up' : 'down';
 }
 
 /** The physical side the primary pane is on, measured against the secondary pane. */

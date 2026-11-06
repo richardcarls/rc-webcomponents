@@ -93,7 +93,7 @@ const LIGHT_DOM_CSS = cssText`
 
   /* Check/radio indicator — ::after acts as a fixed-width trailing column,
      pushed to the item's inline-end regardless of label length (same
-     positioning as the [data-rc-menu-shortcut] slot below). Trailing rather
+     positioning as the shortcut <kbd> below). Trailing rather
      than leading so it coexists with a leading icon a consumer supplies for
      the item itself (a radio/checkbox item's own icon and its checked state
      are different things; leading is already spoken for). Content is empty
@@ -111,8 +111,8 @@ const LIGHT_DOM_CSS = cssText`
 
   /* A shortcut owns the auto margin when both trailing affordances exist,
      keeping the shortcut and selection indicator in one end-aligned group. */
-  rc-menu [role='menuitemcheckbox']:has(:is([data-rc-menu-shortcut], [data-menu-shortcut]))::after,
-  rc-menu [role='menuitemradio']:has(:is([data-rc-menu-shortcut], [data-menu-shortcut]))::after {
+  rc-menu [role='menuitemcheckbox']:has(kbd)::after,
+  rc-menu [role='menuitemradio']:has(kbd)::after {
     margin-inline-start: 0;
   }
 
@@ -137,7 +137,7 @@ const LIGHT_DOM_CSS = cssText`
   }
 
   rc-menu :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'])
-    :is([data-rc-icon], [data-rc-menu-leading], [data-rc-menu-icon]) {
+    :is([data-rc-icon], [data-rc-menu-leading]) {
     flex: none;
     font-size: var(--rc-item-icon-size, inherit);
     line-height: var(--rc-item-icon-size, inherit);
@@ -150,13 +150,12 @@ const LIGHT_DOM_CSS = cssText`
 
   /* Trailing label — keyboard shortcut or hint, pushed to the inline-end of the item */
   rc-menu [data-rc-menu-trailing],
-  rc-menu [data-rc-menu-shortcut],
-  rc-menu [data-menu-shortcut] {
+  rc-menu kbd {
     margin-inline-start: auto;
   }
 
-  rc-menu [data-rc-menu-shortcut],
-  rc-menu [data-menu-shortcut] {
+  rc-menu kbd {
+    font-family: inherit;
     font-size: var(--rc-menu-shortcut-size, 0.8em);
     color: var(--rc-menu-shortcut-color, GrayText);
     white-space: nowrap;
@@ -216,8 +215,8 @@ const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-menu', LIGHT_DOM_C
  *     add a visible `[data-group-label]` element as first child of the group for section headings.
  *   - `role="separator"` / `<hr>` produce horizontal dividers between sections.
  *   - Within any item, use `[data-rc-menu-leading]`, `[data-rc-menu-label]`, and
- *     `[data-rc-menu-trailing]` to identify content columns. `[data-rc-menu-shortcut]`
- *     (and the legacy `[data-menu-shortcut]`) is pushed to the inline-end edge.
+ *     `[data-rc-menu-trailing]` to identify content columns. A `<kbd>` keyboard shortcut
+ *     is pushed to the inline-end edge.
  *   - Nested menu triggers supply their own trailing indicator through `rc-menu-button`'s `indicator` slot.
  *
  * @fires rc-menu-activate - Fired when a menu item is activated via keyboard (Enter/Space) or pointer click.
@@ -245,8 +244,8 @@ const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-menu', LIGHT_DOM_C
  * @cssprop [--rc-menu-active-color=inherit] - Virtual-cursor active text color.
  * @cssprop [--rc-menu-check-size=1.25em] - Width of the trailing indicator column for checkbox/radio items.
  * @cssprop [--rc-menu-check-color=inherit] - Color of the check/radio symbol.
- * @cssprop [--rc-menu-shortcut-size=0.8em] - Font size of `[data-rc-menu-shortcut]` labels.
- * @cssprop [--rc-menu-shortcut-color=GrayText] - Text color of `[data-rc-menu-shortcut]` labels.
+ * @cssprop [--rc-menu-shortcut-size=0.8em] - Font size of `<kbd>` shortcut labels.
+ * @cssprop [--rc-menu-shortcut-color=GrayText] - Text color of `<kbd>` shortcut labels.
  * @cssprop [--rc-menu-disabled-color=GrayText] - Disabled menu item text color.
  * @cssprop [--rc-menu-disabled-opacity=var(--rc-disabled-opacity)] - Disabled menu item opacity.
  * @cssprop [--rc-menu-separator-border=1px solid ButtonBorder] - Separator border.
@@ -259,7 +258,7 @@ const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-menu', LIGHT_DOM_C
  * @cssprop [--rc-item-font-weight=inherit] - Item font weight; shared with listbox and adaptive-menu items.
  * @cssprop [--rc-item-line-height=var(--rc-line-height)] - Item line height; shared with listbox and adaptive-menu items.
  * @cssprop [--rc-item-letter-spacing=inherit] - Item letter spacing; shared with listbox and adaptive-menu items.
- * @cssprop [--rc-item-icon-size=inherit] - Size of icons marked with `data-rc-icon`, `data-rc-menu-leading`, or `data-rc-menu-icon`.
+ * @cssprop [--rc-item-icon-size=inherit] - Size of icons marked with `data-rc-icon` or `data-rc-menu-leading`.
  */
 export class RCMenu extends LitElement {
   /** Writes the element's attributes again after a DOM morph removes them. */

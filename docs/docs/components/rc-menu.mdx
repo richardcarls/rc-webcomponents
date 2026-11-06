@@ -79,7 +79,7 @@ keyboard navigation.
   <hr />
   <button type="button" value="duplicate">
     <span>Duplicate</span>
-    <kbd data-menu-shortcut>Ctrl+D</kbd>
+    <kbd>Ctrl+D</kbd>
   </button>
 </rc-menu>
 ```
@@ -111,7 +111,7 @@ Slotted rows remain in light DOM. `rc-menu` injects their structural base styles
 once per containing document or shadow root under `@layer rc-base`, so consumer
 styles outside that layer can override them. Inherited `--rc-menu-*` custom
 properties customize the host and rows; the component does not expose CSS
-parts. Add trailing keyboard hints with `[data-menu-shortcut]`.
+parts. Add trailing keyboard hints with `<kbd>`.
 
 ## API
 

@@ -41,3 +41,28 @@ test.each(['ltr', 'rtl'] as const)(
     controller.destroy();
   },
 );
+
+test('shows the label when an icon action has no icon renderer', async () => {
+  const screen = render(html`<div data-testid="host"></div>`);
+  const host = (await screen.getByTestId('host').element()) as HTMLElement;
+  const api = {
+    host,
+    adoptStyleSheet() {},
+    getCursorRect: () => null,
+  } as unknown as RCTextareaPluginAPI;
+  const controller = new LineActionsController(api);
+
+  controller.getDecorations(
+    0,
+    [{ id: 'lock', label: 'Lock', iconName: 'mdi-lock-outline', onClick() {} }],
+    'x',
+    'popover',
+  );
+
+  const button = document.querySelector<HTMLButtonElement>('.rc-line-action-btn');
+
+  expect(button?.textContent).toBe('Lock');
+  expect(button?.hasAttribute('data-icon')).toBe(false);
+
+  controller.destroy();
+});

@@ -1,8 +1,8 @@
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
 import type { RCSlider } from './rc-slider.js';
 
@@ -13,6 +13,7 @@ test('rc-slider renders progress fill', async () => {
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
 
   expect(host.shadowRoot?.querySelector('[part="progress"]')).toBeTruthy();
@@ -25,6 +26,7 @@ test('rc-slider renders float value display using value-text', async () => {
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
 
   await expect.element(screen.getByText('25 of 100')).toBeInTheDocument();
@@ -37,9 +39,11 @@ test('rc-slider keeps the native input in the DOM after upgrade', async () => {
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
 
   const input = host.querySelector<HTMLInputElement>('input[type="range"]');
+
   expect(input).toBeTruthy();
   expect(input?.isConnected).toBe(true);
   expect(input?.getAttribute('name')).toBe('fuel');
@@ -58,9 +62,11 @@ test('rc-slider leaves the consumer native input in light DOM', async () => {
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
 
   const input = host.querySelector<HTMLInputElement>('input[type="range"]');
+
   expect(input?.className).toBe('consumer-input');
   expect(input?.getAttribute('part')).toBe('consumer-part');
 });
@@ -73,32 +79,33 @@ test('rc-slider renders track-background slot before progress', async () => {
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
 
   const track = host.shadowRoot?.querySelector('[part="track"]');
   const slot = track?.querySelector('slot[name="track-background"]');
   const progress = track?.querySelector('[part="progress"]');
+
   expect(slot).toBeTruthy();
   expect(progress).toBeTruthy();
   expect(slot?.compareDocumentPosition(progress!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
   expect((slot as HTMLSlotElement).assignedElements()[0]).toBe(
     host.querySelector('[data-testid="background"]'),
   );
 });
 
-test('rc-slider reflects styling state on the root part', async () => {
+test('rc-slider reflects styling state on the host for ::part(root) selectors', async () => {
   const screen = render(html`
     <rc-slider data-testid="host" readonly disabled value-text="25 of 100">
       <input type="range" min="0" max="100" value="25" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
 
-  const root = host.shadowRoot?.querySelector('[part="root"]');
-  expect(root?.hasAttribute('data-readonly')).toBe(true);
-  expect(root?.hasAttribute('data-disabled')).toBe(true);
-  expect(root?.hasAttribute('data-has-value-text')).toBe(true);
+  expect(host.matches('[readonly][disabled][value-text]')).toBe(true);
 });
 
 test('rc-slider fires input and change events', async () => {
@@ -110,7 +117,9 @@ test('rc-slider fires input and change events', async () => {
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
+
   const input = host.querySelector('input') as HTMLInputElement;
 
   input.value = '7';
@@ -128,7 +137,9 @@ test('rc-slider input event updates rendered progress and value display', async 
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
+
   const input = host.querySelector('input') as HTMLInputElement;
 
   input.value = '45';
@@ -136,6 +147,7 @@ test('rc-slider input event updates rendered progress and value display', async 
   await host.updateComplete;
 
   const progress = host.shadowRoot?.querySelector<HTMLElement>('[part="progress"]');
+
   expect(progress?.getAttribute('style')).toContain('inline-size:45');
   await expect.element(screen.getByText('45')).toBeInTheDocument();
 });
@@ -147,7 +159,9 @@ test('rc-slider readonly suppresses value updates', async () => {
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
+
   const input = host.querySelector('input') as HTMLInputElement;
 
   input.value = '9';
@@ -164,7 +178,9 @@ test('rc-slider exposes aria-valuetext and aria-orientation via updated()', asyn
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
+
   const input = host.querySelector('input') as HTMLInputElement;
 
   expect(input.getAttribute('aria-valuetext')).toBe('Low');
@@ -181,14 +197,18 @@ test('rc-slider native for/id label association survives component upgrade', asy
     </div>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
 
   const input = host.querySelector<HTMLInputElement>('input');
+
   expect(input?.isConnected).toBe(true);
   expect(input?.id).toBe('test-slider-input');
+
   // The label element resolves to the input via the document label registry.
   const wrapper = screen.getByTestId('wrapper').element();
   const labelEl = wrapper.querySelector<HTMLLabelElement>('label[for="test-slider-input"]');
+
   expect(labelEl?.control).toBe(input);
 });
 
@@ -200,7 +220,9 @@ test('rc-slider Page Down adjusts value by 10 and fires rc-slider-input', async 
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
+
   const input = host.querySelector('input') as HTMLInputElement;
 
   input.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true }));
@@ -216,9 +238,11 @@ test('rc-slider progress fill reflects initial value at first render', async () 
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
 
   const progress = host.shadowRoot?.querySelector<HTMLElement>('[part="progress"]');
+
   expect(progress?.getAttribute('style')).toContain('inline-size:25');
 });
 
@@ -229,9 +253,11 @@ test('rc-slider disabled syncs to native input', async () => {
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
 
   const input = host.querySelector('input') as HTMLInputElement;
+
   expect(input.disabled).toBe(true);
 });
 
@@ -243,7 +269,9 @@ test('rc-slider Page Up adjusts value by 10 and fires rc-slider-input', async ()
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
+
   const input = host.querySelector('input') as HTMLInputElement;
 
   input.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageUp', bubbles: true }));
@@ -259,9 +287,11 @@ test('rc-slider display="inline-end" renders value display', async () => {
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
 
   const display = host.shadowRoot?.querySelector('[part="value-display"]');
+
   expect(display).toBeTruthy();
   await expect.element(screen.getByText('75')).toBeInTheDocument();
 });
@@ -273,6 +303,7 @@ test('rc-slider has no automated accessibility violations', async () => {
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
   await expectNoA11yViolations(host);
 });
@@ -284,9 +315,11 @@ test('rc-slider defaultValue sets initial value without controlling', async () =
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
 
   const input = host.querySelector('input') as HTMLInputElement;
+
   expect(host.value).toBe(30);
   expect(input.valueAsNumber).toBe(30);
 });
@@ -298,6 +331,7 @@ test('rc-slider controlled value overrides defaultValue', async () => {
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   host.value = 60;
   await host.updateComplete;
 
@@ -313,9 +347,11 @@ test('rc-slider user input in uncontrolled mode updates value and fires rc-slide
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
 
   const input = host.querySelector('input') as HTMLInputElement;
+
   input.value = '20';
   input.dispatchEvent(new Event('change', { bubbles: true }));
 
@@ -331,6 +367,7 @@ test('rc-slider without defaultValue falls back to 0', async () => {
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
+
   await host.updateComplete;
 
   expect(host.value).toBe(0);

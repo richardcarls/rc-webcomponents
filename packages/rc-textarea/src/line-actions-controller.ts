@@ -8,7 +8,7 @@ export interface LineAction {
   /** Human-readable label; used as button text and accessible name. */
   label: string;
 
-  /** Icon name passed to `LineActionsOptions.createIcon`, e.g. `'mdi-lock-outline'`. */
+  /** Icon name passed to `LineActionsOptions.createIcon`, e.g. `'mdi-lock-outline'`; without an icon, the button shows `label`. */
   iconName?: string;
 
   /** Called when the action button is activated. */
@@ -374,19 +374,16 @@ function buildButton(
 
   if (options.renderButton) {
     options.renderButton(action, $btn);
-  } else if (action.iconName) {
-    const $icon = options.createIcon?.(action.iconName) ?? null;
+  } else {
+    // Without an icon renderer, the visible label keeps the button usable.
+    const $icon = action.iconName ? (options.createIcon?.(action.iconName) ?? null) : null;
 
     if ($icon) {
       $btn.setAttribute('aria-label', action.label);
       $btn.appendChild($icon);
     } else {
-      // Fallback: data-icon attribute for hosts that process it externally
-      $btn.dataset['icon'] = action.iconName;
-      $btn.setAttribute('aria-label', action.label);
+      $btn.textContent = action.label;
     }
-  } else {
-    $btn.textContent = action.label;
   }
 
   $btn.addEventListener('mousedown', (e) => e.preventDefault());

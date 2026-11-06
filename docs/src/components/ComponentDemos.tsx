@@ -1,3 +1,9 @@
+import type { CSSProperties } from 'react';
+import type * as React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import hljs from 'highlight.js/lib/core';
+import rust from 'highlight.js/lib/languages/rust';
+
 import type { RCAppBar } from '@rcarls/rc-webcomponents/rc-app-bar';
 import type {
   RCBottomSheet,
@@ -38,12 +44,6 @@ import type {
   RCVirtualScroller,
   RCVirtualScrollerRangeDetail,
 } from '@rcarls/rc-webcomponents/rc-virtual-scroller';
-import type { CSSProperties } from 'react';
-import type * as React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import hljs from 'highlight.js/lib/core';
-import rust from 'highlight.js/lib/languages/rust';
-
 import type { RCTextareaPluginAPI } from '@rcarls/rc-textarea';
 import { FoldingActionController } from '@rcarls/rc-textarea/folding';
 
@@ -1940,7 +1940,7 @@ export function MenuButtonDemo() {
         <rc-menu label="Actions">
           <button type="button" value="edit">
             <span>Edit</span>
-            <span data-menu-shortcut>Ctrl+E</span>
+            <kbd>Ctrl+E</kbd>
           </button>
           <button type="button" value="share">
             Share
@@ -2027,11 +2027,11 @@ export function MenubarDemo() {
           <rc-menu label="File">
             <button type="button" value="new">
               <span>New</span>
-              <span data-menu-shortcut>Ctrl+N</span>
+              <kbd>Ctrl+N</kbd>
             </button>
             <button type="button" value="open">
               <span>Open</span>
-              <span data-menu-shortcut>Ctrl+O</span>
+              <kbd>Ctrl+O</kbd>
             </button>
             <hr />
             <button type="button" value="close" disabled>
@@ -2046,11 +2046,11 @@ export function MenubarDemo() {
           <rc-menu label="Edit">
             <button type="button" value="undo">
               <span>Undo</span>
-              <span data-menu-shortcut>Ctrl+Z</span>
+              <kbd>Ctrl+Z</kbd>
             </button>
             <button type="button" value="redo">
               <span>Redo</span>
-              <span data-menu-shortcut>Ctrl+Y</span>
+              <kbd>Ctrl+Y</kbd>
             </button>
           </rc-menu>
         </rc-menu-button>

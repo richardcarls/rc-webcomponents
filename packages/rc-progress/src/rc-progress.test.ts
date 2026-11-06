@@ -147,7 +147,7 @@ test('rc-progress leaves the consumer native progress in light DOM', async () =>
   expect(progress?.getAttribute('part')).toBe('consumer-part');
 });
 
-test('rc-progress reflects styling state on the root part', async () => {
+test('rc-progress reflects styling state on the host for ::part(root) selectors', async () => {
   const screen = render(html`
     <rc-progress data-testid="host" disabled value-text="4 of 10">
       <progress value="4" max="10" aria-label="Sync"></progress>
@@ -157,10 +157,7 @@ test('rc-progress reflects styling state on the root part', async () => {
 
   await host.updateComplete;
 
-  const root = host.shadowRoot?.querySelector('[part="root"]');
-
-  expect(root?.hasAttribute('data-disabled')).toBe(true);
-  expect(root?.hasAttribute('data-has-value-text')).toBe(true);
+  expect(host.matches('[disabled][value-text]')).toBe(true);
 });
 
 test('rc-progress indeterminate removes the native value attribute', async () => {

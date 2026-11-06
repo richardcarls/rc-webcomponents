@@ -111,17 +111,3 @@ such as `data-rc-button-icon` and `data-rc-navigation-icon` opt in
 automatically. The shared `--rc-icon-font-size` and
 `--rc-icon-font-line-height` tokens keep glyph geometry consistent and can be
 overridden at the theme boundary or on one component.
-
-## View transitions
-
-The theme includes stable CSS hooks for apps that opt into View Transitions,
-but it does not start transitions or require browser support:
-
-```css
-.rc-theme-tailwind [data-rc-view-transition='panel'] {
-  --rc-view-transition-name: rc-panel;
-}
-```
-
-Application code remains responsible for deciding when to call
-`document.startViewTransition()`.
