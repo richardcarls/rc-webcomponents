@@ -91,9 +91,9 @@
     transform-origin: left top;
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-focused]::part(label),
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-populated]::part(label),
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-multiline]::part(label) {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:state(focused)::part(label),
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:state(populated)::part(label),
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:state(multiline)::part(label) {
     inset-block-start: 0;
     font-family: var(--md-sys-typescale-body-small-font, inherit);
     font-size: var(--md-sys-typescale-body-small-size, 0.75rem);
@@ -101,7 +101,7 @@
     transform: translateY(0);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-has-label]::part(control) {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:has(> [slot='label'])::part(control) {
     min-block-size: var(--_rc-field-input-line-height);
     padding-block-start: var(--_rc-field-label-line-height);
   }
@@ -111,16 +111,16 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field.rc-field--outlined[data-multiline]::part(content) {
+    rc-field.rc-field--outlined:state(multiline)::part(content) {
     padding-block: 0.5rem;
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-multiline]::part(control) {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:state(multiline)::part(control) {
     align-items: flex-start;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-multiline][data-has-label]::part(control) {
+    rc-field:state(multiline):has(> [slot='label'])::part(control) {
     padding-block-start: var(--_rc-field-label-line-height);
   }
 
@@ -131,7 +131,7 @@
 
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field
-    > rc-textarea[data-rc-field-control] {
+    > rc-textarea {
     --rc-textarea-border: 0;
     --rc-textarea-border-radius: 0;
     --rc-textarea-background: transparent;
@@ -143,14 +143,14 @@
   /* Text starts on the input line under the floated label, as a native textarea. */
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field:not(.rc-field--outlined)
-    > rc-textarea[data-rc-field-control] {
+    > rc-textarea {
     --rc-textarea-padding-block: 0 0.5rem;
     --rc-textarea-padding-inline: 1rem;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field
-    > rc-select[data-rc-field-control] {
+    > rc-select {
     --rc-select-control-block-size: var(--md-sys-typescale-body-large-line-height, 1.5rem);
     --rc-select-border: 0;
     --rc-select-radius: 0;
@@ -181,13 +181,13 @@
    */
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field
-    > rc-select[data-rc-field-control]::part(trigger):hover,
+    > rc-select::part(trigger):hover,
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field
-    > rc-select[data-rc-field-control]::part(trigger):focus-visible,
+    > rc-select::part(trigger):focus-visible,
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field
-    > rc-select[data-rc-field-control]::part(trigger)[aria-expanded='true'] {
+    > rc-select::part(trigger)[aria-expanded='true'] {
     border-color: transparent;
     background: transparent;
     box-shadow: none;
@@ -197,7 +197,7 @@
 
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field
-    > rc-combobox[data-rc-field-control] {
+    > rc-combobox {
     --rc-combobox-control-block-size: var(--md-sys-typescale-body-large-line-height, 1.5rem);
     --rc-combobox-border: 0;
     --rc-combobox-radius: 0;
@@ -218,24 +218,24 @@
     > :is(
       rc-combobox:not(.rc-combobox--dense),
       rc-select:not(.rc-select--dense)
-    )[data-rc-field-control]::part(chips) {
+    )::part(chips) {
     padding-block-start: 0.25rem;
   }
 
   /* Dense chips leave more of the 3rem touch target to overlap. */
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field
-    > :is(rc-combobox.rc-combobox--dense, rc-select.rc-select--dense)[data-rc-field-control] {
+    > :is(rc-combobox.rc-combobox--dense, rc-select.rc-select--dense) {
     --rc-chip-touch-target-overlap-block-start: 0.75rem;
     --rc-chip-touch-target-overlap-block-end: 0.75rem;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field
-    > rc-combobox[data-rc-field-control]::part(anchor):hover,
+    > rc-combobox::part(anchor):hover,
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field
-    > rc-combobox[data-rc-field-control]::part(anchor):focus-within {
+    > rc-combobox::part(anchor):focus-within {
     border-color: transparent;
     background: transparent;
     box-shadow: none;
@@ -245,37 +245,37 @@
 
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field
-    rc-combobox[data-rc-field-control]::part(input) {
+    rc-combobox::part(input) {
     caret-color: var(--md-sys-color-primary, Highlight);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-control-provider] {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:has(> :is([data-rc-field-control], rc-select, rc-combobox, rc-textarea)) {
     --rc-field-padding: 0;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-control-provider]:not(.rc-field--outlined) {
+    rc-field:has(> :is([data-rc-field-control], rc-select, rc-combobox, rc-textarea)):not(.rc-field--outlined) {
     --rc-field-padding: 0.5rem 0 calc(0.5rem - 1px);
   }
 
   /* A multiline control provider supplies its own trailing block space. */
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-control-provider][data-multiline]:not(.rc-field--outlined) {
+    rc-field:has(> :is([data-rc-field-control], rc-select, rc-combobox, rc-textarea)):state(multiline):not(.rc-field--outlined) {
     --rc-field-padding: 0.5rem 0 0;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-control-provider]::part(label) {
+    rc-field:has(> :is([data-rc-field-control], rc-select, rc-combobox, rc-textarea))::part(label) {
     inset-inline-start: 1rem;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-control-provider]::part(trailing) {
+    rc-field:has(> :is([data-rc-field-control], rc-select, rc-combobox, rc-textarea))::part(trailing) {
     margin-inline-end: 1rem;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field.rc-field--outlined[data-control-provider][data-multiline]::part(content) {
+    rc-field.rc-field--outlined:has(> :is([data-rc-field-control], rc-select, rc-combobox, rc-textarea)):state(multiline)::part(content) {
     /*
      * A single-line field's label gets its resting space above the field's
      * top edge for free: #field centers content within its own taller
@@ -287,7 +287,7 @@
      * moves its in-flow children (the control), never an abspos one. Margin
      * moves the ancestor's own box instead, carrying both children down
      * together and reproducing the single-line field's free top space.
-     * padding-block is reset to 0 here too: the general [data-multiline]
+     * padding-block is reset to 0 here too: the general :state(multiline)
      * rule above would otherwise still apply its own 0.5rem, additionally
      * shifting only the in-flow control and pulling it out of alignment
      * with the label again.
@@ -297,14 +297,14 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-has-label]:not([data-focused]):not([data-populated])
+    rc-field:has(> [slot='label']):not(:state(focused)):not(:state(populated))
     > input::placeholder,
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-has-label]:not([data-focused]):not([data-populated])
+    rc-field:has(> [slot='label']):not(:state(focused)):not(:state(populated))
     > textarea::placeholder,
   /* A group's legend never rests in the input, so its placeholders wait for focus instead. */
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-group]:not([data-focused])
+    rc-field:has(> fieldset):not(:state(focused))
     > fieldset
     > :is(input, textarea)::placeholder {
     color: transparent;
@@ -313,7 +313,7 @@
   /* A read-only field keeps its focus indicator but no hover affordance, since
      hovering cannot lead to an edit. */
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field:not([data-readonly]):hover::part(field) {
+    rc-field:not(:state(readonly)):hover::part(field) {
     border-block-end-color: var(--md-sys-color-on-surface, CanvasText);
     background: color-mix(
       in srgb,
@@ -322,27 +322,27 @@
     );
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-focused]::part(field)::after {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:state(focused)::part(field)::after {
     transform: scaleX(1);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-focused]::part(label) {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:state(focused)::part(label) {
     color: var(--md-sys-color-primary, Highlight);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-invalid]::part(field) {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:state(invalid)::part(field) {
     border-block-end-color: var(--md-sys-color-error, red);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-invalid]::part(field)::after {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:state(invalid)::part(field)::after {
     background: var(--md-sys-color-error, red);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-invalid]::part(label) {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:state(invalid)::part(label) {
     color: var(--md-sys-color-error, red);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-disabled]::part(field) {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:state(disabled)::part(field) {
     border-block-end-color: color-mix(
       in srgb,
       var(--md-sys-color-on-surface, CanvasText) 38%,
@@ -352,9 +352,9 @@
     color: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 38%, transparent);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-disabled]::part(label),
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:state(disabled)::part(label),
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-disabled]::part(supporting-text) {
+    rc-field:state(disabled)::part(supporting-text) {
     color: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 38%, transparent);
   }
 
@@ -368,12 +368,12 @@
    * controls attach before or after it, connected by the shared container and
    * active indicator rather than chrome of their own.
    */
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-group] > fieldset {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:has(> fieldset) > fieldset {
     --rc-field-control-gap: 0.75rem;
     padding-block-start: var(--_rc-field-group-label-space, var(--_rc-field-label-line-height));
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-group] > fieldset > legend {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:has(> fieldset) > fieldset > legend {
     position: absolute;
     z-index: 1;
     inset-inline-start: 0;
@@ -391,7 +391,7 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-group]:not([data-focused]):not([data-populated])
+    rc-field:has(> fieldset):not(:state(focused)):not(:state(populated))
     > fieldset:has(> legend + :is(input, textarea))
     > legend {
     inset-block-start: 50%;
@@ -402,51 +402,51 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-group][data-focused]
+    rc-field:has(> fieldset):state(focused)
     > fieldset
     > legend {
     color: var(--md-sys-color-primary, Highlight);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-group][data-invalid]
+    rc-field:has(> fieldset):state(invalid)
     > fieldset
     > legend {
     color: var(--md-sys-color-error, red);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-group][data-disabled]
+    rc-field:has(> fieldset):state(disabled)
     > fieldset
     > legend {
     color: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 38%, transparent);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-group]
+    rc-field:has(> fieldset)
     > fieldset
     > :is(input, textarea) {
     caret-color: var(--md-sys-color-primary, Highlight);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-group]
+    rc-field:has(> fieldset)
     > fieldset
     > :is(input, select, textarea):focus-visible {
     outline: none;
   }
 
   /* WebKit gives a native select a taller minimum than the input line. */
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-group] > fieldset > select {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:has(> fieldset) > fieldset > select {
     block-size: var(--_rc-field-input-line-height);
     field-sizing: content;
     cursor: pointer;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-group]
+    rc-field:has(> fieldset)
     > fieldset
-    > rc-select[data-rc-field-control] {
+    > rc-select {
     --rc-select-control-block-size: var(--md-sys-typescale-body-large-line-height, 1.5rem);
     --rc-select-border: 0;
     --rc-select-radius: 0;
@@ -456,7 +456,7 @@
 
   /* The outlined legend rides the outline like a floated outlined label. */
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field.rc-field--outlined[data-group]
+    rc-field.rc-field--outlined:has(> fieldset)
     > fieldset
     > legend {
     --_rc-field-legend-x: -0.25rem;
@@ -501,11 +501,11 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field.rc-field--outlined[data-focused]::part(label),
+    rc-field.rc-field--outlined:state(focused)::part(label),
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field.rc-field--outlined[data-populated]::part(label),
+    rc-field.rc-field--outlined:state(populated)::part(label),
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field.rc-field--outlined[data-multiline]::part(label) {
+    rc-field.rc-field--outlined:state(multiline)::part(label) {
     inset-block-start: 0;
     transform: translate(-0.25rem, -50%);
   }
@@ -515,21 +515,21 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field.rc-field--outlined[data-focused]::part(field)::after {
+    rc-field.rc-field--outlined:state(focused)::part(field)::after {
     opacity: 1;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field.rc-field--outlined[data-invalid]::part(field),
+    rc-field.rc-field--outlined:state(invalid)::part(field),
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field.rc-field--outlined[data-invalid]::part(field)::after {
+    rc-field.rc-field--outlined:state(invalid)::part(field)::after {
     border-color: var(--md-sys-color-error, red);
   }
 
   @media (prefers-reduced-motion: no-preference) {
     :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(field),
     :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(label),
-    :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-group] > fieldset > legend,
+    :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:has(> fieldset) > fieldset > legend,
     :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(field)::after {
       /*
        * inset-block-start and font-size move the label's box (the floating

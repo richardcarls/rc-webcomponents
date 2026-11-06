@@ -390,7 +390,6 @@ give every icon marker the font in one rule:
   [data-rc-button-icon],
   [data-rc-button-selected-icon],
   [data-rc-chip-icon],
-  [data-rc-list-leading],
   [data-rc-menu-leading],
   [data-rc-navigation-icon],
   [data-rc-navigation-collapse-icon],
@@ -1006,8 +1005,6 @@ coexists with the page.
     <button
       type="button"
       data-rc-bottom-sheet-handle
-      data-rc-dialog-resize-axis="y"
-      data-rc-dialog-resize-origin="top"
       aria-label="Resize sheet"
     ></button>
     …
@@ -1086,22 +1083,22 @@ scrim. It fades rather than sliding, like every other surface here.
 ### Lists and settings
 
 `rc-list` and `rc-list-item` are Material lists. Slots map to the M3 list
-anatomy: `leading` (icon, avatar or native control, with `data-rc-list-leading`
-for icon geometry), the default headline and supporting text, `trailing`
+anatomy: `leading` (icon, avatar or native control; an `<svg>` or `data-rc-icon`
+takes icon geometry), the default headline and supporting `<small>` text, `trailing`
 (metadata or an action), and `details` for expandable content.
 
 ```html
 <h2 class="section-heading" id="display">Display</h2>
 <rc-list variant="segmented" aria-labelledby="display">
   <rc-list-item>
-    <span slot="leading" data-rc-list-leading aria-hidden="true">dark_mode</span>
+    <span slot="leading" data-rc-icon aria-hidden="true">dark_mode</span>
     <label for="dark">Dark theme</label>
     <rc-switch slot="trailing"><input id="dark" type="checkbox" /></rc-switch>
   </rc-list-item>
   <rc-list-item interactive action-target="text-size">
-    <span slot="leading" data-rc-list-leading aria-hidden="true">text_fields</span>
+    <span slot="leading" data-rc-icon aria-hidden="true">text_fields</span>
     <a id="text-size" href="/settings/text-size">Text size</a>
-    <small data-rc-list-supporting>Medium</small>
+    <small>Medium</small>
   </rc-list-item>
 </rc-list>
 ```

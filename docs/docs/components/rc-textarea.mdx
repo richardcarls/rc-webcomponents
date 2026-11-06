@@ -152,8 +152,8 @@ See [Content language and direction](#content-language-and-direction).
 
 Read-only state comes from the slotted native control: set `readonly` on the `<textarea>`. The
 editor keeps the enabled field appearance, stays focusable and selectable, announces
-`aria-readonly`, and rejects edits. The host reflects `data-readonly`, and the `readOnly` getter
-reports the state.
+`aria-readonly`, and rejects edits. The host matches `:state(readonly)`, and the `readOnly`
+getter reports the state.
 
 Use a plugin with `LineDecoration.gutterContent` for sparse numbering. Put accessible names on
 the slotted textarea with `aria-label` or a real `<label for="...">`.

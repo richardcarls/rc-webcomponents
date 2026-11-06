@@ -9,6 +9,7 @@ import {
   warnMissingDirectChild,
   defineLightDomBaseStyles,
   MorphRecoveryController,
+  setCustomState,
 } from '@rcarls/rc-common';
 
 import fieldStyles from './rc-field.styles.js';
@@ -21,13 +22,16 @@ declare global {
 
 export type RCFieldControl = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
+/** Direct children that own the native control: the RC controls, or any element marked. */
+const CONTROL_PROVIDER = ':is([data-rc-field-control], rc-select, rc-combobox, rc-textarea)';
+
 const CONTROL_SELECTOR = [
   ':scope > input',
   ':scope > textarea',
   ':scope > select',
-  ':scope > [data-rc-field-control] > input',
-  ':scope > [data-rc-field-control] > textarea',
-  ':scope > [data-rc-field-control] > select',
+  `:scope > ${CONTROL_PROVIDER} > input`,
+  `:scope > ${CONTROL_PROVIDER} > textarea`,
+  `:scope > ${CONTROL_PROVIDER} > select`,
   ':scope > fieldset',
 ].join(', ');
 
@@ -84,7 +88,7 @@ const LIGHT_DOM_CSS = cssText`
     flex: 1 1 0;
   }
 
-  rc-field > fieldset > :is(select, [data-rc-field-control]) {
+  rc-field > fieldset > :is(select, [data-rc-field-control], rc-select, rc-combobox, rc-textarea) {
     flex: none;
   }
 }
@@ -128,9 +132,10 @@ function groupControls($group: HTMLFieldSetElement): RCFieldControl[] {
  * control and wires a slotted label, hint, and error without replacing author-provided ARIA
  * references. Programmatic native value writes are visible after calling `sync()`.
  *
- * Derived host attributes expose `data-focused`, `data-populated`, `data-disabled`,
- * `data-readonly`, `data-required`, `data-invalid`, `data-multiline`, `data-has-label`, and
- * `data-validation-attempted` for themes.
+ * Derived custom states expose `:state(focused)`, `:state(populated)`, `:state(disabled)`,
+ * `:state(readonly)`, `:state(invalid)`, and `:state(multiline)` for themes. Structure needs no
+ * state: select a label with `:has(> [slot='label'])`, a group with `:has(> fieldset)`, and a
+ * control provider with `:has(> :is([data-rc-field-control], rc-select, rc-combobox, rc-textarea))`.
  *
  * A direct `<fieldset>` child groups several native controls into one field, such as an amount
  * and its unit. Its `<legend>` names the group and shows as the field label, and each control
@@ -142,7 +147,8 @@ function groupControls($group: HTMLFieldSetElement): RCFieldControl[] {
  * @see {@link https://m3.material.io/components/text-fields/overview Material Design 3 text fields}
  *
  * @slot - Required native `<input>`, `<textarea>`, or `<select>` control. An enhancing direct
- *   child marked `data-rc-field-control` may own the native control as its direct child. A
+ *   `rc-select`, `rc-combobox`, or `rc-textarea` child, or another enhancing child marked
+ *   `data-rc-field-control`, may own the native control as its direct child. A
  *   `<fieldset>` with a `<legend>` instead groups several controls into one field.
  * @slot label - Visible label; use a native `<label>` unless an ancestor label wraps the field
  * @slot leading - Leading icon or control outside the editable content
@@ -154,18 +160,13 @@ function groupControls($group: HTMLFieldSetElement): RCFieldControl[] {
  *
  * @attr counter - Shows the current native value length and `maxlength`, when present
  * @attr invalid - Forces invalid presentation and supplies native `aria-invalid` when absent
- * @attr [data-focused] - Present while the native control has focus
- * @attr [data-populated] - Present while the native control has a value, or a single select's
- *   selected option has visible label text
- * @attr [data-disabled] - Mirrors the native control's disabled state
- * @attr [data-readonly] - Mirrors the native control's readonly state
- * @attr [data-required] - Mirrors the native control's required state
- * @attr [data-invalid] - Present while an attempted or forced validation state is invalid
- * @attr [data-multiline] - Present when the native control is a textarea
- * @attr [data-has-label] - Present when the field has content in its label slot
- * @attr [data-validation-attempted] - Present after the native control dispatches `invalid`
- * @attr [data-control-provider] - Present when an enhancing direct child owns the native control
- * @attr [data-group] - Present when a `<fieldset>` groups several controls into the field
+ * @cssstate focused - While the native control, its provider, or the group has focus
+ * @cssstate populated - While the native control has a value, or a single select's selected
+ *   option has visible label text
+ * @cssstate disabled - While the field is disabled; a control provider's own `disabled` wins
+ * @cssstate readonly - While the native input or textarea is readonly
+ * @cssstate invalid - While an attempted or forced validation state is invalid
+ * @cssstate multiline - While the native control is a textarea outside a group
  *
  * @cssprop [--rc-field-min-block-size=var(--rc-control-block-size, 2.5rem)] - Minimum field surface block size
  * @cssprop [--rc-field-gap=var(--rc-control-gap, 0.5rem)] - Gap between leading, content, and trailing regions
@@ -201,9 +202,9 @@ function groupControls($group: HTMLFieldSetElement): RCFieldControl[] {
  */
 export class RCField extends LitElement {
   /** Writes the element's attributes again after a DOM morph removes them. */
-  protected readonly _morphRecovery = new MorphRecoveryController(this, {
-    attributes: ['data-has-label'],
-  });
+  protected readonly _morphRecovery = new MorphRecoveryController(this);
+
+  private readonly _internals = this.attachInternals();
 
   static styles = [fieldStyles];
 
@@ -258,13 +259,7 @@ export class RCField extends LitElement {
   private _readOnly = false;
 
   @state()
-  private _required = false;
-
-  @state()
   private _multiline = false;
-
-  @state()
-  private _grouped = false;
 
   @state()
   private _validationAttempted = false;
@@ -310,7 +305,8 @@ export class RCField extends LitElement {
         warnMissingDirectChild(this, {
           selector: CONTROL_SELECTOR,
           childDescription:
-            'native <input> or <textarea>, optionally inside a data-rc-field-control provider, ' +
+            'native <input> or <textarea>, optionally inside rc-select, rc-combobox, rc-textarea, or ' +
+            'another provider marked data-rc-field-control, ' +
             'or a <fieldset> grouping several controls',
         });
       }
@@ -422,7 +418,6 @@ export class RCField extends LitElement {
   private _setupGroup($group: HTMLFieldSetElement): void {
     this._$groupRef = new WeakRef($group);
     this._$controlProviderRef = null;
-    this._grouped = true;
     this._focused = $group.matches(':focus-within');
     this._validationAttempted = false;
     this._nativeInvalid = false;
@@ -457,7 +452,6 @@ export class RCField extends LitElement {
     $group.removeEventListener('compositionend', this._onCompositionEnd);
     this._groupObserver?.disconnect();
     this._$groupRef = null;
-    this._grouped = false;
     this._$formRef?.deref()?.removeEventListener('reset', this._onFormReset);
     this._$formRef = null;
     this._restoreAssociations($group);
@@ -489,7 +483,7 @@ export class RCField extends LitElement {
   private _setupControl($control: RCFieldControl | null): void {
     this._$controlRef = $control ? new WeakRef($control) : null;
 
-    const $provider = $control?.parentElement?.matches('[data-rc-field-control]')
+    const $provider = $control?.parentElement?.matches(CONTROL_PROVIDER)
       ? $control.parentElement
       : null;
 
@@ -670,7 +664,6 @@ export class RCField extends LitElement {
       : this._effectiveDisabled($control);
 
     this._readOnly = $control instanceof HTMLSelectElement ? false : ($control?.readOnly ?? false);
-    this._required = $controls.some(($item) => $item.required);
     this._multiline = !$group && $control instanceof HTMLTextAreaElement;
 
     if ($control && this._validationAttempted) {
@@ -701,17 +694,12 @@ export class RCField extends LitElement {
   }
 
   private _reflectStates(): void {
-    this.toggleAttribute('data-focused', this._focused);
-    this.toggleAttribute('data-populated', this._populated);
-    this.toggleAttribute('data-disabled', this._disabled);
-    this.toggleAttribute('data-readonly', this._readOnly);
-    this.toggleAttribute('data-required', this._required);
-    this.toggleAttribute('data-invalid', this._effectiveInvalid());
-    this.toggleAttribute('data-multiline', this._multiline);
-    this.toggleAttribute('data-has-label', this._hasLabel);
-    this.toggleAttribute('data-validation-attempted', this._validationAttempted);
-    this.toggleAttribute('data-control-provider', this._$controlProviderRef?.deref() !== undefined);
-    this.toggleAttribute('data-group', this._grouped);
+    setCustomState(this._internals, 'focused', this._focused);
+    setCustomState(this._internals, 'populated', this._populated);
+    setCustomState(this._internals, 'disabled', this._disabled);
+    setCustomState(this._internals, 'readonly', this._readOnly);
+    setCustomState(this._internals, 'invalid', this._effectiveInvalid());
+    setCustomState(this._internals, 'multiline', this._multiline);
   }
 
   private _effectiveInvalid(): boolean {

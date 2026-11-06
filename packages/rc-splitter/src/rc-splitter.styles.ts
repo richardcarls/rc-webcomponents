@@ -24,11 +24,6 @@ export const splitterStyles = css`
     display: none;
   }
 
-  /* because :has(:focus-visible) doesn't work across slot boundary */
-  :host([data-interaction-mode='keyboard']):focus-within {
-    outline: auto;
-  }
-
   ::slotted(*) {
     width: 100%;
     height: 100%;

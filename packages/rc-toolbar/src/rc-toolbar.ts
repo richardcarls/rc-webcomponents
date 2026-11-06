@@ -2,10 +2,11 @@ import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
 import {
+  cssText,
+  defineLightDomBaseStyles,
   FlowController,
   HydrationController,
   isFocusable,
-  keyInteraction,
   keyNavigation,
   type KeyboardNavigationAction,
   renderedOrientation,
@@ -14,6 +15,18 @@ import {
 } from '@rcarls/rc-common';
 
 import toolbarStyles from './rc-toolbar.styles.js';
+
+const LIGHT_DOM_CSS = cssText`
+@layer rc-base {
+  /* :host(:has()) is not supported in Chromium or Firefox, so the light DOM draws the ring. */
+  rc-toolbar:has(:focus-visible)::part(root) {
+    outline: var(--rc-focus-ring, auto);
+    outline-offset: var(--rc-focus-ring-offset, 0);
+  }
+}
+`;
+
+const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-toolbar', LIGHT_DOM_CSS);
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -76,6 +89,7 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
 
   override connectedCallback(): void {
     super.connectedCallback();
+    ensureLightDomBaseStyles(this.getRootNode());
     this._disabledObserver.observe(this, { attributeFilter: ['disabled'], subtree: true });
   }
 
@@ -179,7 +193,6 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
         id="root"
         part="root"
         ${keyNavigation(this._onNavigate)}
-        ${keyInteraction()}
         role="toolbar"
         aria-orientation=${renderedOrientation(this.orientation, this._flow.flow)}
         aria-label=${this.label}

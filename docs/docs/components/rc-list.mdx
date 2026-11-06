@@ -67,14 +67,14 @@ aligned even when leading visuals or trailing actions have different sizes.
 If no visible row uses an optional slot, the corresponding column and gap
 collapse across the whole list.
 
-Mark an icon in the leading slot with `data-rc-list-leading` when the active
-theme should apply its standard icon size and alignment. Other leading media
+An `<svg>` in the leading slot, or an icon-font element marked `data-rc-icon`,
+takes the active theme's standard icon size and alignment. Other leading media
 such as images, avatars, and selection controls retain their authored geometry.
 
 ```html
 <rc-list aria-label="Recent recipes">
   <rc-list-item>
-    <span slot="leading" data-rc-list-leading aria-hidden="true">★</span>
+    <span slot="leading" data-rc-icon aria-hidden="true">★</span>
     Apple pie
     <span slot="trailing">42 min</span>
   </rc-list-item>

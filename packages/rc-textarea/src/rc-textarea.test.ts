@@ -681,7 +681,7 @@ describe('RCTextarea — readOnly', () => {
     const $editor = getEditor(host);
 
     expect(host.readOnly).toBe(true);
-    expect(host).toHaveAttribute('data-readonly');
+    expect(host.matches(':state(readonly)')).toBe(true);
     expect($editor.contentEditable).toBe('false');
     expect($editor).toHaveAttribute('aria-readonly', 'true');
 
@@ -689,7 +689,7 @@ describe('RCTextarea — readOnly', () => {
 
     await expect.poll(() => $editor.contentEditable).toBe('true');
     expect(host.readOnly).toBe(false);
-    expect(host).not.toHaveAttribute('data-readonly');
+    expect(host.matches(':state(readonly)')).toBe(false);
     expect($editor).not.toHaveAttribute('aria-readonly');
 
     $textarea.readOnly = true;

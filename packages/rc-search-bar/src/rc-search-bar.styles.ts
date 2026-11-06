@@ -39,11 +39,6 @@ export const searchBarStyles = css`
       box-shadow 120ms;
   }
 
-  :host([data-interaction-mode='keyboard']) #root:focus-within {
-    outline: var(--rc-focus-ring, auto);
-    outline-offset: var(--rc-focus-ring-offset, 0);
-  }
-
   /* No slotted search input: render no chrome at all. */
   #root.empty {
     block-size: auto;

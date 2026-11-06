@@ -30,7 +30,7 @@
   }
 
   /* A grouped field's legend reads like the label above a single field. */
-  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-field[data-group] > fieldset > legend {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-field:has(> fieldset) > fieldset > legend {
     margin-block-end: var(--win31-gap-tight);
     color: var(--win31-color-frame);
   }

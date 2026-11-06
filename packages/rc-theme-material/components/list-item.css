@@ -152,7 +152,7 @@
 
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-list-item
-    > :where([data-rc-list-supporting], small) {
+    > small {
     display: block;
     color: var(--md-sys-color-on-surface-variant, CanvasText);
     font-family: var(--md-sys-typescale-body-medium-font, inherit);
@@ -163,7 +163,7 @@
 
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-list-item
-    > [slot='leading'][data-rc-list-leading] {
+    > [slot='leading']:is(svg, [data-rc-icon]) {
     display: inline-flex;
     align-items: center;
     justify-content: center;

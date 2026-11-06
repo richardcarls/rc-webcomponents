@@ -6,6 +6,15 @@ afterEach(() => {
   document.body.replaceChildren();
 });
 
+/** Stands in for `rc-field` so a test can set the custom states the theme selects. */
+class StateHostField extends HTMLElement {
+  readonly internals = this.attachInternals();
+}
+
+if (!customElements.get('rc-field')) {
+  customElements.define('rc-field', StateHostField);
+}
+
 function renderScope(): HTMLElement {
   const scope = document.createElement('div');
 
@@ -192,9 +201,7 @@ test('nested field controls defer compact geometry and multiline label offset to
   const $label = renderPart($scope, 'rc-field', 'label');
   const $labelField = $label.getRootNode() as ShadowRoot;
 
-  $select.dataset.rcFieldControl = '';
-  $combobox.dataset.rcFieldControl = '';
-  ($labelField.host as HTMLElement).setAttribute('data-multiline', '');
+  ($labelField.host as StateHostField).internals.states.add('multiline');
   $field.append($select, $combobox);
   $scope.append($field);
 
@@ -1071,9 +1078,11 @@ test('breadcrumbs point their chevron along the reading direction and keep a 48p
   expect(getComputedStyle(ltr).getPropertyValue('--rc-breadcrumbs-separator')).toMatch(
     /\\203a\b|›/i,
   );
+
   expect(getComputedStyle(rtl).getPropertyValue('--rc-breadcrumbs-separator')).toMatch(
     /\\2039\b|‹/i,
   );
+
   expect(getComputedStyle(ltr.querySelector('a')!).minBlockSize).toBe('48px');
 });
 

@@ -134,25 +134,20 @@ export class RCMenubar extends LitElement {
   /** Bound keydown handler, held for `removeEventListener` pairing. */
   protected _boundHandleKeydown = this._handleKeydown.bind(this);
 
-  /** Bound click handler, held for `removeEventListener` pairing. */
-  protected _boundHandleClick = this._handleClick.bind(this);
-
-  /** Syncs host ARIA attributes and registers keyboard and click handlers. */
+  /** Syncs host ARIA attributes and registers the keyboard handler. */
   override connectedCallback() {
     super.connectedCallback();
 
     this._syncHostAria();
 
     this.addEventListener('keydown', this._boundHandleKeydown);
-    this.addEventListener('click', this._boundHandleClick);
   }
 
-  /** Removes keyboard and click handlers. */
+  /** Removes the keyboard handler. */
   override disconnectedCallback() {
     super.disconnectedCallback();
 
     this.removeEventListener('keydown', this._boundHandleKeydown);
-    this.removeEventListener('click', this._boundHandleClick);
   }
 
   /** Keeps the exposed aria-orientation on the orientation actually rendered. */
@@ -453,8 +448,6 @@ export class RCMenubar extends LitElement {
       action = 'end';
     } else if (key === 'Escape') {
       action = 'escape';
-    } else if (key === 'Tab') {
-      this.setAttribute('data-interaction-mode', 'keyboard');
     }
 
     if (!action) {
@@ -462,15 +455,9 @@ export class RCMenubar extends LitElement {
     }
 
     this._handleNavigate(action);
-    this.setAttribute('data-interaction-mode', 'keyboard');
 
     e.stopPropagation();
     e.preventDefault();
-  }
-
-  /** Clears keyboard interaction mode on pointer click. */
-  protected _handleClick(): void {
-    this.removeAttribute('data-interaction-mode');
   }
 
   protected override render() {

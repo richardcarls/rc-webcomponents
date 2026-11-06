@@ -185,7 +185,6 @@ for (const exportName of [
   'ActiveDescendantController',
   'AnchorController',
   'DragController',
-  'keyInteraction',
   'keyNavigation',
   'ClickDelegateController',
   'cssText',

@@ -6,7 +6,6 @@ import {
   cssText,
   defineLightDomBaseStyles,
   HydrationController,
-  keyInteraction,
   MessagesController,
   NativeChildController,
   warnMissingDirectChild,
@@ -38,6 +37,12 @@ const LIGHT_DOM_CSS = cssText`
     border: 0;
     outline: 0;
     box-shadow: none;
+  }
+
+  /* :host(:has()) is not supported in Chromium or Firefox, so the light DOM draws the ring. */
+  rc-search-bar:has(:focus-visible)::part(root) {
+    outline: var(--rc-focus-ring, auto);
+    outline-offset: var(--rc-focus-ring-offset, 0);
   }
 
   rc-search-bar:not([allow-native-clear])
@@ -794,7 +799,6 @@ export class RCSearchBar extends LitElement {
         id="root"
         part="root"
         class=${classMap({ empty: !hasInput })}
-        ${keyInteraction({ attributeTarget: this })}
       >
         <span
           id="leading"

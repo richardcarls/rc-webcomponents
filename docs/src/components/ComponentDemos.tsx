@@ -351,7 +351,8 @@ const SCROLLER_DEMO_CSS = `
   padding-block: 1rem;
 }
 
-.scroller-demo > [data-rc-scroller-span='fullbleed'] {
+.scroller-demo > .fullbleed {
+  grid-column: fullbleed;
   padding-inline: 1rem;
   background: color-mix(in srgb, Highlight 12%, Canvas);
 }
@@ -371,7 +372,7 @@ export function ScrollerDemo() {
         role="region"
         aria-label="Recipe collection"
       >
-        <header data-rc-scroller-span="fullbleed">
+        <header className="fullbleed">
           <strong>Recipes</strong>
         </header>
         {['Apple pie', 'Mushroom risotto', 'Lentil soup', 'Lemon tart', 'Tomato galette'].map(
@@ -559,7 +560,7 @@ export function ListDemo() {
               </span>
               <span className="list-demo-copy">
                 Apple pie
-                <small data-rc-list-supporting>Updated yesterday</small>
+                <small>Updated yesterday</small>
               </span>
               <span slot="trailing">42 min</span>
             </rc-list-item>
@@ -569,7 +570,7 @@ export function ListDemo() {
               </span>
               <span className="list-demo-copy">
                 Mushroom risotto with roasted garlic
-                <small data-rc-list-supporting>Updated Friday</small>
+                <small>Updated Friday</small>
               </span>
               <span slot="trailing">35 min</span>
             </rc-list-item>

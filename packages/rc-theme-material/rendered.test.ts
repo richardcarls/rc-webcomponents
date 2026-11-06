@@ -83,7 +83,7 @@ test('Material fields render filled and outlined native-control compositions', a
   expect($filledSurface!.getBoundingClientRect().height).toBe(56);
   expect(getComputedStyle($filledSurface!).borderBottomWidth).toBe('1px');
   expect(getComputedStyle($outlinedSurface!).borderTopWidth).toBe('1px');
-  expect($outlined.hasAttribute('data-multiline')).toBe(true);
+  expect($outlined.matches(':state(multiline)')).toBe(true);
   expect($filled.querySelector('input')?.isConnected).toBe(true);
 
   expect($filledLabel!.getBoundingClientRect().left).toBe(
@@ -99,7 +99,7 @@ test('Material fields render filled and outlined native-control compositions', a
   $emptyControl!.focus();
   await settle($empty);
 
-  expect($empty.hasAttribute('data-focused')).toBe(true);
+  expect($empty.matches(':state(focused)')).toBe(true);
 
   await expect.poll(() => $emptyLabel!.getBoundingClientRect().top).toBeLessThan(restingTop);
 });
@@ -112,7 +112,7 @@ test('filled Material field aligns a textarea gutter with its floated label', as
   scope.innerHTML = `
     <rc-field>
       <label slot="label" for="ingredient-notes">Ingredients</label>
-      <rc-textarea data-rc-field-control gutter>
+      <rc-textarea gutter>
         <textarea id="ingredient-notes" name="ingredients">Flour\nWater</textarea>
       </rc-textarea>
     </rc-field>
@@ -154,7 +154,7 @@ test('filled Material field shows a read-only textarea as a focusable field with
   scope.innerHTML = `
     <rc-field>
       <label slot="label" for="preview-notes">Ingredients</label>
-      <rc-textarea data-rc-field-control>
+      <rc-textarea>
         <textarea id="preview-notes" readonly>Flour</textarea>
       </rc-textarea>
     </rc-field>
@@ -169,7 +169,7 @@ test('filled Material field shows a read-only textarea as a focusable field with
   const $surface = $field.shadowRoot!.querySelector<HTMLElement>('[part="field"]')!;
   const resting = getComputedStyle($surface).backgroundColor;
 
-  await vi.waitFor(() => expect($field).toHaveAttribute('data-readonly'));
+  await vi.waitFor(() => expect($field.matches(':state(readonly)')).toBe(true));
   expect($editor).toHaveAttribute('aria-readonly', 'true');
   expect($editor).toHaveAccessibleName('Ingredients');
 
@@ -177,7 +177,7 @@ test('filled Material field shows a read-only textarea as a focusable field with
   expect(getComputedStyle($surface).backgroundColor).toBe(resting);
 
   await userEvent.click($editor);
-  await vi.waitFor(() => expect($field).toHaveAttribute('data-focused'));
+  await vi.waitFor(() => expect($field.matches(':state(focused)')).toBe(true));
 });
 
 test('filled Material field clears a page focus outline on its native control', async () => {
@@ -211,7 +211,7 @@ test('filled Material field clears a page focus outline on its native control', 
 
   try {
     await userEvent.click($input);
-    await vi.waitFor(() => expect($field).toHaveAttribute('data-focused'));
+    await vi.waitFor(() => expect($field.matches(':state(focused)')).toBe(true));
     expect($input).toHaveFocus();
     expect($input.matches(':focus-visible')).toBe(true);
     expect(getComputedStyle($input).outlineStyle).toBe('none');
@@ -259,7 +259,7 @@ test('a grouped Material field matches a single field with its legend as the flo
   const labelRect = singleLabel.getBoundingClientRect();
   const legendRect = legend.getBoundingClientRect();
 
-  expect($group).toHaveAttribute('data-group');
+  expect($group.matches(':has(> fieldset)')).toBe(true);
   expect(Math.round(groupRect.height)).toBe(Math.round(singleRect.height));
   expect(legendRect.top - groupRect.top).toBeCloseTo(labelRect.top - singleRect.top, 0);
   expect(legendRect.left - groupRect.left).toBeCloseTo(labelRect.left - singleRect.left, 0);
@@ -276,7 +276,7 @@ test('a grouped Material field matches a single field with its legend as the flo
   expect(getComputedStyle(note, '::placeholder').color).toBe('rgba(0, 0, 0, 0)');
 
   await userEvent.click(unit);
-  await vi.waitFor(() => expect($group).toHaveAttribute('data-focused'));
+  await vi.waitFor(() => expect($group.matches(':state(focused)')).toBe(true));
   expect(getComputedStyle(note, '::placeholder').color).not.toBe('rgba(0, 0, 0, 0)');
   expect(getComputedStyle(unit).outlineStyle).toBe('none');
 
@@ -356,7 +356,7 @@ test('a grouped Material legend rests and floats like a single field label', asy
   $group.querySelector('input')!.focus();
   $single.querySelector('input')!.focus();
   $group.querySelector('input')!.focus();
-  await vi.waitFor(() => expect($group).toHaveAttribute('data-focused'));
+  await vi.waitFor(() => expect($group.matches(':state(focused)')).toBe(true));
   await waitForTransitions();
   expect(getComputedStyle(legend).fontSize).toBe('12px');
 
@@ -375,7 +375,7 @@ test('rc-select and rc-combobox lose their own chrome when composed as rc-field 
   scope.innerHTML = `
     <rc-field>
       <label slot="label">Unit</label>
-      <rc-select data-rc-field-control>
+      <rc-select>
         <select>
           <option value="">Choose a unit</option>
           <option value="oz">oz</option>
@@ -384,7 +384,7 @@ test('rc-select and rc-combobox lose their own chrome when composed as rc-field 
     </rc-field>
     <rc-field>
       <label slot="label">Categories</label>
-      <rc-combobox data-rc-field-control multiple>
+      <rc-combobox multiple>
         <select multiple>
           <option value="braiser">Braiser</option>
         </select>
@@ -402,9 +402,9 @@ test('rc-select and rc-combobox lose their own chrome when composed as rc-field 
   const $comboboxAnchor = $combobox.shadowRoot!.querySelector<HTMLElement>('[part="anchor"]')!;
 
   expect($selectField.control).toBe($select.querySelector('select'));
-  expect($selectField.hasAttribute('data-control-provider')).toBe(true);
+  expect($selectField.matches(':has(> rc-select)')).toBe(true);
   expect($comboboxField.control).toBe($combobox.querySelector('select'));
-  expect($comboboxField.hasAttribute('data-control-provider')).toBe(true);
+  expect($comboboxField.matches(':has(> rc-combobox)')).toBe(true);
 
   expect(getComputedStyle($selectTrigger).borderWidth).toBe('0px');
   expect(getComputedStyle($selectTrigger).backgroundColor).toBe('rgba(0, 0, 0, 0)');
@@ -414,7 +414,7 @@ test('rc-select and rc-combobox lose their own chrome when composed as rc-field 
   ($select as unknown as { focus(): void }).focus();
   await settle($selectField);
 
-  expect($selectField.hasAttribute('data-focused')).toBe(true);
+  expect($selectField.matches(':state(focused)')).toBe(true);
 
   // border-color is moot once border-width is 0 (invisible regardless of color), and
   // :focus-visible is a scripted-focus heuristic that varies by environment; border-width
@@ -425,7 +425,7 @@ test('rc-select and rc-combobox lose their own chrome when composed as rc-field 
   $combobox.shadowRoot!.querySelector<HTMLInputElement>('[part~="input"]')!.focus();
   await settle($comboboxField);
 
-  expect($comboboxField.hasAttribute('data-focused')).toBe(true);
+  expect($comboboxField.matches(':state(focused)')).toBe(true);
   expect($comboboxAnchor.matches(':focus-within')).toBe(true);
   expect(getComputedStyle($comboboxAnchor).outlineStyle).toBe('none');
 });
@@ -475,17 +475,17 @@ test('floated field labels share one offset while chip rows grow the filled fiel
     <rc-field data-k="text"><label slot="label">Name</label><input value="Tacos"></rc-field>
     <rc-field data-k="select">
       <label slot="label">Difficulty</label>
-      <rc-select data-rc-field-control>
+      <rc-select>
         <select><option value=""></option><option value="easy" selected>Easy</option></select>
       </rc-select>
     </rc-field>
     <rc-field data-k="chips">
       <label slot="label">Categories</label>
-      <rc-select data-rc-field-control><select multiple>${options}</select></rc-select>
+      <rc-select><select multiple>${options}</select></rc-select>
     </rc-field>
     <rc-field data-k="dense">
       <label slot="label">Categories</label>
-      <rc-select class="rc-select--dense" data-rc-field-control>
+      <rc-select class="rc-select--dense">
         <select multiple>${options}</select>
       </rc-select>
     </rc-field>
@@ -494,7 +494,7 @@ test('floated field labels share one offset while chip rows grow the filled fiel
     </rc-field>
     <rc-field class="rc-field--outlined" data-k="outlined-select">
       <label slot="label">Difficulty</label>
-      <rc-select data-rc-field-control>
+      <rc-select>
         <select><option value=""></option><option value="easy" selected>Easy</option></select>
       </rc-select>
     </rc-field>
@@ -549,7 +549,7 @@ test('dialog-mode combobox fills the current visual viewport', async () => {
   scope.innerHTML = `
     <rc-field>
       <label slot="label">Categories</label>
-      <rc-combobox data-rc-field-control popup-mode="dialog" multiple>
+      <rc-combobox popup-mode="dialog" multiple>
         <select aria-label="Categories" multiple>
           <option value="quick">Quick meal</option>
           <option value="vegetarian">Vegetarian</option>
@@ -687,7 +687,7 @@ test('segmented Material list rows render with 16px inline content padding', asy
   iconList.setAttribute('variant', 'segmented');
   item.textContent = 'Padded setting';
   leading.slot = 'leading';
-  leading.dataset.rcListLeading = '';
+  leading.dataset.rcIcon = '';
   leading.textContent = '★';
   iconItem.textContent = 'Icon setting';
   iconItem.prepend(leading);
@@ -1006,11 +1006,11 @@ test.runIf(isChromium).each(['light', 'dark'] as const)(
       <rc-list variant="segmented">
         <rc-list-item>
           <span data-rc-list-headline>Theme</span>
-          <small data-rc-list-supporting>Use device setting</small>
+          <small>Use device setting</small>
         </rc-list-item>
         <rc-list-item>
           <span data-rc-list-headline>Sync</span>
-          <small data-rc-list-supporting>Connected to cloud storage</small>
+          <small>Connected to cloud storage</small>
         </rc-list-item>
       </rc-list>
       <div style="inline-size:184px;justify-self:end">
@@ -1170,6 +1170,7 @@ test('a data-rc-type-scale region scales Material type and RC text tokens', asyn
       <rc-list-item>Unscaled row</rc-list-item>
     </rc-list>
   `;
+
   document.body.append(scope);
   await settle(scope);
 
@@ -1201,10 +1202,12 @@ test('a theme root marked data-rc-type-scale scales its own type tokens', async 
   scope.className = 'rc-theme-material';
   scope.setAttribute('data-rc-type-scale', '');
   scope.style.setProperty('--rc-type-scale', '0.75');
+
   scope.innerHTML = `
     <p style="font: var(--md-sys-typescale-body-large-size) / var(--md-sys-typescale-body-large-line-height) sans-serif">Scaled</p>
     <rc-button><button type="button">Scaled button</button></rc-button>
   `;
+
   document.body.append(scope);
   await settle(scope);
 

@@ -142,7 +142,7 @@ describe('RCMarkdownEditor value ownership', () => {
     await host.updateComplete;
 
     expect(source.querySelector('textarea')).toHaveAttribute('readonly');
-    await expect.poll(() => source.hasAttribute('data-readonly')).toBe(true);
+    await expect.poll(() => source.matches(':state(readonly)')).toBe(true);
   });
 });
 

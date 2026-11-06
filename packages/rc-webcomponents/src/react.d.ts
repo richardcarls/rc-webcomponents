@@ -423,17 +423,6 @@ declare module 'react' {
       'rc-field': RCElementProps<
         RCField,
         {
-          'data-control-provider'?: string;
-          'data-disabled'?: string;
-          'data-focused'?: string;
-          'data-group'?: string;
-          'data-has-label'?: string;
-          'data-invalid'?: string;
-          'data-multiline'?: string;
-          'data-populated'?: string;
-          'data-readonly'?: string;
-          'data-required'?: string;
-          'data-validation-attempted'?: string;
           counter?: RCField['counter'];
           invalid?: RCField['invalid'];
         },
@@ -813,7 +802,6 @@ declare module 'react' {
         RCTextarea,
         {
           'auto-grow'?: RCAttribute<RCTextarea['autoGrow']>;
-          'data-readonly'?: string;
           'default-value'?: RCAttribute<RCTextarea['defaultValue']>;
           'line-direction'?: RCAttribute<RCTextarea['lineDirection']>;
           'line-numbers'?: RCAttribute<RCTextarea['lineNumbers']>;

@@ -55,33 +55,33 @@
   /* Same hover and focus treatment rc-select, rc-combobox, and rc-textarea use. */
   /* Read-only fields keep focus treatment but skip the hover affordance. */
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
-    rc-field:not([data-readonly]):hover::part(field) {
+    rc-field:not(:state(readonly)):hover::part(field) {
     border-color: color-mix(in srgb, var(--rc-accent, Highlight) 55%, var(--rc-border-color));
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field[data-focused]::part(field) {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field:state(focused)::part(field) {
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field[data-invalid]::part(label),
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field:state(invalid)::part(label),
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
-    rc-field[data-group][data-invalid]
+    rc-field:has(> fieldset):state(invalid)
     > fieldset
     > legend {
     color: var(--rc-field-error-color, red);
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
-    rc-field[data-invalid]:hover::part(field) {
+    rc-field:state(invalid):hover::part(field) {
     border-color: var(--rc-field-error-color, red);
   }
 
   /* A textarea grows downward, so its label and control belong at the top. */
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field[data-multiline]::part(field) {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field:state(multiline)::part(field) {
     align-items: flex-start;
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field[data-multiline]::part(control) {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field:state(multiline)::part(control) {
     align-items: flex-start;
   }
 
@@ -97,7 +97,7 @@
    */
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
     rc-field
-    > rc-textarea[data-rc-field-control] {
+    > rc-textarea {
     --rc-textarea-border: 0;
     --rc-textarea-border-radius: 0;
     --rc-textarea-background: transparent;
@@ -108,23 +108,23 @@
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
     rc-field
-    > rc-textarea[data-rc-field-control]::part(root):focus-within {
+    > rc-textarea::part(root):focus-within {
     box-shadow: none;
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
     rc-field
-    > :is(rc-select, rc-combobox)[data-rc-field-control] {
+    > :is(rc-select, rc-combobox) {
     --rc-field: transparent;
     inline-size: 100%;
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
     rc-field
-    > rc-select[data-rc-field-control]::part(trigger),
+    > rc-select::part(trigger),
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
     rc-field
-    > rc-combobox[data-rc-field-control]::part(anchor) {
+    > rc-combobox::part(anchor) {
     min-block-size: 0;
     padding-inline: 0;
     border: 0;
@@ -139,14 +139,14 @@
    */
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
     rc-field
-    > rc-select[data-rc-field-control]::part(trigger):is(
+    > rc-select::part(trigger):is(
       :hover,
       :focus-visible,
       [aria-expanded='true']
     ),
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
     rc-field
-    > rc-combobox[data-rc-field-control]::part(anchor):is(:hover, :focus-within) {
+    > rc-combobox::part(anchor):is(:hover, :focus-within) {
     border-color: transparent;
     background: transparent;
     outline: none;

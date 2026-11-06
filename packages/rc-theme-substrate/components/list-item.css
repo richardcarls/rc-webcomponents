@@ -43,7 +43,7 @@
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
     rc-list-item
-    > :where([data-rc-list-supporting], small) {
+    > small {
     display: block;
     color: var(--substrate-on-surface-muted, GrayText);
   }

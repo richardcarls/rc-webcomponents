@@ -47,8 +47,8 @@ let detailsIdCounter = 0;
  * containing block, but that part's own `overflow: hidden` (required for
  * label truncation) clips the overlay right back down to its own bounds.
  *
- * @slot leading - Optional leading visual or native selection control. Add
- *   `data-rc-list-leading` when a theme should apply its standard leading-icon geometry.
+ * @slot leading - Optional leading visual or native selection control. An `<svg>` or
+ *   `[data-rc-icon]` there takes the theme's standard leading-icon geometry.
  * @slot - Primary row content. It truncates to one line by default.
  * @slot trailing - Optional trailing metadata or action.
  * @slot details - Optional supporting region below the row, shown while expanded. A descendant

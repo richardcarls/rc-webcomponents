@@ -12,7 +12,6 @@ import {
   findNextSnapIndex,
   HydrationController,
   isReversed,
-  keyInteraction,
   keyNavigation,
   logicalDelta,
   parseCssTime,
@@ -824,7 +823,6 @@ export class RCSplitter extends LitElement {
           aria-valuemax=${this._effectiveMax}
           @keydown=${this._onCollapseKeydown}
           ${keyNavigation(this._onKeyboardResize)}
-          ${keyInteraction()}
           ?hidden=${!hasSecondary}
         ></div>
       </div>
