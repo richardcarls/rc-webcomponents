@@ -358,17 +358,6 @@ declare module 'vue' {
     'rc-field': RCVueElement<
       RCField,
       {
-        'data-control-provider'?: string;
-        'data-disabled'?: string;
-        'data-focused'?: string;
-        'data-group'?: string;
-        'data-has-label'?: string;
-        'data-invalid'?: string;
-        'data-multiline'?: string;
-        'data-populated'?: string;
-        'data-readonly'?: string;
-        'data-required'?: string;
-        'data-validation-attempted'?: string;
         counter?: RCField['counter'];
         invalid?: RCField['invalid'];
       },
@@ -698,7 +687,6 @@ declare module 'vue' {
     'rc-textarea': RCVueElement<
       RCTextarea,
       {
-        'data-readonly'?: string;
         autoGrow?: RCTextarea['autoGrow'];
         decorations?: RCTextarea['decorations'];
         defaultValue?: RCTextarea['defaultValue'];

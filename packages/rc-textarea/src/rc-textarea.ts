@@ -14,6 +14,7 @@ import {
   includeDefaults,
   MorphRecoveryController,
   nativeLabelText,
+  setCustomState,
 } from '@rcarls/rc-common';
 import { RCDocument, getText } from './document.js';
 import {
@@ -312,8 +313,8 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @attr auto-grow - Allow the field to grow vertically with content to prevent vertical overflow.
  * @attr line-direction - `base` (default) gives every line the editor's base direction; `auto` gives
  *   each line the direction of its first strong character, holding lines without one to the base.
- * @attr [data-readonly] - Reflected while the slotted `<textarea>` is `readonly`. The editor stays
- *   focusable and selectable, announces `aria-readonly`, and blocks edits.
+ * @cssstate readonly - While the slotted `<textarea>` is `readonly`. The editor stays focusable
+ *   and selectable, announces `aria-readonly`, and blocks edits.
  * @attr value - Current field value.
  * @attr default-value - Initial uncontrolled value.
  *
@@ -354,6 +355,8 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-line-action-shadow=0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)] - Line-action popover shadow
  */
 export class RCTextarea extends LitElement {
+  private readonly _internals = this.attachInternals();
+
   /** Writes the element's attributes again after a DOM morph removes them. */
   protected readonly _morphRecovery = new MorphRecoveryController(this, {
     attributes: ['style'],
@@ -831,7 +834,7 @@ export class RCTextarea extends LitElement {
     const changed = readOnly !== this._readOnly;
 
     this._readOnly = readOnly;
-    this.toggleAttribute('data-readonly', readOnly);
+    setCustomState(this._internals, 'readonly', readOnly);
 
     if (this._$editor) {
       this._$editor.contentEditable = readOnly ? 'false' : 'true';

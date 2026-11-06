@@ -476,17 +476,6 @@ declare module 'solid-js' {
         RCField,
         {
           counter?: RCAttribute<RCField['counter']>;
-          'data-control-provider'?: string;
-          'data-disabled'?: string;
-          'data-focused'?: string;
-          'data-group'?: string;
-          'data-has-label'?: string;
-          'data-invalid'?: string;
-          'data-multiline'?: string;
-          'data-populated'?: string;
-          'data-readonly'?: string;
-          'data-required'?: string;
-          'data-validation-attempted'?: string;
           invalid?: RCAttribute<RCField['invalid']>;
           'prop:counter'?: RCField['counter'];
           'prop:invalid'?: RCField['invalid'];
@@ -942,7 +931,6 @@ declare module 'solid-js' {
         RCTextarea,
         {
           'auto-grow'?: RCAttribute<RCTextarea['autoGrow']>;
-          'data-readonly'?: string;
           'default-value'?: RCAttribute<RCTextarea['defaultValue']>;
           gutter?: RCAttribute<RCTextarea['gutter']>;
           'line-direction'?: RCAttribute<RCTextarea['lineDirection']>;

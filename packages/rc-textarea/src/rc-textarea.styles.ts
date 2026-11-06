@@ -206,7 +206,7 @@ export const styles = css`
 
   /* A read-only field keeps its enabled appearance and focus ring; it only
      stops accepting edits. */
-  :host([data-readonly]) #editor {
+  :host(:state(readonly)) #editor {
     -webkit-user-modify: read-only;
   }
 

@@ -95,8 +95,8 @@ When the user edits, the slotted textarea is kept in sync and dispatches a nativ
 
 Read-only state comes from the slotted native control: set `readonly` on the `<textarea>`. The
 editor keeps the enabled field appearance, stays focusable and selectable, announces
-`aria-readonly`, and rejects edits. The host reflects `data-readonly`, and the `readOnly` getter
-reports the state.
+`aria-readonly`, and rejects edits. The host matches `:state(readonly)`, and the `readOnly`
+getter reports the state.
 
 Put the content's `lang`, `dir` and `spellcheck` on the slotted `<textarea>`: the editor mirrors
 `lang` and `spellcheck`, and takes its base direction from `dir` (`auto` follows the native

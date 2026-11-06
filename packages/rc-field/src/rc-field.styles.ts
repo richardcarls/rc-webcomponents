@@ -98,7 +98,10 @@ export const fieldStyles = css`
   ::slotted(input),
   ::slotted(select),
   ::slotted(textarea),
-  ::slotted([data-rc-field-control]) {
+  ::slotted([data-rc-field-control]),
+  ::slotted(rc-select),
+  ::slotted(rc-combobox),
+  ::slotted(rc-textarea) {
     box-sizing: border-box;
     flex: 1 1 auto;
     min-inline-size: 0;
@@ -124,7 +127,10 @@ export const fieldStyles = css`
     resize: block;
   }
 
-  ::slotted([data-rc-field-control]) {
+  ::slotted([data-rc-field-control]),
+  ::slotted(rc-select),
+  ::slotted(rc-combobox),
+  ::slotted(rc-textarea) {
     display: block;
   }
 
@@ -157,25 +163,25 @@ export const fieldStyles = css`
     white-space: nowrap;
   }
 
-  :host([data-invalid]) #field {
+  :host(:state(invalid)) #field {
     border-color: var(--rc-field-error-color, red);
   }
 
-  :host([data-disabled]) {
+  :host(:state(disabled)) {
     opacity: var(--rc-field-disabled-opacity, var(--rc-disabled-opacity, 0.6));
   }
 
-  :host([data-focused]) #field {
+  :host(:state(focused)) #field {
     outline: var(--rc-field-focus-outline, var(--rc-focus-ring, 2px solid Highlight));
     outline-offset: var(--rc-field-focus-outline-offset, var(--rc-focus-ring-offset, 0));
   }
 
   @media (forced-colors: active) {
-    :host([data-invalid]) #field {
+    :host(:state(invalid)) #field {
       border-color: Mark;
     }
 
-    :host([data-focused]) #field {
+    :host(:state(focused)) #field {
       outline-color: Highlight;
     }
   }

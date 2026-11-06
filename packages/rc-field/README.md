@@ -63,10 +63,10 @@ control. Supporting text describes the fieldset.
 ```
 
 The first text-like input or textarea is the primary control: `control` returns it, `focus()`
-moves to it, and `data-populated` follows its value. The field stays focused while focus moves
-between its controls. `data-disabled` follows the fieldset's `disabled`, `data-required` any
-required control, and `data-invalid` any control that fails validation, which also gets
-`aria-invalid`. Use `controls` for every grouped control and `group` for the fieldset.
+moves to it, and `:state(populated)` follows its value. The field stays focused while focus
+moves between its controls. `:state(disabled)` follows the fieldset's `disabled`, and
+`:state(invalid)` any control that fails validation, which also gets `aria-invalid`. Use
+`controls` for every grouped control and `group` for the fieldset.
 
 The primary control grows to fill the row. Selects and enhanced controls such as `rc-select` keep
 their own width and attach before or after it in source order.
@@ -82,7 +82,7 @@ the field control provider. The native control must remain its direct child:
 ```html
 <rc-field>
   <label slot="label" for="notes">Notes</label>
-  <rc-textarea data-rc-field-control>
+  <rc-textarea>
     <textarea id="notes" name="notes"></textarea>
   </rc-textarea>
 </rc-field>
@@ -105,7 +105,7 @@ or wrapped by an enhancing control provider the same way as `rc-textarea`:
 ```html
 <rc-field>
   <label slot="label" for="categories">Categories</label>
-  <rc-combobox data-rc-field-control multiple allow-create>
+  <rc-combobox multiple allow-create>
     <select id="categories" name="categories" multiple>
       <option value="braiser">Braiser</option>
       <option value="chicken">Chicken</option>

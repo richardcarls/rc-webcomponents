@@ -110,13 +110,13 @@ test('supports an enhancing control provider without replacing the native contro
 
   expect($field.control).toBe($textarea);
   expect(new FormData($textarea.form!).get('notes')).toBe('Remember the salt.');
-  expect($field.hasAttribute('data-multiline')).toBe(true);
-  expect($field.hasAttribute('data-control-provider')).toBe(true);
+  expect($field.matches(':state(multiline)')).toBe(true);
+  expect($field.matches(':has(> [data-rc-field-control])')).toBe(true);
 
   $field.focus();
 
   expect(document.activeElement).toBe($provider);
-  expect($field.hasAttribute('data-focused')).toBe(true);
+  expect($field.matches(':state(focused)')).toBe(true);
 });
 
 test("prefers a control provider's own disabled over the raw control it wraps", async () => {
@@ -134,19 +134,19 @@ test("prefers a control provider's own disabled over the raw control it wraps", 
 
   // A provider disabling its own native control for an internal reason unrelated to
   // the field's real enabled/disabled intent (rc-select's picker guard is exactly this)
-  // must not leak into rc-field's own data-disabled state when the provider itself
+  // must not leak into rc-field's own disabled state when the provider itself
   // reports it is not disabled.
   $provider.disabled = false;
   $field.sync();
   await $field.updateComplete;
 
-  expect($field.hasAttribute('data-disabled')).toBe(false);
+  expect($field.matches(':state(disabled)')).toBe(false);
 
   $provider.disabled = true;
   $field.sync();
   await $field.updateComplete;
 
-  expect($field.hasAttribute('data-disabled')).toBe(true);
+  expect($field.matches(':state(disabled)')).toBe(true);
 });
 
 test('wires a sibling slotted native label without replacing author ids', async () => {
@@ -200,7 +200,7 @@ test('supports an ancestor native label', async () => {
   await tick();
 
   expect($label.control).toBe($field.control);
-  expect($field.hasAttribute('data-multiline')).toBe(true);
+  expect($field.matches(':state(multiline)')).toBe(true);
 });
 
 test('merges and restores hint and error descriptions', async () => {
@@ -221,7 +221,7 @@ test('merges and restores hint and error descriptions', async () => {
   expect($input.checkValidity()).toBe(false);
   await $field.updateComplete;
 
-  expect($field.hasAttribute('data-invalid')).toBe(true);
+  expect($field.matches(':state(invalid)')).toBe(true);
   expect($input.getAttribute('aria-describedby')?.split(/\s+/)).toEqual(['author-note', $error.id]);
 
   $error.remove();
@@ -241,21 +241,19 @@ test('keeps required fields visually quiet until validation is attempted', async
   const $input = $field.querySelector<HTMLInputElement>('input')!;
 
   expect($input.validity.valid).toBe(false);
-  expect($field.hasAttribute('data-invalid')).toBe(false);
-  expect($field.hasAttribute('data-validation-attempted')).toBe(false);
+  expect($field.matches(':state(invalid)')).toBe(false);
 
   $input.dispatchEvent(new Event('invalid'));
   await $field.updateComplete;
 
-  expect($field.hasAttribute('data-invalid')).toBe(true);
-  expect($field.hasAttribute('data-validation-attempted')).toBe(true);
+  expect($field.matches(':state(invalid)')).toBe(true);
   expect($input.getAttribute('aria-invalid')).toBe('true');
 
   $input.value = 'Soup';
   $input.dispatchEvent(new Event('input', { bubbles: true }));
   await $field.updateComplete;
 
-  expect($field.hasAttribute('data-invalid')).toBe(false);
+  expect($field.matches(':state(invalid)')).toBe(false);
   expect($input.hasAttribute('aria-invalid')).toBe(false);
 });
 
@@ -266,14 +264,13 @@ test('reflects native state and supports explicit invalid state', async () => {
     </rc-field>
   `);
 
-  expect($field.hasAttribute('data-disabled')).toBe(true);
-  expect($field.hasAttribute('data-readonly')).toBe(true);
-  expect($field.hasAttribute('data-required')).toBe(true);
+  expect($field.matches(':state(disabled)')).toBe(true);
+  expect($field.matches(':state(readonly)')).toBe(true);
 
   $field.invalid = true;
   await $field.updateComplete;
 
-  expect($field.hasAttribute('data-invalid')).toBe(true);
+  expect($field.matches(':state(invalid)')).toBe(true);
   expect($field.control?.getAttribute('aria-invalid')).toBe('true');
 
   $field.invalid = false;
@@ -298,7 +295,7 @@ test('updates populated and counter state from native input and sync()', async (
   $input.dispatchEvent(new Event('input', { bubbles: true }));
   await $field.updateComplete;
 
-  expect($field.hasAttribute('data-populated')).toBe(true);
+  expect($field.matches(':state(populated)')).toBe(true);
   expect($counter.textContent).toBe('5 / 10');
 
   $input.value = 'Broth';
@@ -340,14 +337,14 @@ test('single select populated state follows visible option text rather than its 
 
   expect($field.control).toBe($select);
   expect($select.value).toBe('');
-  expect($field.hasAttribute('data-populated')).toBe(true);
-  expect($field.hasAttribute('data-multiline')).toBe(false);
+  expect($field.matches(':state(populated)')).toBe(true);
+  expect($field.matches(':state(multiline)')).toBe(false);
 
   $select.value = 'oz';
   $select.dispatchEvent(new Event('change', { bubbles: true }));
   await $field.updateComplete;
 
-  expect($field.hasAttribute('data-populated')).toBe(true);
+  expect($field.matches(':state(populated)')).toBe(true);
 });
 
 test('single select with a blank sentinel option remains unpopulated', async () => {
@@ -362,7 +359,7 @@ test('single select with a blank sentinel option remains unpopulated', async () 
   `);
 
   expect($field.querySelector('select')?.value).toBe('');
-  expect($field.hasAttribute('data-populated')).toBe(false);
+  expect($field.matches(':state(populated)')).toBe(false);
 });
 
 test('reflects populated state for a multiple select from selectedOptions, not value', async () => {
@@ -378,7 +375,7 @@ test('reflects populated state for a multiple select from selectedOptions, not v
   `);
   const $select = $field.querySelector<HTMLSelectElement>('select')!;
 
-  expect($field.hasAttribute('data-populated')).toBe(false);
+  expect($field.matches(':state(populated)')).toBe(false);
 
   // A multiple select's own .value is the first *selected* option's value in
   // tree order, not "the first option overall" — so selecting a blank
@@ -391,7 +388,7 @@ test('reflects populated state for a multiple select from selectedOptions, not v
   await $field.updateComplete;
 
   expect($select.value).toBe('');
-  expect($field.hasAttribute('data-populated')).toBe(true);
+  expect($field.matches(':state(populated)')).toBe(true);
 });
 
 test('supports a select-owning control provider', async () => {
@@ -412,14 +409,14 @@ test('supports a select-owning control provider', async () => {
   const $select = $provider.querySelector('select')!;
 
   expect($field.control).toBe($select);
-  expect($field.hasAttribute('data-control-provider')).toBe(true);
-  expect($field.hasAttribute('data-multiline')).toBe(false);
+  expect($field.matches(':has(> [data-rc-field-control])')).toBe(true);
+  expect($field.matches(':state(multiline)')).toBe(false);
   expect(new FormData($select.form!).get('unit')).toBe('');
 
   $field.focus();
 
   expect(document.activeElement).toBe($provider);
-  expect($field.hasAttribute('data-focused')).toBe(true);
+  expect($field.matches(':state(focused)')).toBe(true);
 });
 
 test('delegates focus and does not steal trailing action clicks', async () => {
@@ -461,8 +458,8 @@ test('tracks a replaced direct native control', async () => {
 
   expect($field.control).toBe($textarea);
   expect($previous.isConnected).toBe(false);
-  expect($field.hasAttribute('data-multiline')).toBe(true);
-  expect($field.hasAttribute('data-populated')).toBe(true);
+  expect($field.matches(':state(multiline)')).toBe(true);
+  expect($field.matches(':state(populated)')).toBe(true);
 });
 
 test('resynchronizes after native form reset', async () => {
@@ -482,7 +479,6 @@ test('resynchronizes after native form reset', async () => {
   $input.dispatchEvent(new Event('invalid'));
   await $field.updateComplete;
 
-  expect($field.hasAttribute('data-validation-attempted')).toBe(true);
 
   $input.setCustomValidity('');
   $input.form!.reset();
@@ -490,7 +486,6 @@ test('resynchronizes after native form reset', async () => {
 
   expect($input.value).toBe('Initial');
   expect($field.shadowRoot?.querySelector('[part="counter"]')?.textContent).toBe('7');
-  expect($field.hasAttribute('data-validation-attempted')).toBe(false);
 });
 
 test('preserves author-provided aria-invalid state', async () => {
@@ -551,7 +546,7 @@ test('groups fieldset controls into one field named by its legend', async () => 
   const $amount = $field.querySelector<HTMLInputElement>('input')!;
   const $unit = $field.querySelector<HTMLSelectElement>('select')!;
 
-  expect($field).toHaveAttribute('data-group');
+  expect($field.matches(':has(> fieldset)')).toBe(true);
   expect($field.group).toBe($group);
   expect($field.control).toBe($amount);
   expect($field.controls).toEqual([$amount, $unit]);
@@ -586,38 +581,41 @@ test('a group stays focused while focus moves between its controls', async () =>
   const $field = await groupFixture();
   const $amount = $field.querySelector('input')!;
   const $unit = $field.querySelector('select')!;
-  const changes: boolean[] = [];
-  const observer = new MutationObserver(() => changes.push($field.hasAttribute('data-focused')));
+  const samples: boolean[] = [];
+  // Custom states fire no mutation records, so sample after each focus event.
+  const sample = (): void => queueMicrotask(() => samples.push($field.matches(':state(focused)')));
 
   $amount.focus();
-  await vi.waitFor(() => expect($field).toHaveAttribute('data-focused'));
-  observer.observe($field, { attributes: true, attributeFilter: ['data-focused'] });
+  await vi.waitFor(() => expect($field.matches(':state(focused)')).toBe(true));
+  $field.addEventListener('focusout', sample);
+  $field.addEventListener('focusin', sample);
 
   $unit.focus();
   await tick();
-  expect($field).toHaveAttribute('data-focused');
-  expect(changes).toEqual([]);
+  expect($field.matches(':state(focused)')).toBe(true);
+  expect(samples).toEqual([true, true]);
 
+  $field.removeEventListener('focusout', sample);
+  $field.removeEventListener('focusin', sample);
   $unit.blur();
-  await vi.waitFor(() => expect($field).not.toHaveAttribute('data-focused'));
-  observer.disconnect();
+  await vi.waitFor(() => expect($field.matches(':state(focused)')).toBe(false));
 });
 
 test('populated state follows the primary control, not the always-filled addon', async () => {
   const $field = await groupFixture();
   const $amount = $field.querySelector('input')!;
 
-  expect($field).not.toHaveAttribute('data-populated');
+  expect($field.matches(':state(populated)')).toBe(false);
 
   $amount.value = '2';
   $amount.dispatchEvent(new Event('input', { bubbles: true }));
-  await vi.waitFor(() => expect($field).toHaveAttribute('data-populated'));
+  await vi.waitFor(() => expect($field.matches(':state(populated)')).toBe(true));
 });
 
 test('a disabled fieldset disables the field', async () => {
   const $field = await groupFixture('disabled');
 
-  expect($field).toHaveAttribute('data-disabled');
+  expect($field.matches(':state(disabled)')).toBe(true);
 });
 
 test('validation marks the failing grouped control and describes the group with the error', async () => {
@@ -626,11 +624,10 @@ test('validation marks the failing grouped control and describes the group with 
   const $amount = $field.querySelector('input')!;
   const $unit = $field.querySelector('select')!;
 
-  expect($field).toHaveAttribute('data-required');
-  expect($field).not.toHaveAttribute('data-invalid');
+  expect($field.matches(':state(invalid)')).toBe(false);
 
   $field.closest('form')!.checkValidity();
-  await vi.waitFor(() => expect($field).toHaveAttribute('data-invalid'));
+  await vi.waitFor(() => expect($field.matches(':state(invalid)')).toBe(true));
 
   expect($amount).toHaveAttribute('aria-invalid', 'true');
   expect($unit).not.toHaveAttribute('aria-invalid');
@@ -638,7 +635,7 @@ test('validation marks the failing grouped control and describes the group with 
 
   $amount.value = '3';
   $amount.dispatchEvent(new Event('input', { bubbles: true }));
-  await vi.waitFor(() => expect($field).not.toHaveAttribute('data-invalid'));
+  await vi.waitFor(() => expect($field.matches(':state(invalid)')).toBe(false));
 
   expect($amount).not.toHaveAttribute('aria-invalid');
   expect($group).toHaveAccessibleDescription('Optional');
