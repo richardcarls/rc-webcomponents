@@ -64,6 +64,8 @@ declare module '@rcarls/rc-common' {
  * Natural wrapping is kept while content fits within `max-rows`; overflowing
  * auto groups collapse to one horizontally scrolling row with a leading
  * Show all action.
+ * A vertical mouse wheel over the scrolling row scrolls it along its inline
+ * axis until it reaches either end.
  *
  * Assist groups expose toolbar semantics and roving arrow-key navigation.
  * Filter groups preserve native radio/checkbox behavior: author a `<fieldset>`
