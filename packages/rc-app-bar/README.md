@@ -163,8 +163,7 @@ In controlled collapse mode, `true` snaps to compact and `false` restores the
 expanded row. Controlled hide mode remains visible because a boolean value
 cannot express scroll direction.
 
-State output is available as `data-scrolled`, `data-collapsed`, and
-`data-hidden`, with equivalent `:state(scrolled)`, `:state(collapsed)`, and
+State output is available as the `:state(scrolled)`, `:state(collapsed)`, and
 `:state(hidden)` custom states.
 
 ## View Transitions

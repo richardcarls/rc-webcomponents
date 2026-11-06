@@ -731,7 +731,7 @@ for safe areas, so do not add the same inset a second time.
 | Segmented list or accordion group            | extra-large outer ends, extra-small inner corners, 2px gaps |
 
 Do not round a single element inside a group; the theme assigns group
-corners from position (`data-rc-list-position` on list items,
+corners from position (`:state(first)`, `:state(last)`, and `:state(only)` on list items,
 `:first-child`/`:last-child` in accordions).
 
 ## Motion

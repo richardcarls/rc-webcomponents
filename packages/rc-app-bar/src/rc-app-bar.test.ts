@@ -75,14 +75,14 @@ test('expanded variant keeps the same title node through controlled collapse', a
 
   await host.updateComplete;
 
-  expect(host.hasAttribute('data-collapsed')).toBe(false);
+  expect(host.matches(':state(collapsed)')).toBe(false);
   expect(getComputedStyle(shadowEl(host, '#title')).gridRowStart).toBe('2');
 
   host.scrolled = true;
   await host.updateComplete;
 
   expect(title.isConnected).toBe(true);
-  expect(host.hasAttribute('data-collapsed')).toBe(true);
+  expect(host.matches(':state(collapsed)')).toBe(true);
   expect(getComputedStyle(shadowEl(host, '#title')).gridRowStart).toBe('1');
 
   if (supportsCustomStates) {
@@ -93,7 +93,7 @@ test('expanded variant keeps the same title node through controlled collapse', a
   await host.updateComplete;
 
   expect(title.isConnected).toBe(true);
-  expect(host.hasAttribute('data-collapsed')).toBe(false);
+  expect(host.matches(':state(collapsed)')).toBe(false);
 });
 
 test('expanded title row uses the title content natural height', async () => {
@@ -360,12 +360,12 @@ test('continuous collapse maps expanded-row scroll distance to progress', async 
     Number.parseFloat(host.style.getPropertyValue('--rc-app-bar-collapse-progress')),
   ).toBeCloseTo(0.5, 1);
 
-  expect(host.hasAttribute('data-collapsed')).toBe(false);
+  expect(host.matches(':state(collapsed)')).toBe(false);
 
   // Firefox quantizes scrollTop to fractional device pixels, so cross the
   // measured endpoint instead of relying on exact equality.
   scrollTo(sc, distance + 2);
-  expect(host.hasAttribute('data-collapsed')).toBe(true);
+  expect(host.matches(':state(collapsed)')).toBe(true);
 });
 
 test('continuous collapse converts a zoomed scroll target into host CSS pixels', async () => {
@@ -409,7 +409,7 @@ test('continuous collapse converts a zoomed scroll target into host CSS pixels',
   ).toBeCloseTo(0.5, 1);
 
   scrollTo(sc, (distanceHostCssPx * 0.64) / 0.8 + 2);
-  expect(host.hasAttribute('data-collapsed')).toBe(true);
+  expect(host.matches(':state(collapsed)')).toBe(true);
 });
 
 test('hide behavior hides downward and reveals upward or near the top', async () => {
@@ -430,20 +430,20 @@ test('hide behavior hides downward and reveals upward or near the top', async ()
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
   scrollTo(sc, 50);
-  expect(host.hasAttribute('data-hidden')).toBe(true);
+  expect(host.matches(':state(hidden)')).toBe(true);
 
   if (supportsCustomStates) {
     expect(host.matches(':state(hidden)')).toBe(true);
   }
 
   scrollTo(sc, 10);
-  expect(host.hasAttribute('data-hidden')).toBe(false);
+  expect(host.matches(':state(hidden)')).toBe(false);
 
   scrollTo(sc, 60);
-  expect(host.hasAttribute('data-hidden')).toBe(true);
+  expect(host.matches(':state(hidden)')).toBe(true);
 
   scrollTo(sc, 0);
-  expect(host.hasAttribute('data-hidden')).toBe(false);
+  expect(host.matches(':state(hidden)')).toBe(false);
 });
 
 test('hide behavior waits for the hide distance in one direction before toggling', async () => {
@@ -465,25 +465,25 @@ test('hide behavior waits for the hide distance in one direction before toggling
 
   // Short downward steps add up until they cover the distance.
   scrollTo(sc, 20);
-  expect(host.hasAttribute('data-hidden')).toBe(false);
+  expect(host.matches(':state(hidden)')).toBe(false);
   scrollTo(sc, 40);
-  expect(host.hasAttribute('data-hidden')).toBe(true);
+  expect(host.matches(':state(hidden)')).toBe(true);
 
   // Small reversals, as when a fling settles, leave it hidden.
   scrollTo(sc, 300);
   scrollTo(sc, 299);
   scrollTo(sc, 301);
   scrollTo(sc, 280);
-  expect(host.hasAttribute('data-hidden')).toBe(true);
+  expect(host.matches(':state(hidden)')).toBe(true);
 
   scrollTo(sc, 268);
-  expect(host.hasAttribute('data-hidden')).toBe(false);
+  expect(host.matches(':state(hidden)')).toBe(false);
 
   // Each change of direction starts the count again.
   scrollTo(sc, 290);
   scrollTo(sc, 280);
   scrollTo(sc, 300);
-  expect(host.hasAttribute('data-hidden')).toBe(false);
+  expect(host.matches(':state(hidden)')).toBe(false);
 });
 
 test('hide behavior publishes its geometry onto the scroll target', async () => {
@@ -542,22 +542,22 @@ test('a hidden bar remains visible while focused and counts a fresh hide distanc
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
   scrollTo(sc, 50);
-  expect(host.hasAttribute('data-hidden')).toBe(true);
+  expect(host.matches(':state(hidden)')).toBe(true);
 
   ((await screen.getByTestId('back').element()) as HTMLButtonElement).focus();
 
-  expect(host.hasAttribute('data-hidden')).toBe(false);
+  expect(host.matches(':state(hidden)')).toBe(false);
 
   scrollTo(sc, 120);
-  expect(host.hasAttribute('data-hidden')).toBe(false);
+  expect(host.matches(':state(hidden)')).toBe(false);
 
   ((await screen.getByTestId('outside').element()) as HTMLButtonElement).focus();
 
   scrollTo(sc, 140);
-  expect(host.hasAttribute('data-hidden')).toBe(false);
+  expect(host.matches(':state(hidden)')).toBe(false);
 
   scrollTo(sc, 160);
-  expect(host.hasAttribute('data-hidden')).toBe(true);
+  expect(host.matches(':state(hidden)')).toBe(true);
 });
 
 test('geometry outputs follow the hide behavior, the target, and the connection', async () => {
@@ -627,15 +627,15 @@ test('controlled mode applies endpoints silently and ignores the observer', asyn
   await host.updateComplete;
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
-  expect(host.hasAttribute('data-scrolled')).toBe(true);
-  expect(host.hasAttribute('data-collapsed')).toBe(true);
+  expect(host.matches(':state(scrolled)')).toBe(true);
+  expect(host.matches(':state(collapsed)')).toBe(true);
 
   scrollTo(sc, 50);
   expect(onScroll).not.toHaveBeenCalled();
 
   host.scrolled = false;
   await host.updateComplete;
-  expect(host.hasAttribute('data-collapsed')).toBe(false);
+  expect(host.matches(':state(collapsed)')).toBe(false);
 });
 
 test('uncontrolled threshold state and event behavior is preserved', async () => {
@@ -656,11 +656,11 @@ test('uncontrolled threshold state and event behavior is preserved', async () =>
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
   scrollTo(sc, 50);
-  expect(host.hasAttribute('data-scrolled')).toBe(false);
+  expect(host.matches(':state(scrolled)')).toBe(false);
 
   scrollTo(sc, 150);
   await host.updateComplete;
-  expect(host.hasAttribute('data-scrolled')).toBe(true);
+  expect(host.matches(':state(scrolled)')).toBe(true);
   expect(onScroll).toHaveBeenCalledWith(expect.objectContaining({ detail: { scrolled: true } }));
 });
 
@@ -680,14 +680,14 @@ test('releasing controlled mode hands state back to the observer', async () => {
   await host.updateComplete;
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
   scrollTo(sc, 50);
-  expect(host.hasAttribute('data-scrolled')).toBe(false);
+  expect(host.matches(':state(scrolled)')).toBe(false);
 
   host.scrolled = undefined;
   await host.updateComplete;
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
   await host.updateComplete;
 
-  expect(host.hasAttribute('data-scrolled')).toBe(true);
+  expect(host.matches(':state(scrolled)')).toBe(true);
 });
 
 test('missing selector and disconnect degrade silently', async () => {

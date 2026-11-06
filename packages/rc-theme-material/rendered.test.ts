@@ -1134,7 +1134,7 @@ test('reorderable list handles and lifted items follow the Material dragged stat
   expect(handleStyles.minInlineSize).toBe('48px');
   expect(getComputedStyle($row).boxShadow).toBe('none');
 
-  $item.toggleAttribute('data-dragging', true);
+  $item._setDragging(true);
 
   const probe = document.createElement('div');
 

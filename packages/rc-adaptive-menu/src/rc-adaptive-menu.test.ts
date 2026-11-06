@@ -85,7 +85,7 @@ test('keeps authored overflow actions in the popup even when other actions fit',
 
   expect(primary).toHaveAttribute('data-rc-action-promoted');
   expect(utility).toHaveAttribute('data-rc-action-overflowed');
-  expect(host).toHaveAttribute('data-overflow');
+  expect(host.matches(':state(overflow)')).toBe(true);
 });
 
 test('always overflows a negative data-priority action, even as the only action', async () => {
@@ -102,7 +102,7 @@ test('always overflows a negative data-priority action, even as the only action'
   expect(only).toHaveAttribute('data-rc-action-overflowed');
   expect(host.$promotedActions).toEqual([]);
   expect(host.$overflowedActions).toEqual([only]);
-  expect(host).toHaveAttribute('data-overflow');
+  expect(host.matches(':state(overflow)')).toBe(true);
 });
 
 test('a negative data-priority still overflows once space allows every action to fit', async () => {
@@ -147,7 +147,7 @@ test('re-evaluates promotion when max-shown changes, with no size measurement in
   await settle(host);
 
   expect(host.querySelectorAll('[data-rc-action-promoted]')).toHaveLength(3);
-  expect(host).not.toHaveAttribute('data-overflow');
+  expect(host.matches(':state(overflow)')).toBe(false);
 });
 
 test('--rc-adaptive-menu-touch-target-overlap-inline-end shifts the host flush with a flex-end container edge', async () => {
@@ -172,7 +172,7 @@ test('--rc-adaptive-menu-touch-target-overlap-inline-end shifts the host flush w
 
   await settle(host);
 
-  expect(host).toHaveAttribute('data-overflow');
+  expect(host.matches(':state(overflow)')).toBe(true);
 
   // The margin lives on the host itself, not on the internal
   // #overflow-trigger-target wrapper: #root has its own JS-managed fixed
@@ -244,7 +244,7 @@ test('touch-target overlap still overhangs a shrink-to-fit trailing container, n
 
   await settle(host);
 
-  expect(host).toHaveAttribute('data-overflow');
+  expect(host.matches(':state(overflow)')).toBe(true);
 
   const trailingRect = trailing.getBoundingClientRect();
   const hostRect = host.getBoundingClientRect();

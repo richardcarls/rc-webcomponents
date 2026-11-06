@@ -127,7 +127,7 @@ export const adaptiveMenuStyles = css`
     );
   }
 
-  :host(:not([data-overflow])) #overflow-trigger-target {
+  :host(:not(:state(overflow))) #overflow-trigger-target {
     position: fixed;
     visibility: hidden;
     pointer-events: none;

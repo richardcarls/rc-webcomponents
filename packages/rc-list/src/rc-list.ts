@@ -7,8 +7,9 @@ import {
   type ReorderMessages,
   includeDefaults,
   MorphRecoveryController,
+  setCustomState,
 } from '@rcarls/rc-common';
-import type { RCListItem } from './rc-list-item.js';
+import type { RCListItem, RCListItemPosition } from './rc-list-item.js';
 import { ensureListBaseStyles } from './listBaseStyles.js';
 
 import listStyles from './rc-list.styles.js';
@@ -60,7 +61,7 @@ function setAttributeIfChanged($element: Element, name: string, value: string): 
   }
 }
 
-function rowPosition(item: Element, index: number, count: number): RCListPosition {
+function rowPosition(item: Element, index: number, count: number): RCListItemPosition {
   const position = Number(item.getAttribute('aria-posinset'));
   const size = Number(item.getAttribute('aria-setsize'));
   const [at, of] = position > 0 && size > 0 ? [position - 1, size] : [index, count];
@@ -72,7 +73,6 @@ function rowPosition(item: Element, index: number, count: number): RCListPositio
   return at === 0 ? 'first' : at === of - 1 ? 'last' : 'middle';
 }
 
-type RCListPosition = 'only' | 'first' | 'middle' | 'last';
 
 /**
  * Shared-column list layout with optional native-backed selection.
@@ -93,7 +93,7 @@ type RCListPosition = 'only' | 'first' | 'middle' | 'last';
  *   No counters are rendered; item content carries any visible numbering.
  * @attr reorderable - Lets people reorder items with a handle, by pointer or keyboard.
  *   Implies `ordered`. Each item provides a native `<button data-rc-reorder-handle>`.
- * @attr [data-reordering] - Reflected while an item is lifted.
+ * @cssstate reordering - While an item is lifted.
  *
  * @fires rc-list-reorder - Fires, cancelable, when a reorder moves an item;
  *   `detail: { item, from, to }`. Unless the event is canceled the list moves the item's
@@ -130,7 +130,7 @@ type RCListPosition = 'only' | 'first' | 'middle' | 'last';
  * `dialog` or popover, else the document body; override the text with `reorderMessages`. Focus stays on the moved item's handle, and is restored to
  * the item at the new position when a framework replaces the item's nodes.
  *
- * The lifted item carries `data-dragging`, and the list carries `data-reordering`. The
+ * The lifted item matches `:state(dragging)`, and the list `:state(reordering)`. The
  * list writes inline `translate` offsets to items while a pointer drag previews a move.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-list rc-list documentation}
@@ -140,7 +140,7 @@ export class RCList extends LitElement {
   /** Writes the element's attributes again after a DOM morph removes them. */
   protected readonly _morphRecovery = new MorphRecoveryController(this, {
     role: 'list',
-    attributes: ['has-leading', 'has-trailing', 'data-rc-list-position'],
+    attributes: ['has-leading', 'has-trailing'],
   });
 
   static override styles = listStyles;
@@ -201,8 +201,8 @@ export class RCList extends LitElement {
       messages: () => this.reorderMessages,
       onMove: (item, from, to) => this._moveItem(item as RCListItem, from, to),
       onActiveChange: (item) => {
-        this.toggleAttribute('data-reordering', item !== null);
-        this._items().forEach(($item) => $item.toggleAttribute('data-dragging', $item === item));
+        setCustomState(this._internals, 'reordering', item !== null);
+        this._items().forEach(($item) => $item._setDragging?.($item === item));
       },
     });
   }
@@ -345,7 +345,7 @@ export class RCList extends LitElement {
     this._syncHandleDescriptions(items);
 
     for (const [index, item] of items.entries()) {
-      item.dataset.rcListPosition = rowPosition(item, index, items.length);
+      item._setListPosition?.(rowPosition(item, index, items.length));
 
       if (expectedType) {
         const input = this._inputFor(item);
@@ -497,7 +497,7 @@ export class RCList extends LitElement {
     $item.selected = state.selected;
     $item.disabled = state.disabled;
     $item.interactive = state.interactive;
-    delete $item.dataset.rcListPosition;
+    $item._setListPosition?.(null);
   }
 
   private _restoreAllItems(): void {

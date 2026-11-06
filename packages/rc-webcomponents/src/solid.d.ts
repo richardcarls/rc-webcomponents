@@ -486,7 +486,6 @@ declare module 'solid-js' {
       'rc-list': RCElementProps<
         RCList,
         {
-          'data-reordering'?: string;
           'has-leading'?: string;
           'has-trailing'?: string;
           ordered?: RCAttribute<RCList['ordered']>;
@@ -507,8 +506,6 @@ declare module 'solid-js' {
         RCListItem,
         {
           'action-target'?: RCAttribute<RCListItem['actionTarget']>;
-          'data-dragging'?: string;
-          'data-rc-list-position'?: string;
           'default-expanded'?: RCAttribute<RCListItem['defaultExpanded']>;
           disabled?: RCAttribute<RCListItem['disabled']>;
           expanded?: RCAttribute<RCListItem['expanded']>;

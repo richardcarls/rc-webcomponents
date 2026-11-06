@@ -13,6 +13,7 @@ import {
   renderedOrientation,
   defineLightDomBaseStyles,
   includeDefaults,
+  setCustomState,
 } from '@rcarls/rc-common';
 
 import adaptiveMenuStyles from './rc-adaptive-menu.styles.js';
@@ -234,6 +235,8 @@ declare module '@rcarls/rc-common' {
  *   `aria-orientation` and the arrow keys follow the orientation actually rendered, which turns
  *   over in vertical writing modes.
  *
+ * @cssstate overflow - While at least one action is in the overflow menu.
+ *
  * @csspart root - Toolbar container.
  * @csspart overflow-trigger - Button that opens the overflow menu.
  * @csspart popup - Overflow menu popover.
@@ -281,6 +284,11 @@ declare module '@rcarls/rc-common' {
  */
 export class RCAdaptiveMenu extends LitElement {
   static override styles = adaptiveMenuStyles;
+
+  private readonly _internals = this.attachInternals();
+
+  /** Whether at least one action is in the overflow menu; mirrored as `:state(overflow)`. */
+  private _hasOverflow = false;
 
   /** Built-in text overrides; unset keys fall back to registered text, then English. */
   @property({ attribute: false })
@@ -373,7 +381,7 @@ export class RCAdaptiveMenu extends LitElement {
     placement: 'block-end-end',
     offset: 4,
     shadowHost: () => this,
-    disabled: () => !this.open || !this.hasAttribute('data-overflow'),
+    disabled: () => !this.open || !this._hasOverflow,
   });
 
   private readonly _popover = new PopoverController(this, { element: () => this._$popup });
@@ -471,7 +479,7 @@ export class RCAdaptiveMenu extends LitElement {
 
   /** Opens the overflow popup silently and optionally focuses an edge action. */
   openMenu(focus: 'first' | 'last' | 'none' = 'first'): void {
-    if (!this.hasAttribute('data-overflow')) {
+    if (!this._hasOverflow) {
       return;
     }
 
@@ -485,7 +493,7 @@ export class RCAdaptiveMenu extends LitElement {
 
   /** Toggles the overflow popup silently. */
   toggleMenu(focus: 'first' | 'last' | 'none' = 'first'): void {
-    if (!this.open && !this.hasAttribute('data-overflow')) {
+    if (!this.open && !this._hasOverflow) {
       return;
     }
 
@@ -701,7 +709,8 @@ export class RCAdaptiveMenu extends LitElement {
       ([, state]) => state.focusTarget === this.ownerDocument.activeElement,
     )?.[0];
 
-    this.toggleAttribute('data-overflow', overflowed.length > 0);
+    this._hasOverflow = overflowed.length > 0;
+    setCustomState(this._internals, 'overflow', this._hasOverflow);
 
     if (focusedAction && overflowed.includes(focusedAction)) {
       this._$trigger.focus();
@@ -755,7 +764,7 @@ export class RCAdaptiveMenu extends LitElement {
       .map(([, state]) => state.focusTarget)
       .filter(($target) => isFocusable($target));
 
-    if (this.hasAttribute('data-overflow')) {
+    if (this._hasOverflow) {
       targets.push(this._$trigger);
     }
 
@@ -942,7 +951,7 @@ export class RCAdaptiveMenu extends LitElement {
       return;
     }
 
-    if (this.open && this.hasAttribute('data-overflow')) {
+    if (this.open && this._hasOverflow) {
       this._popover.sync(true);
       this._$trigger.setAttribute('aria-expanded', 'true');
       this._anchor.update();

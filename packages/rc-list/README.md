@@ -97,7 +97,7 @@ list.addEventListener('rc-list-reorder', (event) => {
 });
 ```
 
-While an item is lifted it carries `data-dragging` and the list carries `data-reordering`. Themes
+While an item is lifted it matches `:state(dragging)` and the list `:state(reordering)`. Themes
 style the lifted item with the `--rc-list-item-dragged-*` properties and animate the shifting
 items with `--rc-list-item-reorder-duration`. Reduced motion turns that shift off.
 

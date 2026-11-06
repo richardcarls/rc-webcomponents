@@ -14,23 +14,23 @@ export const LIST_BASE_CSS = cssText`
     cursor: grab;
   }
 
-  rc-list[data-reordering] {
+  rc-list:state(reordering) {
     user-select: none;
     -webkit-user-select: none;
   }
 
-  rc-list[data-reordering] [data-rc-reorder-handle] {
+  rc-list:state(reordering) [data-rc-reorder-handle] {
     cursor: grabbing;
   }
 
   /* Items shifting out of the lifted item's way. The lifted item follows the pointer. */
-  rc-list[data-reordering] > rc-list-item:not([data-dragging]) {
+  rc-list:state(reordering) > rc-list-item:not(:state(dragging)) {
     transition: translate var(--rc-list-item-reorder-duration, 0ms)
       var(--rc-list-item-reorder-easing, ease);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    rc-list[data-reordering] > rc-list-item {
+    rc-list:state(reordering) > rc-list-item {
       transition-duration: 0ms;
     }
   }

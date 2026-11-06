@@ -6,13 +6,21 @@ afterEach(() => {
   document.body.replaceChildren();
 });
 
-/** Stands in for `rc-field` so a test can set the custom states the theme selects. */
-class StateHostField extends HTMLElement {
+/** Stands in for an RC element so a test can set the custom states the theme selects. */
+class StateHost extends HTMLElement {
   readonly internals = this.attachInternals();
 }
 
+class StateHostField extends StateHost {}
+
+class StateHostListItem extends StateHost {}
+
 if (!customElements.get('rc-field')) {
   customElements.define('rc-field', StateHostField);
+}
+
+if (!customElements.get('rc-list-item')) {
+  customElements.define('rc-list-item', StateHostListItem);
 }
 
 function renderScope(): HTMLElement {
@@ -173,8 +181,8 @@ test('Material terminal list rows do not draw a trailing divider', () => {
   const $first = document.createElement('rc-list-item');
   const $last = document.createElement('rc-list-item');
 
-  $first.dataset.rcListPosition = 'first';
-  $last.dataset.rcListPosition = 'last';
+  ($first as StateHost).internals.states.add('first');
+  ($last as StateHost).internals.states.add('last');
   $list.append($first, $last);
   $scope.append($list);
 
@@ -712,7 +720,7 @@ test('segmented Material lists receive expressive grouped-row tokens', () => {
   const item = document.createElement('rc-list-item');
 
   list.setAttribute('variant', 'segmented');
-  item.dataset.rcListPosition = 'only';
+  (item as StateHost).internals.states.add('only');
   list.append(item);
   scope.append(list);
 

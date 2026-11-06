@@ -9,6 +9,10 @@ import './define.js';
 import type { RCListItem } from './rc-list-item.js';
 import type { RCList } from './rc-list.js';
 
+/** The row position state the parent list set on an item. */
+const positionOf = (row: Element): string | undefined =>
+  ['only', 'first', 'middle', 'last'].find((name) => row.matches(`:state(${name})`));
+
 async function settle(list: RCList): Promise<void> {
   await list.updateComplete;
 
@@ -153,15 +157,15 @@ test('assigns segmented row positions as visible children change', async () => {
 
   await settle(list);
 
-  expect(first.dataset.rcListPosition).toBe('first');
-  expect(second.dataset.rcListPosition).toBe('middle');
-  expect(third.dataset.rcListPosition).toBe('last');
+  expect(positionOf(first)).toBe('first');
+  expect(positionOf(second)).toBe('middle');
+  expect(positionOf(third)).toBe('last');
 
   second.hidden = true;
   await settle(list);
 
-  expect(first.dataset.rcListPosition).toBe('first');
-  expect(third.dataset.rcListPosition).toBe('last');
+  expect(positionOf(first)).toBe('first');
+  expect(positionOf(third)).toBe('last');
 });
 
 test('mirrors native radio state and activates it from the row surface', async () => {
@@ -483,14 +487,14 @@ test('takes row positions from aria-posinset and aria-setsize when a slice is re
 
   await settle(list);
 
-  expect(rows.map((row) => row.dataset.rcListPosition)).toEqual(['middle', 'middle', 'middle']);
+  expect(rows.map((row) => positionOf(row))).toEqual(['middle', 'middle', 'middle']);
 
   // The true ends of the set still get their end styling.
   rows[0]!.setAttribute('aria-posinset', '1');
   rows[2]!.setAttribute('aria-posinset', '300');
   await settle(list);
 
-  expect(rows.map((row) => row.dataset.rcListPosition)).toEqual(['first', 'middle', 'last']);
+  expect(rows.map((row) => positionOf(row))).toEqual(['first', 'middle', 'last']);
 
   // A set of one is the only row.
   rows[1]!.hidden = true;
@@ -498,7 +502,7 @@ test('takes row positions from aria-posinset and aria-setsize when a slice is re
   rows[0]!.setAttribute('aria-setsize', '1');
   await settle(list);
 
-  expect(rows[0]!.dataset.rcListPosition).toBe('only');
+  expect(positionOf(rows[0]!)).toBe('only');
 });
 
 test('an ordered list exposes item positions without rendering counters', async () => {

@@ -105,7 +105,7 @@
   /* Dividers separate visible rows; they do not trail the final row. */
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-list
-    > rc-list-item:is([data-rc-list-position='last'], [data-rc-list-position='only']) {
+    > rc-list-item:is(:state(last), :state(only)) {
     --rc-list-item-divider: 0;
   }
 
@@ -121,13 +121,13 @@
 
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-list[variant='segmented']
-    > rc-list-item[data-rc-list-position='only'] {
+    > rc-list-item:state(only) {
     --rc-list-item-border-radius: var(--md-sys-shape-corner-extra-large, 1.75rem);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-list[variant='segmented']
-    > rc-list-item[data-rc-list-position='first'] {
+    > rc-list-item:state(first) {
     --rc-list-item-border-radius: var(--md-sys-shape-corner-extra-large, 1.75rem)
       var(--md-sys-shape-corner-extra-large, 1.75rem)
       var(--md-sys-shape-corner-extra-small, 0.25rem)
@@ -136,7 +136,7 @@
 
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-list[variant='segmented']
-    > rc-list-item[data-rc-list-position='last'] {
+    > rc-list-item:state(last) {
     --rc-list-item-border-radius: var(--md-sys-shape-corner-extra-small, 0.25rem)
       var(--md-sys-shape-corner-extra-small, 0.25rem)
       var(--md-sys-shape-corner-extra-large, 1.75rem)

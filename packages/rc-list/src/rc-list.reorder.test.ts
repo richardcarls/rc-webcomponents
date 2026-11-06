@@ -177,8 +177,8 @@ test('a pointer drag previews the move, then moves the node on drop', async () =
 
   const { drop } = await drag(list, 'Alpha', 'Beta');
 
-  expect(list.hasAttribute('data-reordering')).toBe(true);
-  expect(item(list, 'Alpha').hasAttribute('data-dragging')).toBe(true);
+  expect(list.matches(':state(reordering)')).toBe(true);
+  expect(item(list, 'Alpha').matches(':state(dragging)')).toBe(true);
   expect(item(list, 'Beta').style.translate).not.toBe('');
   expect(item(list, 'Gamma').style.translate).toBe('');
 
@@ -187,8 +187,8 @@ test('a pointer drag previews the move, then moves the node on drop', async () =
 
   expect(events).toEqual([{ item: item(list, 'Alpha'), from: 0, to: 1 }]);
   expect(order(list)).toEqual(['Beta', 'Alpha', 'Gamma']);
-  expect(list.hasAttribute('data-reordering')).toBe(false);
-  expect(item(list, 'Alpha').hasAttribute('data-dragging')).toBe(false);
+  expect(list.matches(':state(reordering)')).toBe(false);
+  expect(item(list, 'Alpha').matches(':state(dragging)')).toBe(false);
   expect(NAMES.map((name) => item(list, name).style.translate)).toEqual(['', '', '']);
   expect(item(list, 'Alpha').getAttribute('aria-posinset')).toBe('2');
 });
@@ -229,7 +229,7 @@ test('a lifted row paints above a later row it overlaps', async () => {
   const alphaRect = $alpha.getBoundingClientRect();
   const betaRect = item(list, 'Beta').getBoundingClientRect();
 
-  $alpha.setAttribute('data-dragging', '');
+  $alpha._setDragging(true);
   $alpha.style.translate = `0px ${betaRect.top - alphaRect.top}px`;
   await nextFrame();
 
@@ -280,7 +280,7 @@ test('a touch drag keeps capture on the touched icon inside its handle', async (
   expect(iconCapture).toHaveBeenCalledWith(1);
   expect(handleCapture).not.toHaveBeenCalled();
   expect(listCapture).not.toHaveBeenCalled();
-  expect(item(list, 'Alpha').hasAttribute('data-dragging')).toBe(true);
+  expect(item(list, 'Alpha').matches(':state(dragging)')).toBe(true);
 
   firePointer($icon, 'pointerup', { ...touch, clientY: start.y + step * 1.2 });
   await settle(list);
@@ -326,7 +326,7 @@ test('a touch long press on an item, away from its handle, picks it up', async (
   firePointer($alpha, 'pointerdown', { ...touch, clientY: start.y });
   await wait(LONG_PRESS);
 
-  expect($alpha.hasAttribute('data-dragging')).toBe(true);
+  expect($alpha.matches(':state(dragging)')).toBe(true);
 
   firePointer($alpha, 'pointermove', { ...touch, clientY: start.y + step * 1.2 });
   firePointer($alpha, 'pointerup', { ...touch, clientY: start.y + step * 1.2 });
@@ -349,7 +349,7 @@ test('a touch that moves before the long press completes scrolls instead', async
   firePointer($alpha, 'pointermove', { ...touch, clientY: start.y + 24 });
   await wait(LONG_PRESS);
 
-  expect($alpha.hasAttribute('data-dragging')).toBe(false);
+  expect($alpha.matches(':state(dragging)')).toBe(false);
 
   firePointer($alpha, 'pointerup', { ...touch, clientY: start.y + 24 });
   await settle(list);
@@ -365,7 +365,7 @@ test('a mouse long press on an item does not pick it up', async () => {
   firePointer($alpha, 'pointerdown', { clientX: start.x, clientY: start.y });
   await wait(LONG_PRESS);
 
-  expect($alpha.hasAttribute('data-dragging')).toBe(false);
+  expect($alpha.matches(':state(dragging)')).toBe(false);
 
   firePointer($alpha, 'pointerup', { clientX: start.x, clientY: start.y });
 });
@@ -393,7 +393,7 @@ test('a long-press drag only swallows its own pointer click in the lifted item',
   firePointer($menu, 'pointerdown', touch);
   await wait(LONG_PRESS);
 
-  expect($alpha.hasAttribute('data-dragging')).toBe(true);
+  expect($alpha.matches(':state(dragging)')).toBe(true);
 
   firePointer($menu, 'pointerup', touch);
 
@@ -455,7 +455,7 @@ test('a context menu before the long-press delay leaves the item alone', async (
   expect(contextMenu.defaultPrevented).toBe(false);
 
   await wait(LONG_PRESS);
-  expect($alpha.hasAttribute('data-dragging')).toBe(false);
+  expect($alpha.matches(':state(dragging)')).toBe(false);
 
   firePointer($alpha, 'pointerup', touch);
 });
@@ -497,7 +497,7 @@ test('a handle press without movement does not reorder', async () => {
   await settle(list);
 
   expect(listener).not.toHaveBeenCalled();
-  expect(list.hasAttribute('data-reordering')).toBe(false);
+  expect(list.matches(':state(reordering)')).toBe(false);
 });
 
 test('Escape cancels a pointer drag without closing an enclosing surface', async () => {
@@ -529,7 +529,7 @@ test('the keyboard picks up, moves, and drops with announcements', async () => {
   handle(list, 'Alpha').focus();
 
   expect(key(handle(list, 'Alpha'), ' ').defaultPrevented).toBe(true);
-  expect(item(list, 'Alpha').hasAttribute('data-dragging')).toBe(true);
+  expect(item(list, 'Alpha').matches(':state(dragging)')).toBe(true);
   await vi.waitFor(() => expect(announcement()).toMatch(/Picked up, position 1 of 3/));
 
   key(handle(list, 'Alpha'), 'ArrowDown');
@@ -549,7 +549,7 @@ test('the keyboard picks up, moves, and drops with announcements', async () => {
 
   key(handle(list, 'Alpha'), 'Enter');
 
-  expect(item(list, 'Alpha').hasAttribute('data-dragging')).toBe(false);
+  expect(item(list, 'Alpha').matches(':state(dragging)')).toBe(false);
   await vi.waitFor(() => expect(announcement()).toBe('Dropped at position 3 of 3.'));
 });
 
@@ -585,7 +585,7 @@ test('moving focus away drops a keyboard-lifted item', async () => {
 
   handle(list, 'Gamma').focus();
 
-  expect(list.hasAttribute('data-reordering')).toBe(false);
+  expect(list.matches(':state(reordering)')).toBe(false);
   expect(order(list)).toEqual(['Beta', 'Alpha', 'Gamma']);
 });
 
@@ -599,14 +599,14 @@ test('moving focus to another control in the same item drops without stealing it
 
   handle(list, 'Alpha').focus();
   key(handle(list, 'Alpha'), ' ');
-  expect(list.hasAttribute('data-reordering')).toBe(true);
+  expect(list.matches(':state(reordering)')).toBe(true);
 
   $other.focus();
 
   const arrow = key($other, 'ArrowDown');
   const space = key($other, ' ');
 
-  expect(list.hasAttribute('data-reordering')).toBe(false);
+  expect(list.matches(':state(reordering)')).toBe(false);
   expect(arrow.defaultPrevented).toBe(false);
   expect(space.defaultPrevented).toBe(false);
   expect(order(list)).toEqual(NAMES);
@@ -622,7 +622,7 @@ test('a press outside the lifted item drops it', async () => {
 
   firePointer(document.body, 'pointerdown');
 
-  expect(list.hasAttribute('data-reordering')).toBe(false);
+  expect(list.matches(':state(reordering)')).toBe(false);
   expect(order(list)).toEqual(['Beta', 'Alpha', 'Gamma']);
 });
 
@@ -650,7 +650,7 @@ test('focus follows the item when a consumer re-creates its nodes', async () => 
 
   expect(order(list)).toEqual(['Beta', 'Alpha', 'Gamma']);
   expect(document.activeElement).toBe(handle(list, 'Alpha'));
-  expect(list.hasAttribute('data-reordering')).toBe(true);
+  expect(list.matches(':state(reordering)')).toBe(true);
 
   key(handle(list, 'Alpha'), 'ArrowDown');
   await settle(list);
