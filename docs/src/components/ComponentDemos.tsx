@@ -1977,7 +1977,7 @@ export function TooltipDemo() {
 export function PopoverDemo() {
   return (
     <DemoFrame>
-      <rc-popover data-rc-material-rich-tooltip open-on-hover open-on-focus>
+      <rc-popover className="rc-popover--rich" open-on-hover open-on-focus>
         <button
           slot="trigger"
           type="button"

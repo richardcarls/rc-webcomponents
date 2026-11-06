@@ -21,7 +21,6 @@ export const MARKER_CONTRACTS = {
   'data-rc-light-dom-base': 'style-sentinel',
   'data-rc-list-item-toggle': 'authored-behavior',
   'data-rc-live-announcer': 'internal-controller',
-  'data-rc-material-rich-tooltip': 'authored-theme-hook',
   'data-rc-native': 'authored-theme-hook',
   'data-rc-navigation-indicator': 'authored-behavior',
   'data-rc-page': 'authored-behavior',
@@ -31,10 +30,9 @@ export const MARKER_CONTRACTS = {
   'data-rc-resize-corner': 'internal-controller',
   'data-rc-sort-first': 'authored-behavior',
   'data-rc-sort-key': 'authored-behavior',
+  'data-rc-tone': 'authored-theme-hook',
   'data-rc-type-scale': 'authored-theme-hook',
-  'data-rc-win31-default': 'authored-theme-hook',
   'data-rc-win31-inactive': 'authored-theme-hook',
-  'data-rc-win31-toggle': 'authored-theme-hook',
 };
 
 export const REMOVED_TOKEN_CONTRACTS = new Set([
@@ -137,9 +135,8 @@ export const THEME_SELECTOR_BUDGETS = {
   'rc-theme-material': {
     // Grouped fields and expanded list details add three part selectors.
     parts: 111,
-    // Dialog surfaces add no marker coupling; the retained growth comes from
-    // documented chip-icon and visible-list-position contracts.
-    // Four selectors opt the authored rich-tooltip structure into Material styling.
+    // Shared [data-rc-icon]/[data-rc-label] roles, custom states, and :has()
+    // structure replaced most per-component markers (92 before). The rest:
     // rc-pagination and rc-data-table style their authored [data-rc-page] and
     // [data-rc-sort-key] controls. Promoted actions marked
     // [data-rc-action-show-label] keep their label visible.
@@ -151,8 +148,9 @@ export const THEME_SELECTOR_BUDGETS = {
     importantDeclarations: 9,
     // Was 3 before hex color fallbacks stopped counting as ID selectors.
     idSelectors: 0,
-    // Grouped and provider-backed field variants add fifteen modifier selectors.
-    modifierHooks: 74,
+    // Grouped and provider-backed field variants add fifteen modifier selectors;
+    // the rich tooltip is the .rc-popover--rich variant.
+    modifierHooks: 78,
   },
   'rc-theme-substrate': {
     // Grew with rc-field coverage: the field's own anatomy plus the resets a
@@ -188,10 +186,11 @@ export const THEME_SELECTOR_BUDGETS = {
     // because it draws buttons on the control rather than through tokens.
     // rc-pagination and rc-data-table style their authored [data-rc-page] and
     // [data-rc-sort-key] controls.
-    markerHooks: 27,
+    markerHooks: 16,
     importantDeclarations: 8,
     idSelectors: 0,
-    modifierHooks: 0,
+    // The .rc-button--default and .rc-switch--toggle variants.
+    modifierHooks: 4,
   },
 };
 

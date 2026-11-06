@@ -96,7 +96,7 @@ test('the dialog caption bar matches the recorded window-chrome constraint', asy
       <dialog open aria-labelledby="win31-title">
         <header><button aria-label="System menu"></button><h2 id="win31-title">Save Changes</h2></header>
         <p>Save changes before closing?</p>
-        <footer><rc-button data-rc-win31-default><button>OK</button></rc-button><rc-button><button>Cancel</button></rc-button></footer>
+        <footer><rc-button class="rc-button--default"><button>OK</button></rc-button><rc-button><button>Cancel</button></rc-button></footer>
       </dialog>
     </rc-dialog>
   `);
@@ -112,7 +112,7 @@ test('the dialog caption bar matches the recorded window-chrome constraint', asy
   expect(getComputedStyle($title).textAlign).toBe(expected.typography.align);
 
   const $defaultButton = scope.querySelector<HTMLElement>(
-    'rc-button[data-rc-win31-default] > button',
+    'rc-button.rc-button--default > button',
   );
 
   expect($defaultButton).not.toBeNull();

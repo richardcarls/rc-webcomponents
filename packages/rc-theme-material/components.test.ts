@@ -764,7 +764,7 @@ test.each([
   ['outlined', 'rc-button--outlined', 'transparent', 'rgb(179, 38, 30)'],
   ['text', 'rc-button--text', 'transparent', 'rgb(179, 38, 30)'],
 ])(
-  'Material danger %s button maps to the error role contract',
+  'Material error-tone %s button maps to the error role contract',
   (_variant, className, background, color) => {
     const scope = renderScope();
     const button = document.createElement('rc-button');
@@ -774,7 +774,7 @@ test.each([
     scope.style.setProperty('--md-sys-color-error-container', 'rgb(249, 222, 220)');
     scope.style.setProperty('--md-sys-color-on-error-container', 'rgb(65, 14, 11)');
     button.className = className;
-    button.dataset.tone = 'danger';
+    button.dataset.rcTone = 'error';
     scope.append(button);
 
     const styles = getComputedStyle(button);

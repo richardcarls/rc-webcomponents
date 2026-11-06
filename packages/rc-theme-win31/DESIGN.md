@@ -163,7 +163,7 @@ usability while changing glyph widths and rendering.
     </header>
     <p>Save changes before closing?</p>
     <footer>
-      <rc-button data-rc-win31-default><button type="button">OK</button></rc-button>
+      <rc-button class="rc-button--default"><button type="button">OK</button></rc-button>
       <rc-button><button type="button">Cancel</button></rc-button>
     </footer>
   </dialog>
@@ -172,8 +172,8 @@ usability while changing glyph widths and rendering.
 
 The authored system-menu control needs a real menu action if shown. For a
 simple confirmation dialog, omit it. Use `data-rc-win31-inactive` on
-`rc-app-bar` only for an inactive caption, and `data-rc-win31-toggle` on
-`rc-switch` only when its optional sliding treatment suits the application.
+`rc-app-bar` only for an inactive caption, and the `rc-switch--toggle` class
+on `rc-switch` only when its optional sliding treatment suits the application.
 The default switch treatment resembles a checkbox.
 
 ## Respect platform limits

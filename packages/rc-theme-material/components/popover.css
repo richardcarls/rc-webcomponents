@@ -10,7 +10,7 @@
     --rc-popover-shadow: var(--rc-shadow-level2, none);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-popover[data-rc-material-rich-tooltip] {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-popover.rc-popover--rich {
     --rc-popover-max-inline-size: min(20rem, 100dvi - 1rem);
     --rc-popover-padding-block: 0.75rem;
     --rc-popover-padding-inline: 1rem;
@@ -18,7 +18,7 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-popover[data-rc-material-rich-tooltip]
+    rc-popover.rc-popover--rich
     > [slot='content']
     > h2 {
     margin: 0 0 0.25rem;
@@ -30,7 +30,7 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-popover[data-rc-material-rich-tooltip]
+    rc-popover.rc-popover--rich
     > [slot='content']
     > p {
     margin: 0;
@@ -40,7 +40,7 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-popover[data-rc-material-rich-tooltip]
+    rc-popover.rc-popover--rich
     > [slot='content']
     > footer {
     display: flex;

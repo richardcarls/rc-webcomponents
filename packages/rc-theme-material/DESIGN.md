@@ -421,7 +421,7 @@ control.
   Content inside a container uses a step **below** it, so a card on a dialog
   is `surface-container-low`, never the dialog's own step (it would vanish).
 
-- **Error is a tone, not a component.** Add `data-tone="danger"` to a button
+- **Error is a tone, not a component.** Add `data-rc-tone="error"` to a button
   variant for destructive actions; `rc-field` shows error state from native
   validity or `invalid`.
 - **Color never carries meaning alone.** Pair it with text, an icon or shape.
@@ -881,7 +881,7 @@ var(--rc-app-bar-block-size))`; both values are published on the bar's
   </button>
 </rc-button>
 
-<rc-button class="rc-button--outlined" data-tone="danger">
+<rc-button class="rc-button--outlined" data-rc-tone="error">
   <button type="button">Delete account</button>
 </rc-button>
 ```
@@ -922,7 +922,7 @@ dimensions, and write the choice from app state:
       <rc-button class="rc-button--text">
         <button value="cancel">Keep editing</button>
       </rc-button>
-      <rc-button class="rc-button--text" data-tone="danger">
+      <rc-button class="rc-button--text" data-rc-tone="error">
         <button value="discard">Discard</button>
       </rc-button>
     </form>
@@ -976,7 +976,7 @@ dimensions, and write the choice from app state:
   `rc-list selection="single"` and commit on confirm, or immediately on
   selection when there is no confirm button.
 - **Confirmations** state the consequence in the headline, put the
-  destructive action last with `data-tone="danger"`, and label buttons with
+  destructive action last with `data-rc-tone="error"`, and label buttons with
   verbs rather than OK.
 - Use `default-open` for an initially open uncontrolled dialog; `open` makes
   the dialog controlled (see [Framework notes](#framework-notes)).
@@ -1303,7 +1303,7 @@ rc-card.card-outlined {
   focused or hovered trigger. Keep the content non-interactive, and use it for
   supplemental context rather than required instructions. The theme maps its
   surface to `inverse-surface` and its text to `inverse-on-surface`.
-- **Rich tooltips.** Use `rc-popover data-rc-material-rich-tooltip` for an
+- **Rich tooltips.** Use `rc-popover class="rc-popover--rich"` for an
   explanatory panel with an optional action. Author a named non-modal dialog
   surface in the `content` slot with direct `h2`, `p`, and optional `footer`
   children. Set `open-on-hover` and `open-on-focus` only when users can move

@@ -6,7 +6,7 @@
    * semantics intact.
    *
    * Consumers who want a sliding control can opt into the beveled two-position
-   * variant with the documented data-rc-win31-toggle marker below.
+   * variant with the documented rc-switch--toggle class below.
    */
   :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch {
     --rc-switch-track-inline-size: var(--win31-check-size);
@@ -54,18 +54,18 @@
   }
 
   /* Opt-in sliding variant: a beveled thumb travelling in a sunken channel. */
-  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch[data-rc-win31-toggle] {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch.rc-switch--toggle {
     --rc-switch-track-inline-size: calc(36 * var(--win31-unit));
     --rc-switch-track-block-size: var(--win31-control-height);
     --rc-switch-thumb-translate: calc(16 * var(--win31-unit));
   }
 
-  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch[data-rc-win31-toggle]::part(track) {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch.rc-switch--toggle::part(track) {
     inline-size: calc(36 * var(--win31-unit));
     block-size: var(--win31-control-height);
   }
 
-  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch[data-rc-win31-toggle]::part(thumb) {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch.rc-switch--toggle::part(thumb) {
     inline-size: calc(18 * var(--win31-unit));
     block-size: calc(100% - (2 * var(--win31-unit)));
     background-color: var(--win31-color-surface);
