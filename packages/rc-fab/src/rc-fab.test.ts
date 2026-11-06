@@ -254,3 +254,14 @@ test.each(
   expect(distance[vertical]).toBeCloseTo(10, 0);
   expect(distance[horizontal]).toBeCloseTo(10, 0);
 });
+
+test('shows a pointer over the button', async () => {
+  const screen = render(html`
+    <rc-fab data-testid="host"><button type="button" aria-label="Add">+</button></rc-fab>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCFab;
+
+  await host.updateComplete;
+
+  expect(getComputedStyle(host.querySelector('button')!).cursor).toBe('pointer');
+});

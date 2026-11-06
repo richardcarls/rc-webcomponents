@@ -92,6 +92,8 @@ export const buttonStyles = css`
     overflow: clip;
     box-sizing: border-box;
     z-index: 0;
+    /* Links already show a pointer; a button matches them while enabled. */
+    cursor: pointer;
     transition: var(--rc-button-transition, revert);
   }
 

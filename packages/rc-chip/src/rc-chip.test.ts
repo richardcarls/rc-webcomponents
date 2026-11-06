@@ -482,3 +482,25 @@ test('disabled and readonly chips settle after disabling the native control', as
     expect(host.querySelector('button')?.disabled).toBe(true);
   }
 });
+
+test('shows a pointer over an interactive chip only', async () => {
+  const screen = render(html`
+    <rc-chip data-testid="button"><button type="button">Quick</button></rc-chip>
+    <rc-chip data-testid="filter"><label><input type="checkbox" />Vegan</label></rc-chip>
+    <rc-chip data-testid="disabled" disabled><button type="button">Off</button></rc-chip>
+    <rc-chip data-testid="readonly" readonly><span data-rc-chip-label>Tag</span></rc-chip>
+  `);
+
+  const cursor = async (id: string) => {
+    const host = (await screen.getByTestId(id).element()) as RCChip;
+
+    await host.updateComplete;
+
+    return getComputedStyle(host.firstElementChild!).cursor;
+  };
+
+  expect(await cursor('button')).toBe('pointer');
+  expect(await cursor('filter')).toBe('pointer');
+  expect(await cursor('disabled')).toBe('default');
+  expect(await cursor('readonly')).not.toBe('pointer');
+});

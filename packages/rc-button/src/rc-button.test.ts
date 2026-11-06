@@ -1055,3 +1055,23 @@ test('selected toggle state has no automated accessibility violations', async ()
   expect(host.querySelector('button')?.getAttribute('aria-pressed')).toBe('true');
   await expectNoA11yViolations(host);
 });
+
+test('shows a pointer over an enabled button and the default cursor when disabled', async () => {
+  const screen = render(html`
+    <rc-button data-testid="enabled"><button type="button">Save</button></rc-button>
+    <rc-button data-testid="disabled" disabled><button type="button">Save</button></rc-button>
+    <rc-button data-testid="pending" pending><button type="button">Save</button></rc-button>
+  `);
+
+  const cursor = async (id: string) => {
+    const host = (await screen.getByTestId(id).element()) as RCButton;
+
+    await flushButton(host);
+
+    return getComputedStyle(host.querySelector('button')!).cursor;
+  };
+
+  expect(await cursor('enabled')).toBe('pointer');
+  expect(await cursor('disabled')).toBe('default');
+  expect(await cursor('pending')).toBe('default');
+});

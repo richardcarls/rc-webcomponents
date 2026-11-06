@@ -61,6 +61,7 @@ export const fabMenuStyles = css`
     font-weight: var(--rc-fab-menu-font-weight, revert);
     letter-spacing: var(--rc-fab-menu-letter-spacing, revert);
     white-space: nowrap;
+    cursor: pointer;
     text-decoration: var(--rc-fab-menu-text-decoration, revert);
     user-select: var(--rc-fab-menu-user-select, revert);
     transition: var(--rc-fab-menu-transition, revert);
