@@ -25,11 +25,11 @@ import '@rcarls/rc-navigation-bar/define';
 <nav aria-label="Main navigation">
   <rc-navigation-bar>
     <a href="/recipes" aria-current="page">
-      <span data-rc-navigation-icon aria-hidden="true">R</span>
+      <span data-rc-icon aria-hidden="true">R</span>
       <span>Recipes</span>
     </a>
     <a href="/settings">
-      <span data-rc-navigation-icon aria-hidden="true">S</span>
+      <span data-rc-icon aria-hidden="true">S</span>
       <span>Settings</span>
     </a>
   </rc-navigation-bar>
@@ -54,7 +54,7 @@ layout stay coordinated.
 | Property          | Attribute          | Type     | Default                                                     | Description                                                  |
 | ----------------- | ------------------ | -------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
 | `activeSelector`  | `active-selector`  | `string` | `a[aria-current]:not([aria-current="false"])`               | Selector used to find the active link.                       |
-| `indicatorTarget` | `indicator-target` | `string` | `[data-rc-navigation-indicator], [data-rc-navigation-icon]` | Selector inside the active link used for indicator geometry. |
+| `indicatorTarget` | `indicator-target` | `string` | `[data-rc-navigation-indicator], [data-rc-icon]` | Selector inside the active link used for indicator geometry. |
 
 | Part        | Description                  |
 | ----------- | ---------------------------- |

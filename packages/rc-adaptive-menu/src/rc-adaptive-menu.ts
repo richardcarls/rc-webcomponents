@@ -125,25 +125,25 @@ const LIGHT_DOM_CSS = cssText`
     min-inline-size: 100%;
   }
 
-  rc-adaptive-menu [data-rc-menu-leading],
-  rc-adaptive-menu [data-rc-menu-trailing] {
+  rc-adaptive-menu [data-rc-icon],
+  rc-adaptive-menu [data-rc-label] ~ * {
     flex: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
   }
 
-  rc-adaptive-menu > [data-rc-action-overflowed] [data-rc-menu-leading] {
+  rc-adaptive-menu > [data-rc-action-overflowed] [data-rc-icon] {
     font-size: var(--rc-item-icon-size, inherit);
     line-height: var(--rc-item-icon-size, inherit);
   }
 
-  rc-adaptive-menu [data-rc-menu-label] {
+  rc-adaptive-menu [data-rc-label] {
     flex: 1 1 auto;
     min-inline-size: 0;
   }
 
-  rc-adaptive-menu > [data-rc-action-overflowed] [data-rc-menu-label] {
+  rc-adaptive-menu > [data-rc-action-overflowed] [data-rc-label] {
     font-family: var(--rc-item-font-family, inherit);
     font-size: var(--rc-item-font-size, inherit);
     font-weight: var(--rc-item-font-weight, inherit);
@@ -151,7 +151,6 @@ const LIGHT_DOM_CSS = cssText`
     letter-spacing: var(--rc-item-letter-spacing, inherit);
   }
 
-  rc-adaptive-menu [data-rc-menu-trailing],
   rc-adaptive-menu kbd {
     margin-inline-start: auto;
   }
@@ -190,7 +189,7 @@ declare module '@rcarls/rc-common' {
  *
  * Direct native buttons and links are supported. `rc-button`, `rc-chip`, and
  * `rc-menu-button` wrappers participate through their direct native trigger.
- * An action's `[data-rc-menu-leading]` icon and `[data-rc-menu-label]` text
+ * An action's `[data-rc-icon]` icon and `[data-rc-label]` text
  * lay out as an overflow menu item; a theme may show a promoted action with
  * an icon as icon-only. Author the boolean `data-rc-action-show-label` on an
  * action to keep its label visible while promoted, such as a pane's primary

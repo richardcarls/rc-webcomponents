@@ -18,15 +18,15 @@ npm install @rcarls/rc-adaptive-menu
 ```html
 <rc-adaptive-menu label="Document actions" max-shown="3">
   <button type="button" data-priority="30">
-    <span data-rc-menu-leading aria-hidden="true">★</span>
-    <span data-rc-menu-label>Favorite</span>
+    <span data-rc-icon aria-hidden="true">★</span>
+    <span data-rc-label>Favorite</span>
   </button>
   <button type="button" data-priority="20">
-    <span data-rc-menu-leading aria-hidden="true">✎</span>
-    <span data-rc-menu-label>Edit</span>
+    <span data-rc-icon aria-hidden="true">✎</span>
+    <span data-rc-label>Edit</span>
   </button>
   <button type="button" slot="overflow">
-    <span data-rc-menu-label>Delete</span>
+    <span data-rc-label>Delete</span>
   </button>
 </rc-adaptive-menu>
 
@@ -42,7 +42,7 @@ keep an action in the overflow menu regardless of `max-shown`. A negative
 menu renders in authored DOM order (native slot distribution isn't
 JS-ordered), so author negative-priority actions after normal-priority ones to
 have them appear last. Author the boolean `data-rc-action-show-label` on an
-action to keep its `[data-rc-menu-label]` text visible while promoted, in a
+action to keep its `[data-rc-label]` text visible while promoted, in a
 theme that otherwise shows promoted actions icon-only; it has no effect in the
 overflow menu. `max-shown` is a static declarative cap, re-evaluated
 whenever it or an authored action's `data-priority` changes: the component
@@ -61,7 +61,7 @@ In horizontal mode the toolbar is a plain shrink-to-fit flex row:
 own preferred width is ordinary CSS, sized to only the actions actually
 promoted. No JS-computed intrinsic-size hint is involved.
 
-Use `data-rc-menu-leading`, `data-rc-menu-label`, `data-rc-menu-trailing`,
+Use `data-rc-icon`, `data-rc-label`, trailing content after the label,
 and a `<kbd>` shortcut to expose menu content regions to themes shared with
 `rc-menu`.
 

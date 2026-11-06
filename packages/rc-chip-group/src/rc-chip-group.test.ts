@@ -132,7 +132,7 @@ test('expanded readonly chips keep one row pitch with the disclosure toggle', as
         { length: 8 },
         (_, index) => html`
           <rc-chip readonly>
-            <span data-rc-chip-label style="inline-size: 5rem;">${index}</span>
+            <span data-rc-label style="inline-size: 5rem;">${index}</span>
           </rc-chip>
         `,
       )}
@@ -148,7 +148,7 @@ test('expanded readonly chips keep one row pitch with the disclosure toggle', as
 
   const rowTops = [
     ...new Set(
-      [...host.querySelectorAll<HTMLElement>('rc-chip > [data-rc-chip-label]')].map((label) =>
+      [...host.querySelectorAll<HTMLElement>('rc-chip > [data-rc-label]')].map((label) =>
         Math.round(label.getBoundingClientRect().top),
       ),
     ),
@@ -186,7 +186,7 @@ test('auto layout collapses after max rows and toggles back to wrapped layout', 
   await vi.waitFor(() => expect(root.dataset.mode).toBe('scroll'));
   expect(toggle.textContent?.trim()).toBe('Show all');
   expect(toggleIcon.getAttribute('viewBox')).toBe('0 0 24 24');
-  expect(toggleIcon).toHaveAttribute('data-rc-chip-icon');
+  expect(toggleIcon).toHaveAttribute('data-rc-icon');
   expect(toggleSeparator).toBeVisible();
 
   toggle.click();

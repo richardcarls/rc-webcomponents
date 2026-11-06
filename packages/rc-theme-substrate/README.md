@@ -82,7 +82,7 @@ opt-in `css-components.css` recipes cover `.rc-button`, `.rc-chip`,
 only, not behavior, events, popup replacement, or measured overflow.
 
 Tag general icon-font markup with `data-rc-icon`; component-specific markers
-such as `data-rc-button-icon` and `data-rc-navigation-icon` opt in
+such as `data-rc-icon` and `data-rc-icon` opt in
 automatically. The shared `--rc-icon-font-size` and
 `--rc-icon-font-line-height` tokens keep glyph geometry consistent and can be
 overridden at the theme boundary or on one component.

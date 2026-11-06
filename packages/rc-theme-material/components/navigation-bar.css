@@ -35,7 +35,7 @@
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-navigation-bar
     > a
-    :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    :where([data-rc-icon], [data-rc-navigation-indicator]) {
     display: inline-grid;
     place-items: center;
     inline-size: 4rem;
@@ -46,7 +46,7 @@
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-navigation-bar
     > a:hover
-    :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    :where([data-rc-icon], [data-rc-navigation-indicator]) {
     background: color-mix(
       in srgb,
       var(--md-sys-color-on-surface, CanvasText)
@@ -58,7 +58,7 @@
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-navigation-bar
     > a:active
-    :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    :where([data-rc-icon], [data-rc-navigation-indicator]) {
     background: color-mix(
       in srgb,
       var(--md-sys-color-on-surface, CanvasText)
@@ -70,7 +70,7 @@
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-navigation-bar
     > a[aria-current]:not([aria-current='false'])
-    :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    :where([data-rc-icon], [data-rc-navigation-indicator]) {
     color: var(--md-sys-color-on-secondary-container, CanvasText);
   }
 }

@@ -155,14 +155,14 @@ const LIGHT_DOM_CSS = cssText`
      change between checked/unchecked — only visibility toggles. A fixed
      inline-size keeps the reserved width deterministic regardless of the
      icon's own intrinsic size. */
-  rc-segmented-button > fieldset > label > [data-rc-segmented-button-selected-icon] {
+  rc-segmented-button > fieldset > label > [data-rc-icon="selected"] {
     display: var(--rc-segmented-button-selected-icon-display, inline-grid);
     inline-size: var(--rc-segmented-button-selected-icon-size, 1.25em);
     place-items: center;
     visibility: hidden;
   }
 
-  rc-segmented-button > fieldset > label:has(input[type='radio']:checked) > [data-rc-segmented-button-selected-icon] {
+  rc-segmented-button > fieldset > label:has(input[type='radio']:checked) > [data-rc-icon="selected"] {
     visibility: visible;
   }
 
@@ -172,7 +172,7 @@ const LIGHT_DOM_CSS = cssText`
      :has() (only labels that opt into the checkmark pattern get a mirror)
      keeps this RTL-correct and backward compatible for consumers not
      using the selected-icon slot at all. */
-  rc-segmented-button > fieldset > label:has([data-rc-segmented-button-selected-icon])::after {
+  rc-segmented-button > fieldset > label:has([data-rc-icon="selected"])::after {
     content: '';
     inline-size: var(--rc-segmented-button-selected-icon-size, 1.25em);
     visibility: hidden;

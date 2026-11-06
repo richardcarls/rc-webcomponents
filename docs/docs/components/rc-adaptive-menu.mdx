@@ -42,15 +42,15 @@ primary action on a wide screen. The marker has no effect in the overflow menu.
 ```html
 <rc-adaptive-menu label="Document actions" max-shown="3">
   <button type="button" data-priority="30">
-    <span data-rc-menu-leading aria-hidden="true">★</span>
-    <span data-rc-menu-label>Favorite</span>
+    <span data-rc-icon aria-hidden="true">★</span>
+    <span data-rc-label>Favorite</span>
   </button>
   <button type="button" data-priority="20">
-    <span data-rc-menu-leading aria-hidden="true">✎</span>
-    <span data-rc-menu-label>Edit</span>
+    <span data-rc-icon aria-hidden="true">✎</span>
+    <span data-rc-label>Edit</span>
   </button>
   <button type="button" slot="overflow">
-    <span data-rc-menu-label>Delete</span>
+    <span data-rc-label>Delete</span>
   </button>
 </rc-adaptive-menu>
 ```
@@ -84,9 +84,9 @@ generated action proxies.
 
 Themes can align action contents with `rc-menu` through these shared markers:
 
-- `data-rc-menu-leading`
-- `data-rc-menu-label`
-- `data-rc-menu-trailing`
+- `data-rc-icon`
+- `data-rc-label`
+- content after the label, as a trailing column
 - `<kbd>` for a keyboard shortcut
 
 ## Open state

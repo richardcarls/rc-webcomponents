@@ -9,7 +9,7 @@
    * --win31-glyph-* data URIs in defaults.css instead.
    */
   :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where([data-rc-icon], [data-rc-navigation-icon]) {
+    :where([data-rc-icon]) {
     display: inline-grid;
     place-items: center;
     inline-size: var(--rc-icon-font-size, var(--win31-check-size));
@@ -23,8 +23,9 @@
     line-height: var(--rc-icon-font-line-height, var(--win31-check-size)) !important;
   }
 
+  /* Button and chip icons take the compact size. */
   :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where([data-rc-button-icon], [data-rc-button-selected-icon], [data-rc-chip-icon]) {
+    :where(rc-button > :is(button, a), rc-chip) :where([data-rc-icon]) {
     display: inline-grid;
     place-items: center;
     /* Reserve the icon square while an SVG icon element is still empty. */
@@ -39,17 +40,17 @@
 
   :where(.rc-theme-win31, :host(.rc-theme-win31))
     rc-button[icon-only]
-    :where([data-rc-button-icon], [data-rc-button-selected-icon]) {
+    :where([data-rc-icon]) {
     font-size: var(--rc-icon-button-icon-font-size, var(--win31-scrollbar-size));
     line-height: var(--rc-icon-button-icon-font-size, var(--win31-scrollbar-size)) !important;
   }
 
   /* Period art is pixel art. Never let the UA smooth it. */
   :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where([data-rc-icon], [data-rc-navigation-icon])
+    :where([data-rc-icon])
     img,
   :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where([data-rc-icon], [data-rc-navigation-icon])
+    :where([data-rc-icon])
     svg {
     image-rendering: pixelated;
   }

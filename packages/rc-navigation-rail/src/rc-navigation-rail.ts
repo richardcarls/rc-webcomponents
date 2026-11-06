@@ -12,14 +12,14 @@ import navigationRailStyles from './rc-navigation-rail.styles.js';
 
 const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
-  rc-navigation-rail > a > [data-rc-navigation-icon] {
+  rc-navigation-rail > a > [data-rc-icon] {
     align-self: center;
     vertical-align: middle;
   }
 
   rc-navigation-rail:not([expanded])
     > a
-    > [data-rc-navigation-label] {
+    > [data-rc-label] {
     max-inline-size: var(--rc-navigation-rail-collapsed-label-inline-size, 4rem);
     font-size: smaller;
     line-height: 1.2;
@@ -37,7 +37,7 @@ const LIGHT_DOM_CSS = cssText`
     vertical-align: middle;
   }
 
-  rc-navigation-rail > a > [data-rc-navigation-indicator] > [data-rc-navigation-icon] {
+  rc-navigation-rail > a > [data-rc-navigation-indicator] > [data-rc-icon] {
     flex: none;
     vertical-align: middle;
   }
@@ -45,7 +45,7 @@ const LIGHT_DOM_CSS = cssText`
   rc-navigation-rail:not([expanded])
     > a
     > [data-rc-navigation-indicator]
-    > :not([data-rc-navigation-icon]) {
+    > :not([data-rc-icon]) {
     max-inline-size: var(--rc-navigation-rail-collapsed-label-inline-size, 4rem);
     font-size: smaller;
     line-height: 1.2;
@@ -59,7 +59,7 @@ const LIGHT_DOM_CSS = cssText`
   }
 
   rc-navigation-rail
-    :is([data-rc-navigation-expand-icon], [data-rc-navigation-collapse-icon])[hidden] {
+    [slot='toggle'] [data-rc-icon][hidden] {
     display: none !important;
   }
 }
@@ -197,7 +197,7 @@ export class RCNavigationRail extends LitElement {
 
   /** Selector inside the active link used for indicator geometry. */
   @property({ type: String, attribute: 'indicator-target' })
-  indicatorTarget = '[data-rc-navigation-indicator], [data-rc-navigation-icon]';
+  indicatorTarget = '[data-rc-navigation-indicator], [data-rc-icon]';
 
   @state() private _hasToggle = false;
 
@@ -335,12 +335,18 @@ export class RCNavigationRail extends LitElement {
 
     $button?.setAttribute('aria-expanded', String(this.expanded));
 
+    // A native toggle button shows its `selected` icon while expanded, the way a toggle
+    // `rc-button` does; a button without one keeps its single icon.
+    if (!$button?.querySelector(':scope > [data-rc-icon="selected"]')) {
+      return;
+    }
+
     $button
-      ?.querySelectorAll<HTMLElement>('[data-rc-navigation-expand-icon]')
+      .querySelectorAll<HTMLElement>(':scope > [data-rc-icon]:not([data-rc-icon="selected"])')
       .forEach(($icon) => ($icon.hidden = this.expanded));
 
     $button
-      ?.querySelectorAll<HTMLElement>('[data-rc-navigation-collapse-icon]')
+      .querySelectorAll<HTMLElement>(':scope > [data-rc-icon="selected"]')
       .forEach(($icon) => ($icon.hidden = !this.expanded));
   }
 

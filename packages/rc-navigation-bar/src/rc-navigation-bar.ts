@@ -65,7 +65,7 @@ export class RCNavigationBar extends LitElement {
 
   /** Selector inside the active link used for indicator geometry. */
   @property({ type: String, attribute: 'indicator-target' })
-  indicatorTarget = '[data-rc-navigation-indicator], [data-rc-navigation-icon]';
+  indicatorTarget = '[data-rc-navigation-indicator], [data-rc-icon]';
 
   @query('slot') private _$slot!: HTMLSlotElement;
 

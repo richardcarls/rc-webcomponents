@@ -87,7 +87,7 @@ test('warns once and without dumping an unsupported child', async () => {
   await flushChip($host);
 
   expect(warn).toHaveBeenCalledExactlyOnceWith(
-    '[rc-chip] No supported direct child found. Place a native <button>, <a href>, or a <label> containing a direct checkbox/radio inside <rc-chip>, or use readonly with a [data-rc-chip-label] child.',
+    '[rc-chip] No supported direct child found. Place a native <button>, <a href>, or a <label> containing a direct checkbox/radio inside <rc-chip>, or use readonly with a [data-rc-label] child.',
   );
 
   warn.mockRestore();
@@ -337,7 +337,7 @@ test('readonly chips accept non-interactive display content', async () => {
   const listener = vi.fn();
   const screen = render(html`
     <rc-chip data-testid="host" readonly>
-      <span data-rc-chip-label>Dinner</span>
+      <span data-rc-label>Dinner</span>
     </rc-chip>
   `);
   const host = (await screen.getByTestId('host').element()) as RCChip;
@@ -347,7 +347,7 @@ test('readonly chips accept non-interactive display content', async () => {
   await flushChip(host);
   host.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 
-  expect(host.querySelector('[data-rc-chip-label]')?.textContent).toBe('Dinner');
+  expect(host.querySelector('[data-rc-label]')?.textContent).toBe('Dinner');
   expect(listener).not.toHaveBeenCalled();
 });
 
@@ -490,7 +490,7 @@ test('shows a pointer over an interactive chip only', async () => {
       ><label><input type="checkbox" />Vegan</label></rc-chip
     >
     <rc-chip data-testid="disabled" disabled><button type="button">Off</button></rc-chip>
-    <rc-chip data-testid="readonly" readonly><span data-rc-chip-label>Tag</span></rc-chip>
+    <rc-chip data-testid="readonly" readonly><span data-rc-label>Tag</span></rc-chip>
   `);
 
   const cursor = async (id: string) => {

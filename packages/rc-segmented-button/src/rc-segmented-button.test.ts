@@ -79,12 +79,12 @@ test('selected-icon slot reserves constant width, regardless of checked state', 
         <legend>Size</legend>
         <label data-testid="unchecked-label">
           <input type="radio" name="size-icon" value="small" />
-          <span data-testid="unchecked-icon" data-rc-segmented-button-selected-icon>✓</span>
+          <span data-testid="unchecked-icon" data-rc-icon="selected">✓</span>
           <span>Same label</span>
         </label>
         <label data-testid="checked-label">
           <input type="radio" name="size-icon" value="medium" checked />
-          <span data-testid="checked-icon" data-rc-segmented-button-selected-icon>✓</span>
+          <span data-testid="checked-icon" data-rc-icon="selected">✓</span>
           <span>Same label</span>
         </label>
       </fieldset>

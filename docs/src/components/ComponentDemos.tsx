@@ -212,22 +212,22 @@ export function ButtonDemo() {
           progress-value={progress ? progressValue : undefined}
         >
           <button type="button">
-            <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+            <span data-rc-icon className="material-symbols-outlined" aria-hidden="true">
               favorite_border
             </span>
             <span
-              data-rc-button-selected-icon
+              data-rc-icon="selected"
               className="material-symbols-outlined material-symbols-filled"
               aria-hidden="true"
             >
               favorite
             </span>
-            <span data-rc-button-label>Save recipe</span>
+            <span data-rc-label>Save recipe</span>
           </button>
         </rc-button>
         <rc-button icon-only>
           <button type="button" aria-label="Share recipe">
-            <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+            <span data-rc-icon className="material-symbols-outlined" aria-hidden="true">
               share
             </span>
           </button>
@@ -675,11 +675,11 @@ export function CardDemo() {
                   );
                 }}
               >
-                <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+                <span data-rc-icon className="material-symbols-outlined" aria-hidden="true">
                   favorite_border
                 </span>
                 <span
-                  data-rc-button-selected-icon
+                  data-rc-icon="selected"
                   className="material-symbols-outlined material-symbols-filled"
                   aria-hidden="true"
                 >
@@ -1009,7 +1009,7 @@ export function NavigationBarDemo() {
               }}
             >
               <span
-                data-rc-navigation-icon
+                data-rc-icon
                 className="material-symbols-outlined"
                 aria-hidden="true"
               >
@@ -1058,16 +1058,14 @@ export function NavigationRailDemo() {
           <rc-button slot="toggle" icon-only>
             <button type="button" aria-label="Toggle navigation">
               <span
-                data-rc-button-icon
-                data-rc-navigation-expand-icon
+                data-rc-icon
                 className="material-symbols-outlined"
                 aria-hidden="true"
               >
                 menu
               </span>
               <span
-                data-rc-button-selected-icon
-                data-rc-navigation-collapse-icon
+                data-rc-icon="selected"
                 className="material-symbols-outlined"
                 aria-hidden="true"
               >
@@ -1087,7 +1085,7 @@ export function NavigationRailDemo() {
             >
               <span data-rc-navigation-indicator>
                 <span
-                  data-rc-navigation-icon
+                  data-rc-icon
                   className="material-symbols-outlined"
                   aria-hidden="true"
                 >
@@ -1124,7 +1122,7 @@ export function AdaptiveNavigationDemo() {
   const renderLinks = (forRail: boolean) =>
     navigationDestinations.map(({ href, label, icon }) => {
       const iconElement = (
-        <span data-rc-navigation-icon className="material-symbols-outlined" aria-hidden="true">
+        <span data-rc-icon className="material-symbols-outlined" aria-hidden="true">
           {icon}
         </span>
       );
@@ -1178,7 +1176,7 @@ export function AdaptiveNavigationDemo() {
               >
                 <button type="button" aria-label="New note">
                   <span
-                    data-rc-button-icon
+                    data-rc-icon
                     className="material-symbols-outlined"
                     aria-hidden="true"
                   >
@@ -1223,7 +1221,7 @@ export function AdaptiveNavigationDemo() {
               }
             >
               <button type="button" aria-label="New note">
-                <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+                <span data-rc-icon className="material-symbols-outlined" aria-hidden="true">
                   add
                 </span>
               </button>
@@ -1605,7 +1603,7 @@ export function DialogDemo() {
             </strong>
             <rc-button icon-only>
               <button type="button" aria-label="Close" onClick={() => dialogEl?.close('dismiss')}>
-                <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+                <span data-rc-icon className="material-symbols-outlined" aria-hidden="true">
                   close
                 </span>
               </button>
@@ -2072,7 +2070,7 @@ export function MenubarDemo() {
               Compact layout
             </button>
             <div role="group" aria-label="Sort order">
-              <div data-group-label>Sort order</div>
+              <div data-rc-label>Sort order</div>
               <button type="button" role="menuitemradio" aria-checked="true" value="sort-recent">
                 Recent
               </button>
@@ -2595,14 +2593,14 @@ export function ToolbarDemo() {
       <rc-toolbar label="Formatting">
         <rc-button icon-only>
           <button type="button" aria-label="Bold" onClick={() => setClicked('Bold')}>
-            <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+            <span data-rc-icon className="material-symbols-outlined" aria-hidden="true">
               format_bold
             </span>
           </button>
         </rc-button>
         <rc-button icon-only>
           <button type="button" aria-label="Italic" onClick={() => setClicked('Italic')}>
-            <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+            <span data-rc-icon className="material-symbols-outlined" aria-hidden="true">
               format_italic
             </span>
           </button>
@@ -2610,7 +2608,7 @@ export function ToolbarDemo() {
         <hr />
         <rc-button icon-only>
           <button type="button" aria-label="Link" onClick={() => setClicked('Link')}>
-            <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+            <span data-rc-icon className="material-symbols-outlined" aria-hidden="true">
               link
             </span>
           </button>
@@ -2628,10 +2626,10 @@ export function AdaptiveMenuDemo() {
   const action = (label: string, icon: string, priority: number) => (
     <rc-button icon-only className="rc-icon-button--standard" data-priority={priority}>
       <button type="button" aria-label={label} onClick={() => setClicked(label)}>
-        <span data-rc-menu-leading className="material-symbols-outlined" aria-hidden="true">
+        <span data-rc-icon className="material-symbols-outlined" aria-hidden="true">
           {icon}
         </span>
-        <span data-rc-menu-label>{label}</span>
+        <span data-rc-label>{label}</span>
       </button>
     </rc-button>
   );
@@ -2657,10 +2655,10 @@ export function AdaptiveMenuDemo() {
           {action('Share', 'share', 10)}
           <rc-button className="rc-button--text" slot="overflow">
             <button type="button" onClick={() => setClicked('Delete')}>
-              <span data-rc-menu-leading className="material-symbols-outlined" aria-hidden="true">
+              <span data-rc-icon className="material-symbols-outlined" aria-hidden="true">
                 delete
               </span>
-              <span data-rc-menu-label>Delete</span>
+              <span data-rc-label>Delete</span>
             </button>
           </rc-button>
         </rc-adaptive-menu>

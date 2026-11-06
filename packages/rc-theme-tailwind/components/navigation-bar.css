@@ -26,7 +26,7 @@
   :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
     rc-navigation-bar
     > a
-    :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    :where([data-rc-icon], [data-rc-navigation-indicator]) {
     display: inline-grid;
     place-items: center;
     inline-size: 2.5rem;

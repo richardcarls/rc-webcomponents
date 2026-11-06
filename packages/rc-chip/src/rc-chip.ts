@@ -21,7 +21,7 @@ const TOGGLE_ROLES = new Set(['checkbox', 'menuitemcheckbox', 'menuitemradio', '
 
 const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
-  rc-chip > :is(button, a, label, [data-rc-chip-label]) {
+  rc-chip > :is(button, a, label, [data-rc-label]) {
     position: relative;
     display: inline-flex;
     box-sizing: border-box;
@@ -58,7 +58,7 @@ const LIGHT_DOM_CSS = cssText`
     border-radius: inherit;
   }
 
-  rc-chip[selected] > :is(button, a, label, [data-rc-chip-label]),
+  rc-chip[selected] > :is(button, a, label, [data-rc-label]),
   rc-chip > label:has(> input:is([type='checkbox'], [type='radio']):checked) {
     border-color: var(--rc-chip-selected-border-color, revert);
     background: var(--rc-chip-selected-bg, revert);
@@ -92,7 +92,7 @@ const LIGHT_DOM_CSS = cssText`
     white-space: nowrap;
   }
 
-  rc-chip[removable] > :is(button, a, label, [data-rc-chip-label]) {
+  rc-chip[removable] > :is(button, a, label, [data-rc-label]) {
     padding-inline-end: var(
       --rc-chip-removable-padding-inline-end,
       calc(
@@ -103,13 +103,13 @@ const LIGHT_DOM_CSS = cssText`
   }
 
   @media (forced-colors: active) {
-    rc-chip > :is(button, a, label, [data-rc-chip-label]) {
+    rc-chip > :is(button, a, label, [data-rc-label]) {
       border-color: ButtonBorder;
       background: ButtonFace;
       color: ButtonText;
     }
 
-    rc-chip[selected] > :is(button, a, label, [data-rc-chip-label]),
+    rc-chip[selected] > :is(button, a, label, [data-rc-label]),
     rc-chip > label:has(> input:is([type='checkbox'], [type='radio']):checked) {
       border-color: Highlight;
       background: Highlight;
@@ -140,13 +140,13 @@ export interface RCChipRemoveDetail {
  * Chip wrapper that preserves a direct native `<button>` child for action chips,
  * a direct `<a href>` for navigation chips, or a direct `<label>` containing a
  * native checkbox/radio for filter chips. Read-only chips accept a direct
- * `[data-rc-chip-label]` child.
+ * `[data-rc-label]` child.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-chip rc-chip docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/button/ WAI-ARIA button pattern}
  *
  * @slot - A direct native `<button>` child, `<a href>`, native-backed filter
- *   `<label>`, or `[data-rc-chip-label]` when `readonly`.
+ *   `<label>`, or `[data-rc-label]` when `readonly`.
  * @slot remove-icon - Optional presentational remove icon.
  *
  * @fires rc-chip-change - Fired when a user toggles a filter chip.
@@ -386,7 +386,7 @@ export class RCChip extends LitElement {
 
       if (!$nextButton && !$anchor && !$label && !this.readonly) {
         childWarning =
-          '[rc-chip] No supported direct child found. Place a native <button>, <a href>, or a <label> containing a direct checkbox/radio inside <rc-chip>, or use readonly with a [data-rc-chip-label] child.';
+          '[rc-chip] No supported direct child found. Place a native <button>, <a href>, or a <label> containing a direct checkbox/radio inside <rc-chip>, or use readonly with a [data-rc-label] child.';
       } else if ($label && !$nextInput && !this.readonly) {
         childWarning =
           '[rc-chip] A direct child <label> must contain a direct <input type="checkbox"> or <input type="radio">.';

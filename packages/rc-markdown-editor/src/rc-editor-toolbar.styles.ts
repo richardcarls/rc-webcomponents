@@ -61,7 +61,7 @@ export const editorToolbarStyles = css`
     outline-offset: var(--rc-markdown-editor-toolbar-focus-outline-offset, 1px);
   }
 
-  [data-rc-button-icon] svg {
+  [data-rc-icon] svg {
     inline-size: 1.15em;
     block-size: 1.15em;
     flex-shrink: 0;

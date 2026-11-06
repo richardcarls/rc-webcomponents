@@ -264,9 +264,9 @@ test('icon consumers share the theme icon-font convention', () => {
   const buttonIcon = document.createElement('span');
 
   button.setAttribute('icon-only', '');
-  barIcon.dataset.rcNavigationIcon = '';
-  railIcon.dataset.rcNavigationIcon = '';
-  buttonIcon.dataset.rcButtonIcon = '';
+  barIcon.dataset.rcIcon = '';
+  railIcon.dataset.rcIcon = '';
+  buttonIcon.dataset.rcIcon = '';
   listIcon.dataset.rcIcon = '';
   bar.append(barIcon);
   rail.append(railIcon);

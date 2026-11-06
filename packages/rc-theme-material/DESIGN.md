@@ -385,27 +385,15 @@ Neither ships with the theme. Load Roboto (or your brand face, set through
 give every icon marker the font in one rule:
 
 ```css
-:is(
-  [data-rc-icon],
-  [data-rc-button-icon],
-  [data-rc-button-selected-icon],
-  [data-rc-chip-icon],
-  [data-rc-menu-leading],
-  [data-rc-navigation-icon],
-  [data-rc-navigation-collapse-icon],
-  [data-rc-navigation-expand-icon],
-  [data-rc-segmented-button-selected-icon]
-) {
+[data-rc-icon] {
   font-family: 'Material Symbols Outlined';
 }
 ```
 
-Without it, markers render their ligature text (`menu`, `close`). The rule
-includes the list and menu leading markers, which hold icons in list rows and
-in actions that `rc-adaptive-menu` promotes or overflows. Three
-markers get no sizing from the theme, so give them a `font-size` as well:
-`data-rc-navigation-collapse-icon`, `data-rc-navigation-expand-icon` and
-`data-rc-segmented-button-selected-icon`. The rest follow
+Without it, markers render their ligature text (`menu`, `close`). One marker
+covers icons in buttons, chips, list rows, menu items, navigation, and actions
+that `rc-adaptive-menu` promotes or overflows, including the
+`data-rc-icon="selected"`, `"expand"`, and `"collapse"` variants. All follow
 `--rc-icon-font-size` and `--rc-icon-font-line-height`.
 
 Mark decorative icons `aria-hidden="true"` and put the accessible name on the
@@ -775,12 +763,12 @@ navigation component chosen by size class, and at most one FAB.
     <rc-adaptive-menu slot="trailing" label="Library actions" max-shown="1">
       <rc-button icon-only class="rc-icon-button--standard" data-priority="20">
         <button type="button" aria-label="Search">
-          <span data-rc-menu-leading aria-hidden="true">search</span>
-          <span data-rc-menu-label>Search</span>
+          <span data-rc-icon aria-hidden="true">search</span>
+          <span data-rc-label>Search</span>
         </button>
       </rc-button>
       <rc-button class="rc-button--text" slot="overflow">
-        <button type="button"><span data-rc-menu-label>Settings</span></button>
+        <button type="button"><span data-rc-label>Settings</span></button>
       </rc-button>
     </rc-adaptive-menu>
   </rc-app-bar>
@@ -889,7 +877,7 @@ var(--rc-app-bar-block-size))`; both values are published on the bar's
 
 <rc-button icon-only class="rc-icon-button--standard">
   <button type="button" aria-label="Edit">
-    <span data-rc-button-icon aria-hidden="true">edit</span>
+    <span data-rc-icon aria-hidden="true">edit</span>
   </button>
 </rc-button>
 
@@ -903,8 +891,8 @@ var(--rc-app-bar-block-size))`; both values are published on the bar's
   `.rc-button--extra-small` to `.rc-button--extra-large`, plus `.rc-button--narrow`
   or `.rc-button--wide`, for expressive sizes. Every size keeps a 48px
   activation area.
-- Toggle buttons use `rc-button toggle` with `data-rc-button-icon` and
-  `data-rc-button-selected-icon`; selection shows by shape and color, and is
+- Toggle buttons use `rc-button toggle` with `data-rc-icon` and
+  `data-rc-icon="selected"`; selection shows by shape and color, and is
   announced through `aria-pressed`.
 - Menus open from `rc-menu-button`; give an icon-only trigger an accessible
   name. `.rc-menu-button--narrow` is for tight app-bar trailing groups.

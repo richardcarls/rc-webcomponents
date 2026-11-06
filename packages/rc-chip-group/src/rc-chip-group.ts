@@ -834,7 +834,7 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
             <button type="button" ?disabled=${!showToggle} @click=${this._toggleExpanded}>
               <svg
                 part="toggle-icon"
-                data-rc-chip-icon
+                data-rc-icon
                 aria-hidden="true"
                 focusable="false"
                 viewBox="0 0 24 24"
