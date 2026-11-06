@@ -39,7 +39,7 @@
 
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-adaptive-menu
-    > [data-rc-action-promoted]:has([data-rc-menu-leading])
+    > [data-rc-action-promoted]:not([data-rc-action-show-label]):has([data-rc-menu-leading])
     [data-rc-menu-label] {
     position: absolute;
     inline-size: 1px;

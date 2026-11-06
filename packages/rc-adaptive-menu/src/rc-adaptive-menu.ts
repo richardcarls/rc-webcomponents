@@ -190,6 +190,11 @@ declare module '@rcarls/rc-common' {
  *
  * Direct native buttons and links are supported. `rc-button`, `rc-chip`, and
  * `rc-menu-button` wrappers participate through their direct native trigger.
+ * An action's `[data-rc-menu-leading]` icon and `[data-rc-menu-label]` text
+ * lay out as an overflow menu item; a theme may show a promoted action with
+ * an icon as icon-only. Author the boolean `data-rc-action-show-label` on an
+ * action to keep its label visible while promoted, such as a pane's primary
+ * action on a wide screen. It has no effect once the action overflows.
  * DOM order is the default priority; a numeric `data-priority` promotes larger
  * values first. Authoring `slot="overflow"` keeps an action overflow-only. A
  * negative `data-priority` has the same effect: the action always overflows,

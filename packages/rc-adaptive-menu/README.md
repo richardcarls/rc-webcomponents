@@ -41,7 +41,10 @@ keep an action in the overflow menu regardless of `max-shown`. A negative
 `data-priority` has the same effect: the action always overflows. The overflow
 menu renders in authored DOM order (native slot distribution isn't
 JS-ordered), so author negative-priority actions after normal-priority ones to
-have them appear last. `max-shown` is a static declarative cap, re-evaluated
+have them appear last. Author the boolean `data-rc-action-show-label` on an
+action to keep its `[data-rc-menu-label]` text visible while promoted, in a
+theme that otherwise shows promoted actions icon-only; it has no effect in the
+overflow menu. `max-shown` is a static declarative cap, re-evaluated
 whenever it or an authored action's `data-priority` changes: the component
 does not measure its own or its children's rendered size, so promoted actions
 are not guaranteed to visually fit any particular container. A consumer that
