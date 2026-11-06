@@ -106,10 +106,11 @@ transfer list also supports these shortcuts when focus is inside the component:
 
 ## Styling Hooks
 
-Panels expose `data-empty` when their backing list has no options and
-`data-has-selection` when that panel currently has highlighted rows. The root
-exposes `data-can-move-up` and `data-can-move-down` when the selected panel has
-highlighted rows that can be reordered in that direction.
+A panel gains the `empty` part when its list has no options and the
+`has-selection` part while it has highlighted rows. The root gains the
+`can-move-up` and `can-move-down` parts when the selected panel's highlighted
+rows can move in that direction. Select them together, for example
+`rc-transfer-list::part(selected-panel empty)`.
 
 | CSS custom property                         | Default                                                                                  | Description                                |
 | ------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------ |

@@ -42,7 +42,7 @@ test('rc-transfer-list renders owned UI in shadow DOM', async () => {
   await host.updateComplete;
 
   expect(host.shadowRoot).toBe(host.renderRoot);
-  expect(shadow(host).querySelector('[part="root"]')).toBeTruthy();
+  expect(shadow(host).querySelector('[part~="root"]')).toBeTruthy();
   expect(shadow(host).querySelector('rc-listbox')).toBeTruthy();
   expect(host.querySelector('rc-listbox')).toBeNull();
 });
@@ -212,8 +212,8 @@ test('rc-transfer-list reflects empty and selection states', async () => {
   const availablePanel = shadow(host).querySelector('[part~="available-panel"]');
   const selectedPanel = shadow(host).querySelector('[part~="selected-panel"]');
 
-  expect(availablePanel?.hasAttribute('data-empty')).toBe(false);
-  expect(selectedPanel?.hasAttribute('data-empty')).toBe(true);
+  expect(availablePanel?.part.contains('empty')).toBe(false);
+  expect(selectedPanel?.part.contains('empty')).toBe(true);
 
   shadow(host)
     .querySelector('rc-listbox')
@@ -227,7 +227,7 @@ test('rc-transfer-list reflects empty and selection states', async () => {
 
   await host.updateComplete;
 
-  expect(availablePanel?.hasAttribute('data-has-selection')).toBe(true);
+  expect(availablePanel?.part.contains('has-selection')).toBe(true);
 });
 
 test('rc-transfer-list visibly highlights selected listbox options by default', async () => {
@@ -306,12 +306,12 @@ test('rc-transfer-list reflects reorder capability states', async () => {
 
   await host.updateComplete;
 
-  const root = shadow(host).querySelector('[part="root"]');
+  const root = shadow(host).querySelector('[part~="root"]');
   const selectedPanel = shadow(host).querySelector('[part~="selected-panel"]');
 
-  expect(root?.hasAttribute('data-can-move-up')).toBe(true);
-  expect(root?.hasAttribute('data-can-move-down')).toBe(true);
-  expect(selectedPanel?.hasAttribute('data-has-selection')).toBe(true);
+  expect(root?.part.contains('can-move-up')).toBe(true);
+  expect(root?.part.contains('can-move-down')).toBe(true);
+  expect(selectedPanel?.part.contains('has-selection')).toBe(true);
 });
 
 test('rc-transfer-list addSelected syncs selection back to select[multiple]', async () => {

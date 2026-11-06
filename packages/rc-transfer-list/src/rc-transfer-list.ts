@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
 import {
@@ -16,6 +16,11 @@ import '@rcarls/rc-listbox/define';
 import '@rcarls/rc-toolbar/define';
 
 import { transferListStyles } from './rc-transfer-list.styles.js';
+
+/** Joins part names, skipping the conditional ones that are off. */
+function partList(...names: (string | false)[]): string {
+  return names.filter(Boolean).join(' ');
+}
 
 /** Built-in text of `rc-transfer-list`. */
 export interface RCTransferListMessages {
@@ -109,10 +114,14 @@ declare global {
  * @cssprop [--rc-transfer-list-option-hover-bg=var(--rc-transfer-list-option-selected-bg, var(--rc-highlight, Highlight))] - Hovered/active option background
  * @cssprop [--rc-transfer-list-option-hover-color=var(--rc-transfer-list-option-selected-color, var(--rc-highlight-text, HighlightText))] - Hovered/active option foreground
  *
- * @csspart root - Root layout wrapper. Reflects data-can-move-up/down.
+ * @csspart root - Root layout wrapper.
+ * @csspart can-move-up - Added to the root while the selected panel's highlighted rows can move up.
+ * @csspart can-move-down - Added to the root while the selected panel's highlighted rows can move down.
  * @csspart panel - Shared list panel surface.
- * @csspart available-panel - Available/left panel. Reflects data-empty and data-has-selection.
- * @csspart selected-panel - Selected/right panel. Reflects data-empty and data-has-selection.
+ * @csspart available-panel - Available/left panel.
+ * @csspart selected-panel - Selected/right panel.
+ * @csspart empty - Added to a panel whose list has no options.
+ * @csspart has-selection - Added to a panel with highlighted rows.
  * @csspart label - Shared panel label surface.
  * @csspart available-label - Label for the available panel.
  * @csspart selected-label - Label for the selected panel.
@@ -360,18 +369,18 @@ export class RCTransferList extends LitElement {
     return html`
       <div
         id="root"
-        part="root"
+        part=${partList('root', canMoveUp && 'can-move-up', canMoveDown && 'can-move-down')}
         class="rc-transfer-list-root"
-        data-can-move-up=${canMoveUp ? '' : nothing}
-        data-can-move-down=${canMoveDown ? '' : nothing}
         @keydown=${this._onKeydown}
       >
         <section
-          part="panel available-panel"
+          part=${partList(
+            'panel available-panel',
+            noAvailable && 'empty',
+            !noAvailableSelection && 'has-selection',
+          )}
           class="rc-transfer-list-panel"
           aria-labelledby="available-label"
-          data-empty=${noAvailable ? '' : nothing}
-          data-has-selection=${!noAvailableSelection ? '' : nothing}
         >
           <span part="label available-label" id="available-label"
             >${this.availableLabel ?? m.available}</span
@@ -450,11 +459,13 @@ export class RCTransferList extends LitElement {
         </rc-toolbar>
 
         <section
-          part="panel selected-panel"
+          part=${partList(
+            'panel selected-panel',
+            noSelected && 'empty',
+            !noSelectedSelection && 'has-selection',
+          )}
           class="rc-transfer-list-panel"
           aria-labelledby="selected-label"
-          data-empty=${noSelected ? '' : nothing}
-          data-has-selection=${!noSelectedSelection ? '' : nothing}
         >
           <span part="label selected-label" id="selected-label"
             >${this.selectedLabel ?? m.selected}</span
