@@ -457,10 +457,11 @@ test('RCMenu reserves no scrollbar gutter when its items fit', async () => {
 
   const item = menu.querySelector('button')!;
   const style = getComputedStyle(menu);
-  const inlineEndPadding = parseFloat(style.paddingInlineEnd) + parseFloat(style.borderInlineEndWidth);
+  const inlineEndPadding =
+    parseFloat(style.paddingInlineEnd) + parseFloat(style.borderInlineEndWidth);
 
   // The item reaches the menu's inline end, less only its own padding and border.
-  expect(
-    Math.round(menu.getBoundingClientRect().right - item.getBoundingClientRect().right),
-  ).toBe(Math.round(inlineEndPadding));
+  expect(Math.round(menu.getBoundingClientRect().right - item.getBoundingClientRect().right)).toBe(
+    Math.round(inlineEndPadding),
+  );
 });
