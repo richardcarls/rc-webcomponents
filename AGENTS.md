@@ -61,14 +61,23 @@ short and tell the tool to read `AGENTS.md` before project work.
   controls through later theme layers or narrow ownership selectors rather
   than treating every RC host as a native-styling boundary. Keep
   `data-rc-native="off"` as a documented subtree opt-out.
-- Treat every styling hook as an owned contract. Author-provided `data-rc-*`
-  markers used for structure, behavior, or theme opt-in are public API and must
-  be documented. Component-written state should prefer native state, ARIA,
-  documented host `data-*`, or custom states as appropriate. Controller IDs,
-  measurement reflectors, and injected-style sentinels remain internal even
-  when they use the `data-rc-*` namespace. Classify new markers in
-  `scripts/audit-component-architecture.mjs`; the prefix alone does not make a
-  marker public.
+- Treat every styling hook as an owned contract, and add one only when markup,
+  an existing attribute, `:has()`, DOM order, or a grid line name can't express
+  it. Author-provided `data-rc-*` markers are public API and must be
+  documented. Classify new markers in `scripts/audit-component-architecture.mjs`;
+  the prefix alone does not make a marker public. Name markers by these rules:
+  - Use the `data-rc-` prefix exactly when the attribute lands in light DOM.
+    Shadow-internal markers stay unprefixed and undocumented, as do controller
+    IDs, measurement reflectors, and injected-style sentinels.
+  - Expose state a custom element computes as a custom state (`:state(name)`
+    through `setCustomState`), not a host attribute. State a component writes
+    on a native child uses `data-rc-<component>-<state>`. A `data-*` on a shadow
+    part is unreachable from page CSS; add a part name instead.
+  - Share role names across components and let the context scope them:
+    `data-rc-icon` (`="selected"` for an icon shown in the on state) and
+    `data-rc-label`.
+  - Express a theme variant as a class (`.rc-<component>--<variant>`); keep an
+    attribute only for an orthogonal axis such as `data-rc-tone`.
 - Shadow styles rely on shadow-tree scoping rather than document cascade layers.
   Injected light-DOM structural CSS belongs in the `rc-base` layer and uses one
   `data-rc-light-dom-base` sentinel per root. Theme styles declare their complete
