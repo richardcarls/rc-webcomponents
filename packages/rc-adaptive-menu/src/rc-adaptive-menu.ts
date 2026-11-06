@@ -151,8 +151,7 @@ const LIGHT_DOM_CSS = cssText`
   }
 
   rc-adaptive-menu [data-rc-menu-trailing],
-  rc-adaptive-menu [data-rc-menu-shortcut],
-  rc-adaptive-menu [data-menu-shortcut] {
+  rc-adaptive-menu kbd {
     margin-inline-start: auto;
   }
 }

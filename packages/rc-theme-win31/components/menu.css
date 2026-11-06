@@ -57,7 +57,7 @@
    * The shortcut column is right-aligned plain text at the same size as the
    * label. 3.1 did not dim it; the spacing carried the distinction.
    */
-  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu [data-rc-menu-shortcut] {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu kbd {
     color: inherit;
     font-size: var(--win31-font-size);
   }

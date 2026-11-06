@@ -391,7 +391,6 @@ give every icon marker the font in one rule:
   [data-rc-button-selected-icon],
   [data-rc-chip-icon],
   [data-rc-list-leading],
-  [data-rc-menu-icon],
   [data-rc-menu-leading],
   [data-rc-navigation-icon],
   [data-rc-navigation-collapse-icon],

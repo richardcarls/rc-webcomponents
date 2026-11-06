@@ -81,7 +81,7 @@ content, and `checked` reports the resulting checkbox or radio state.
 Menu items remain in light DOM. `rc-menu` injects their structural base styles
 once per containing document or shadow root under `@layer rc-base`; inherited
 `--rc-menu-*` custom properties customize the host and rows. The component does
-not expose CSS parts. Add keyboard hints with `[data-menu-shortcut]`, and provide
+not expose CSS parts. Add keyboard hints with `<kbd>`, and provide
 nested-menu indicators through `rc-menu-button`'s `indicator` slot.
 
 See the [component docs](https://richardcarls.github.io/rc-webcomponents/components/rc-menu)
