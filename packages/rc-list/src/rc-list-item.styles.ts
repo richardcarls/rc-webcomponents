@@ -147,17 +147,17 @@ export const listItemStyles = css`
   }
 
   /* The lifted item paints above the items it passes over. */
-  :host([data-dragging]) {
+  :host(:state(dragging)) {
     position: relative;
     z-index: 1;
   }
 
-  :host([data-dragging]) [part='row'] {
+  :host(:state(dragging)) [part='row'] {
     background: var(--rc-list-item-dragged-background, var(--rc-list-item-background, Canvas));
     box-shadow: var(--rc-list-item-dragged-box-shadow, var(--rc-list-item-box-shadow, none));
   }
 
-  :host([data-dragging]) [part='state-layer'] {
+  :host(:state(dragging)) [part='state-layer'] {
     opacity: var(--rc-list-item-dragged-state-layer-opacity, 0.16);
   }
 
@@ -172,7 +172,7 @@ export const listItemStyles = css`
     }
 
     :host([selected]) [part='row'],
-    :host([data-dragging]) [part='row'] {
+    :host(:state(dragging)) [part='row'] {
       outline: 2px solid Highlight;
       outline-offset: -2px;
     }

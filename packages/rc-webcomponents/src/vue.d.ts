@@ -367,7 +367,6 @@ declare module 'vue' {
     'rc-list': RCVueElement<
       RCList,
       {
-        'data-reordering'?: string;
         'has-leading'?: string;
         'has-trailing'?: string;
         ordered?: RCList['ordered'];
@@ -383,8 +382,6 @@ declare module 'vue' {
     'rc-list-item': RCVueElement<
       RCListItem,
       {
-        'data-dragging'?: string;
-        'data-rc-list-position'?: string;
         'has-leading'?: string;
         'has-trailing'?: string;
         actionTarget?: RCListItem['actionTarget'];

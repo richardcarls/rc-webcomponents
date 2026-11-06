@@ -1,7 +1,7 @@
 import { LitElement, html, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { ClickDelegateController, MorphRecoveryController } from '@rcarls/rc-common';
+import { ClickDelegateController, MorphRecoveryController, setCustomState } from '@rcarls/rc-common';
 
 import listItemStyles from './rc-list-item.styles.js';
 
@@ -14,6 +14,11 @@ declare global {
     'rc-list-item-toggle': CustomEvent<RCListItemToggleDetail>;
   }
 }
+
+/** A row's position in its parent list, from `aria-posinset`/`aria-setsize` or rendered order. */
+export type RCListItemPosition = 'only' | 'first' | 'middle' | 'last';
+
+const POSITIONS: readonly RCListItemPosition[] = ['only', 'first', 'middle', 'last'];
 
 /** Detail shape for `rc-list-item-toggle`. */
 export interface RCListItemToggleDetail {
@@ -75,9 +80,13 @@ let detailsIdCounter = 0;
  * @attr default-expanded - Initial expanded state for uncontrolled usage.
  * @attr [has-leading] - Reflected when the leading slot has content.
  * @attr [has-trailing] - Reflected when the trailing slot has content.
- * @attr [data-dragging] - Set by a `reorderable` parent list while this item is lifted.
- * @attr [data-rc-list-position] - Row position assigned by the parent list: from `aria-posinset`
- *   and `aria-setsize` when the row has them (a virtualized slice), otherwise from rendered order.
+ * @cssstate dragging - Set by a `reorderable` parent list while this item is lifted.
+ * @cssstate first - Row position assigned by the parent list: from `aria-posinset` and
+ *   `aria-setsize` when the row has them (a virtualized slice), otherwise from rendered order.
+ *   Exactly one of `first`, `middle`, `last`, and `only` is set while the item is in a list.
+ * @cssstate middle - See `first`.
+ * @cssstate last - See `first`.
+ * @cssstate only - See `first`.
  *
  * @cssprop [--rc-list-item-min-block-size=3rem] - Minimum rendered row height.
  * @cssprop [--rc-list-item-padding-block=0.5rem] - Row block padding.
@@ -135,6 +144,18 @@ export class RCListItem extends LitElement {
   static override styles = listItemStyles;
 
   private readonly _internals: ElementInternals;
+
+  /** Sets the row position state; `null` clears it. Called by the parent `rc-list`. @internal */
+  _setListPosition(position: RCListItemPosition | null): void {
+    for (const name of POSITIONS) {
+      setCustomState(this._internals, name, name === position);
+    }
+  }
+
+  /** Sets the lifted state. Called by a `reorderable` parent `rc-list`. @internal */
+  _setDragging(dragging: boolean): void {
+    setCustomState(this._internals, 'dragging', dragging);
+  }
 
   /** Presentational selected state. Host writes are silent. */
   @property({ type: Boolean, reflect: true })

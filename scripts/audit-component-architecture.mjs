@@ -24,7 +24,6 @@ export const MARKER_CONTRACTS = {
   'data-rc-icon': 'authored-structure',
   'data-rc-light-dom-base': 'style-sentinel',
   'data-rc-list-item-toggle': 'authored-behavior',
-  'data-rc-list-position': 'component-state',
   'data-rc-live-announcer': 'internal-controller',
   'data-rc-material-rich-tooltip': 'authored-theme-hook',
   'data-rc-menu-label': 'authored-structure',

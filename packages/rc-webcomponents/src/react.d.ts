@@ -432,7 +432,6 @@ declare module 'react' {
       'rc-list': RCElementProps<
         RCList,
         {
-          'data-reordering'?: string;
           'has-leading'?: string;
           'has-trailing'?: string;
           ordered?: RCList['ordered'];
@@ -449,8 +448,6 @@ declare module 'react' {
         RCListItem,
         {
           'action-target'?: RCAttribute<RCListItem['actionTarget']>;
-          'data-dragging'?: string;
-          'data-rc-list-position'?: string;
           'default-expanded'?: RCAttribute<RCListItem['defaultExpanded']>;
           'has-leading'?: string;
           'has-trailing'?: string;
