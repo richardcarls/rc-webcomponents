@@ -11,7 +11,7 @@
     z-index: var(--rc-app-bar-z-index, 1);
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-app-bar[data-scrolled] {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-app-bar:state(scrolled) {
     --rc-app-bar-shadow: var(--substrate-shadow-sm, none);
   }
 

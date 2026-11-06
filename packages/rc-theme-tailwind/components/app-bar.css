@@ -11,7 +11,7 @@
     z-index: var(--rc-app-bar-z-index, 1);
   }
 
-  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-app-bar[data-scrolled] {
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-app-bar:state(scrolled) {
     --rc-app-bar-shadow: var(--tailwind-shadow-sm, none);
   }
 

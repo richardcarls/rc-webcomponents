@@ -21,6 +21,13 @@ customElements.get('rc-slider') || customElements.define('rc-slider', BlockHostE
 customElements.get('rc-range-slider') ||
   customElements.define('rc-range-slider', BlockHostElementAlt);
 
+/** Stands in for `rc-app-bar` so a test can set the custom states the theme selects. */
+class StateHostAppBar extends HTMLElement {
+  readonly internals = this.attachInternals();
+}
+
+customElements.get('rc-app-bar') || customElements.define('rc-app-bar', StateHostAppBar);
+
 afterEach(() => {
   document.body.replaceChildren();
 });
@@ -161,7 +168,7 @@ test('canonical 0.7 component tokens replace removed theme-only names', () => {
     '0.75rem',
   );
 
-  appBar.setAttribute('data-scrolled', '');
+  (appBar as StateHostAppBar).internals.states.add('scrolled');
 
   expect(getComputedStyle(appBar).getPropertyValue('--rc-app-bar-shadow')).not.toBe('');
 });

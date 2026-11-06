@@ -10,6 +10,7 @@ import {
   type ScrollObserverTarget,
   includeDefaults,
   MorphRecoveryController,
+  setCustomState,
 } from '@rcarls/rc-common';
 
 import appBarStyles from './rc-app-bar.styles.js';
@@ -46,11 +47,9 @@ export interface RCAppBarScrollDetail {
  * Controlled: assign `scrolled`; assigning `undefined` releases observation.
  * Host writes are silent.
  *
- * Environment-driven state (scrolled, collapsed, hidden) is exposed as
- * `data-scrolled`, `data-collapsed`, and `data-hidden` attributes with
- * equivalent `:state(scrolled)`, `:state(collapsed)`, and `:state(hidden)`
- * ElementInternals custom states. These are computed outputs, not settable
- * attributes.
+ * Environment-driven state (scrolled, collapsed, hidden) is exposed as the
+ * `:state(scrolled)`, `:state(collapsed)`, and `:state(hidden)` custom
+ * states. These are computed outputs, not settable attributes.
  *
  * A hidden bar reveals itself when focus moves into it and stays visible
  * while it contains focus.
@@ -121,7 +120,6 @@ export interface RCAppBarScrollDetail {
 export class RCAppBar extends LitElement {
   /** Writes the element's attributes again after a DOM morph removes them. */
   protected readonly _morphRecovery = new MorphRecoveryController(this, {
-    attributes: ['data-scrolled', 'data-collapsed', 'data-hidden'],
     resync: () => {
       this._setCollapseProgress(this._collapseProgress);
       this._syncStateOutputs();
@@ -507,7 +505,6 @@ export class RCAppBar extends LitElement {
     }
 
     this._collapsed = collapsed;
-    this.toggleAttribute('data-collapsed', collapsed);
     this._setCustomState('collapsed', collapsed);
     this._queueLayoutMeasure();
   }
@@ -541,7 +538,6 @@ export class RCAppBar extends LitElement {
     }
 
     this._hidden = hidden;
-    this.toggleAttribute('data-hidden', hidden);
     this._setCustomState('hidden', hidden);
     this._writeGeometryOutputs();
   }
@@ -602,22 +598,13 @@ export class RCAppBar extends LitElement {
   }
 
   private _syncStateOutputs(): void {
-    this.toggleAttribute('data-scrolled', this.scrolled);
     this._setCustomState('scrolled', this.scrolled);
-    this.toggleAttribute('data-collapsed', this._collapsed);
-    this.toggleAttribute('data-hidden', this._hidden);
+    this._setCustomState('collapsed', this._collapsed);
+    this._setCustomState('hidden', this._hidden);
   }
 
   private _setCustomState(name: string, active: boolean): void {
-    if (!this._internals.states) {
-      return;
-    }
-
-    if (active) {
-      this._internals.states.add(name);
-    } else {
-      this._internals.states.delete(name);
-    }
+    setCustomState(this._internals, name, active);
   }
 
   private _onSlotChange(e: Event): void {

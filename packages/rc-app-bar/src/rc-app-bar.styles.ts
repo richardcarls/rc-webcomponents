@@ -16,7 +16,7 @@ export const appBarStyles = css`
     transition: translate var(--rc-app-bar-transition-duration, 200ms) ease;
   }
 
-  :host([data-hidden]) {
+  :host(:state(hidden)) {
     translate: 0 -100%;
   }
 
@@ -81,12 +81,12 @@ export const appBarStyles = css`
 
   /* Compact-row title: all non-expanded states and the collapsed endpoint. */
   :host(:not([variant='expanded'])) #title ::slotted(*),
-  :host([variant='expanded'][data-collapsed]) #title ::slotted(*) {
+  :host([variant='expanded']:state(collapsed)) #title ::slotted(*) {
     font-size: var(--rc-app-bar-title-font-size, inherit);
   }
 
   /* Expanded-row title: only while uncollapsed. */
-  :host([variant='expanded']:not([data-collapsed])) #title ::slotted(*) {
+  :host([variant='expanded']:not(:state(collapsed))) #title ::slotted(*) {
     font-size: var(--rc-app-bar-expanded-title-font-size, inherit);
   }
 
@@ -126,13 +126,13 @@ export const appBarStyles = css`
     pointer-events: none;
   }
 
-  :host([variant='expanded']:not([data-collapsed])) #root {
+  :host([variant='expanded']:not(:state(collapsed))) #root {
     grid-template-rows:
       minmax(var(--rc-app-bar-compact-min-height, 3rem), auto)
       var(--_rc-app-bar-expanded-size);
   }
 
-  :host([variant='expanded']:not([data-collapsed])) #title {
+  :host([variant='expanded']:not(:state(collapsed))) #title {
     grid-column: 1 / -1;
     grid-row: 2;
     align-self: start;
@@ -141,7 +141,7 @@ export const appBarStyles = css`
     opacity: var(--_rc-app-bar-expanded-opacity);
   }
 
-  :host([variant='expanded'][data-collapsed]) #title {
+  :host([variant='expanded']:state(collapsed)) #title {
     animation: rc-app-bar-title-in var(--rc-app-bar-transition-duration, 200ms) ease;
   }
 
@@ -154,7 +154,7 @@ export const appBarStyles = css`
     border-block-end: 1px solid transparent;
   }
 
-  :host([data-scrolled]) #scroll-shadow {
+  :host(:state(scrolled)) #scroll-shadow {
     border-block-end: var(--rc-app-bar-scroll-divider, 1px solid GrayText);
   }
 
@@ -176,7 +176,7 @@ export const appBarStyles = css`
       transition-duration: 0s;
     }
 
-    :host([variant='expanded'][data-collapsed]) #title {
+    :host([variant='expanded']:state(collapsed)) #title {
       animation-duration: 70ms;
     }
   }

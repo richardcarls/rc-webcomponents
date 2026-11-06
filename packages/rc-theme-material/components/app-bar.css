@@ -9,7 +9,7 @@
         var(--rc-motion-spatial-easing-default, ease);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-app-bar[data-scrolled] {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-app-bar:state(scrolled) {
     --rc-app-bar-bg: var(--md-sys-color-surface-container, Canvas);
     box-shadow: var(--rc-shadow-level2, none);
   }
