@@ -28,9 +28,11 @@ export const menuStyles = css`
     letter-spacing: var(--rc-item-letter-spacing, inherit);
     max-inline-size: var(--rc-menu-max-inline-size, calc(100dvi - 0.5rem));
     max-block-size: var(--rc-menu-max-block-size, calc(100dvb - 0.5rem));
+    /* No reserved scrollbar gutter: it left a dead strip at the inline end
+       of every menu wherever scrollbars take space, though only a menu
+       taller than its maximum ever scrolls. */
     overflow: auto;
     overscroll-behavior: contain;
-    scrollbar-gutter: stable;
   }
 
   :host(:focus-visible) {
