@@ -146,7 +146,7 @@ export class RCCarouselItem extends LitElement {
    * host's, and `trackElement` only exists once the host has rendered.
    */
   private async _observeIntersection(): Promise<void> {
-    if (this.hasAttribute('data-clone')) {
+    if (this.hasAttribute('data-rc-clone')) {
       this.setHidden(true);
 
       return;

@@ -47,12 +47,12 @@ test('re-slots the authored action node and keeps its listener and identity', as
   expect(await screen.getByTestId('second').element()).toBe(second);
 });
 
-test('uses descending data-priority while retaining DOM order as the tie breaker', async () => {
+test('uses descending data-rc-action-priority while retaining DOM order as the tie breaker', async () => {
   const screen = render(html`
     <rc-adaptive-menu data-testid="host" max-shown="1">
       <button data-testid="first">First</button>
-      <button data-testid="second" data-priority="20">Second</button>
-      <button data-testid="third" data-priority="10">Third</button>
+      <button data-testid="second" data-rc-action-priority="20">Second</button>
+      <button data-testid="third" data-rc-action-priority="10">Third</button>
     </rc-adaptive-menu>
   `);
   const host = (await screen.getByTestId('host').element()) as RCAdaptiveMenu;
@@ -88,10 +88,10 @@ test('keeps authored overflow actions in the popup even when other actions fit',
   expect(host.matches(':state(overflow)')).toBe(true);
 });
 
-test('always overflows a negative data-priority action, even as the only action', async () => {
+test('always overflows a negative data-rc-action-priority action, even as the only action', async () => {
   const screen = render(html`
     <rc-adaptive-menu data-testid="host" max-shown="1">
-      <button data-testid="only" data-priority="-1">Turn off</button>
+      <button data-testid="only" data-rc-action-priority="-1">Turn off</button>
     </rc-adaptive-menu>
   `);
   const host = (await screen.getByTestId('host').element()) as RCAdaptiveMenu;
@@ -105,11 +105,11 @@ test('always overflows a negative data-priority action, even as the only action'
   expect(host.matches(':state(overflow)')).toBe(true);
 });
 
-test('a negative data-priority still overflows once space allows every action to fit', async () => {
+test('a negative data-rc-action-priority still overflows once space allows every action to fit', async () => {
   const screen = render(html`
     <rc-adaptive-menu data-testid="host" max-shown="3">
-      <button data-testid="primary" data-priority="10">Primary</button>
-      <button data-testid="turnOff" data-priority="-1">Turn off</button>
+      <button data-testid="primary" data-rc-action-priority="10">Primary</button>
+      <button data-testid="turnOff" data-rc-action-priority="-1">Turn off</button>
     </rc-adaptive-menu>
   `);
   const host = (await screen.getByTestId('host').element()) as RCAdaptiveMenu;
@@ -278,7 +278,7 @@ test('sizes a shrink-to-fit trailing grid area to only the actually-promoted act
 
     action.type = 'button';
     action.textContent = label;
-    action.dataset.priority = String(priority);
+    action.dataset.rcActionPriority = String(priority);
     action.style.cssText = 'flex: none; inline-size: 48px';
     host.append(action);
   }

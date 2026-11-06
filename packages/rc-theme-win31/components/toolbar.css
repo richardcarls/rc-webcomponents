@@ -43,7 +43,7 @@
    */
   :where(.rc-theme-win31, :host(.rc-theme-win31))
     rc-toolbar
-    :is([data-active], [aria-pressed='true']) {
+    :is([data-rc-active], [aria-pressed='true']) {
     background-image: var(--win31-dither-track);
     background-size: var(--win31-dither-size);
     box-shadow: var(--win31-bevel-inset-1);

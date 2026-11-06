@@ -55,41 +55,41 @@ test('RCMenu is an accessible menu', async () => {
   // Focus the menu host and move the virtual cursor to the first item
   menu.focusFirst();
   await expect.element(root).toHaveFocus();
-  await expect.element(item1).toHaveAttribute('data-active');
+  await expect.element(item1).toHaveAttribute('data-rc-active');
 
   // ArrowDown moves the virtual cursor; DOM focus stays on the host
   pressKey(menu, 'ArrowDown');
-  await expect.element(item2).toHaveAttribute('data-active');
+  await expect.element(item2).toHaveAttribute('data-rc-active');
   await expect.element(root).toHaveFocus();
 
   pressKey(menu, 'ArrowDown');
-  await expect.element(screen.getByText('Paste')).toHaveAttribute('data-active');
+  await expect.element(screen.getByText('Paste')).toHaveAttribute('data-rc-active');
 
   pressKey(menu, 'ArrowDown');
-  await expect.element(item5).toHaveAttribute('data-active'); // skips disabled item4
+  await expect.element(item5).toHaveAttribute('data-rc-active'); // skips disabled item4
 
   pressKey(menu, 'ArrowDown');
-  await expect.element(item1).toHaveAttribute('data-active'); // wraps to first
+  await expect.element(item1).toHaveAttribute('data-rc-active'); // wraps to first
 
   // ArrowUp navigation
   pressKey(menu, 'ArrowUp');
-  await expect.element(item5).toHaveAttribute('data-active'); // wraps to last
+  await expect.element(item5).toHaveAttribute('data-rc-active'); // wraps to last
 
   pressKey(menu, 'ArrowUp');
-  await expect.element(screen.getByText('Paste')).toHaveAttribute('data-active');
+  await expect.element(screen.getByText('Paste')).toHaveAttribute('data-rc-active');
 
   pressKey(menu, 'ArrowUp');
-  await expect.element(item2).toHaveAttribute('data-active');
+  await expect.element(item2).toHaveAttribute('data-rc-active');
 
   pressKey(menu, 'ArrowUp');
-  await expect.element(item1).toHaveAttribute('data-active');
+  await expect.element(item1).toHaveAttribute('data-rc-active');
 
   // Home and End keys
   pressKey(menu, 'End');
-  await expect.element(item5).toHaveAttribute('data-active');
+  await expect.element(item5).toHaveAttribute('data-rc-active');
 
   pressKey(menu, 'Home');
-  await expect.element(item1).toHaveAttribute('data-active');
+  await expect.element(item1).toHaveAttribute('data-rc-active');
 
   // Pointer click clears the keyboard cursor (no :focus-visible outline)
   await item2.click();
@@ -178,7 +178,7 @@ test('RCMenu dispatches rc-menu-activate on Enter and Space', async () => {
 
   // Position virtual cursor on first item via programmatic focus
   menu.focusFirst();
-  await expect.element(item1).toHaveAttribute('data-active');
+  await expect.element(item1).toHaveAttribute('data-rc-active');
 
   // Enter activates the active item
   pressKey(menu, 'Enter');
@@ -189,7 +189,7 @@ test('RCMenu dispatches rc-menu-activate on Enter and Space', async () => {
   // Re-establish the public cursor after activation, then move to item2.
   menu.focusFirst();
   pressKey(menu, 'ArrowDown');
-  await expect.element(item2).toHaveAttribute('data-active');
+  await expect.element(item2).toHaveAttribute('data-rc-active');
 
   pressKey(menu, ' ');
 
@@ -384,7 +384,7 @@ test('RCMenu dispatches rc-menu-close on Escape', async () => {
   await menu.updateComplete;
 
   menu.focusFirst();
-  await expect.element(item1).toHaveAttribute('data-active');
+  await expect.element(item1).toHaveAttribute('data-rc-active');
 
   pressKey(menu, 'Escape');
 
@@ -411,15 +411,15 @@ test('RCMenu exposes focus methods', async () => {
 
   menu.focusFirst();
   await expect.element(host).toHaveFocus();
-  await expect.element(item1).toHaveAttribute('data-active');
+  await expect.element(item1).toHaveAttribute('data-rc-active');
 
   menu.focusLast();
   await expect.element(host).toHaveFocus();
-  await expect.element(item3).toHaveAttribute('data-active');
+  await expect.element(item3).toHaveAttribute('data-rc-active');
 
   menu.focusItemAt(1);
   await expect.element(host).toHaveFocus();
-  await expect.element(item2).toHaveAttribute('data-active');
+  await expect.element(item2).toHaveAttribute('data-rc-active');
 });
 
 test('RCMenu has no accessibility violations when active', async () => {

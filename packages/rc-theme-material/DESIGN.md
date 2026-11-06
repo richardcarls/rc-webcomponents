@@ -761,7 +761,7 @@ navigation component chosen by size class, and at most one FAB.
   <rc-app-bar scroll-target="#content">
     <h1 class="app-title">Library</h1>
     <rc-adaptive-menu slot="trailing" label="Library actions" max-shown="1">
-      <rc-button icon-only class="rc-icon-button--standard" data-priority="20">
+      <rc-button icon-only class="rc-icon-button--standard" data-rc-action-priority="20">
         <button type="button" aria-label="Search">
           <span data-rc-icon aria-hidden="true">search</span>
           <span data-rc-label>Search</span>
@@ -822,7 +822,7 @@ var(--rc-app-bar-block-size))`; both values are published on the bar's
   the rest in `rc-adaptive-menu` overflow. Author each action as an
   `rc-button`: icon-only with `.rc-icon-button--standard` when promoted, and
   `.rc-button--text` with `slot="overflow"` when it should always stay in the
-  menu. Larger `data-priority` values are promoted first, up to `max-shown`.
+  menu. Larger `data-rc-action-priority` values are promoted first, up to `max-shown`.
   Promoted actions with an icon show icon-only; mark a pane's one primary
   action `data-rc-action-show-label` on wide screens to keep its label, and
   style it as a labeled button (`.rc-button--tonal`) rather than an icon

@@ -672,7 +672,7 @@ export class RCCarousel extends LitElement {
   private _directItems(): RCCarouselItem[] {
     return Array.from(this.children).filter(
       (el): el is RCCarouselItem =>
-        el.tagName === 'RC-CAROUSEL-ITEM' && !el.hasAttribute('data-clone'),
+        el.tagName === 'RC-CAROUSEL-ITEM' && !el.hasAttribute('data-rc-clone'),
     );
   }
 
@@ -712,7 +712,7 @@ export class RCCarousel extends LitElement {
     const assigned = this._slotEl?.assignedElements() ?? [];
     const nextItems = assigned.filter(
       (el): el is RCCarouselItem =>
-        el.tagName === 'RC-CAROUSEL-ITEM' && !el.hasAttribute('data-clone'),
+        el.tagName === 'RC-CAROUSEL-ITEM' && !el.hasAttribute('data-rc-clone'),
     );
     const itemsChanged =
       nextItems.length !== this._items.length ||
@@ -740,7 +740,7 @@ export class RCCarousel extends LitElement {
 
   /**
    * Clones the first and last slide and prepends/appends them
-   * (`data-clone="<real index>"` marks them, excluded from `_items` and
+   * (`data-rc-clone="<real index>"` marks them, excluded from `_items` and
    * from position numbering) so the track has real scrollable content
    * past both visual ends. `_trackSlots`/`_commitSettledIndex` detect
    * when a clone settles and instantly re-anchor to the real slide it
@@ -757,13 +757,13 @@ export class RCCarousel extends LitElement {
 
     const leadingClone = last.cloneNode(true) as RCCarouselItem;
 
-    leadingClone.setAttribute('data-clone', String(this._items.length - 1));
+    leadingClone.setAttribute('data-rc-clone', String(this._items.length - 1));
     this._sanitizeClone(leadingClone);
     this.prepend(leadingClone);
 
     const trailingClone = first.cloneNode(true) as RCCarouselItem;
 
-    trailingClone.setAttribute('data-clone', '0');
+    trailingClone.setAttribute('data-rc-clone', '0');
     this._sanitizeClone(trailingClone);
     this.append(trailingClone);
 

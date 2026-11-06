@@ -7,12 +7,15 @@ const DEFAULT_ROOT = resolve(SCRIPT_DIR, '..');
 
 export const MARKER_CONTRACTS = {
   'data-rc-action-overflowed': 'component-state',
+  'data-rc-action-priority': 'authored-behavior',
   'data-rc-action-promoted': 'component-state',
   'data-rc-action-show-label': 'authored-structure',
+  'data-rc-active': 'component-state',
   'data-rc-anchor': 'internal-controller',
   'data-rc-anchor-style': 'style-sentinel',
   'data-rc-bottom-sheet-handle': 'authored-behavior',
   'data-rc-button-progress': 'authored-structure',
+  'data-rc-clone': 'internal-component',
   'data-rc-dialog-resize-axis': 'authored-behavior',
   'data-rc-dialog-resize-origin': 'authored-behavior',
   'data-rc-field-control': 'authored-behavior',
@@ -140,7 +143,7 @@ export const THEME_SELECTOR_BUDGETS = {
     // rc-pagination and rc-data-table style their authored [data-rc-page] and
     // [data-rc-sort-key] controls. Promoted actions marked
     // [data-rc-action-show-label] keep their label visible.
-    markerHooks: 92,
+    markerHooks: 76,
     // Dropped from 13: the reduced-motion refinement replaced a blunt
     // *, !important sweep (2 declarations) with token-level overrides.
     // The audit's own comment-stripping fix also corrected a false count
@@ -160,7 +163,7 @@ export const THEME_SELECTOR_BUDGETS = {
     // menu's item tokens ([data-rc-action-overflowed]).
     // rc-pagination and rc-data-table style their authored [data-rc-page] and
     // [data-rc-sort-key] controls.
-    markerHooks: 30,
+    markerHooks: 19,
     importantDeclarations: 1,
     idSelectors: 0,
     modifierHooks: 0,
@@ -171,7 +174,7 @@ export const THEME_SELECTOR_BUDGETS = {
     parts: 44,
     // rc-pagination and rc-data-table style their authored [data-rc-page] and
     // [data-rc-sort-key] controls.
-    markerHooks: 30,
+    markerHooks: 19,
     importantDeclarations: 1,
     idSelectors: 0,
     modifierHooks: 0,

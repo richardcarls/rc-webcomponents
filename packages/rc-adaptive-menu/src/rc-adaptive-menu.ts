@@ -194,15 +194,15 @@ declare module '@rcarls/rc-common' {
  * an icon as icon-only. Author the boolean `data-rc-action-show-label` on an
  * action to keep its label visible while promoted, such as a pane's primary
  * action on a wide screen. It has no effect once the action overflows.
- * DOM order is the default priority; a numeric `data-priority` promotes larger
+ * DOM order is the default priority; a numeric `data-rc-action-priority` promotes larger
  * values first. Authoring `slot="overflow"` keeps an action overflow-only. A
- * negative `data-priority` has the same effect: the action always overflows,
+ * negative `data-rc-action-priority` has the same effect: the action always overflows,
  * regardless of `max-shown`. The overflow menu itself renders in authored DOM
  * order (native slot distribution, not JS-ordered), so author negative-priority
  * actions after normal-priority ones to have them appear last.
  *
  * This is a purely declarative computation from authored state (`max-shown`,
- * `data-priority`, and authored `slot`) re-evaluated whenever that authored
+ * `data-rc-action-priority`, and authored `slot`) re-evaluated whenever that authored
  * state changes. The component performs no runtime size measurement: it does
  * not observe its own or its children's rendered size, and `max-shown`
  * actions are promoted regardless of whether they visually fit the available
@@ -396,7 +396,7 @@ export class RCAdaptiveMenu extends LitElement {
       this._mutationObserver = new MutationObserver(this._onMutation);
 
       this._mutationObserver.observe(this, {
-        attributeFilter: ['aria-disabled', 'data-priority', 'disabled', 'slot'],
+        attributeFilter: ['aria-disabled', 'data-rc-action-priority', 'disabled', 'slot'],
         childList: true,
         subtree: true,
       });
@@ -586,9 +586,9 @@ export class RCAdaptiveMenu extends LitElement {
       return;
     }
 
-    // A data-priority change reorders which actions are promoted; other
+    // A data-rc-action-priority change reorders which actions are promoted; other
     // watched attributes (aria-disabled, disabled) don't affect slotting.
-    if (records.some((record) => record.attributeName === 'data-priority')) {
+    if (records.some((record) => record.attributeName === 'data-rc-action-priority')) {
       this._applySlots();
 
       return;
@@ -670,19 +670,19 @@ export class RCAdaptiveMenu extends LitElement {
 
   /**
    * Assigns each authored action to the default (promoted) or overflow slot.
-   * A purely declarative computation from `max-shown`, `data-priority`, and
+   * A purely declarative computation from `max-shown`, `data-rc-action-priority`, and
    * authored `slot` — no size measurement of any kind.
    */
   private _applySlots(): void {
     const entries = this._entriesInDomOrder();
 
     const priorityOf = (action: HTMLElement): number => {
-      const parsedPriority = Number(action.dataset.priority ?? 0);
+      const parsedPriority = Number(action.dataset.rcActionPriority ?? 0);
 
       return Number.isFinite(parsedPriority) ? parsedPriority : 0;
     };
 
-    // A negative data-priority forces overflow, the same as an authored
+    // A negative data-rc-action-priority forces overflow, the same as an authored
     // `slot="overflow"`, regardless of max-shown.
     const isForcedOverflow = ([action, state]: [HTMLElement, AuthoredState]): boolean =>
       state.forcedOverflow || priorityOf(action) < 0;

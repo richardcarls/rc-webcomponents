@@ -29,7 +29,7 @@ async function expectActiveMenuItem(item: Locator) {
 
   expect(menu).toBeTruthy();
   await expect.element(menu as HTMLElement).toHaveFocus();
-  await expect.element(item).toHaveAttribute('data-active');
+  await expect.element(item).toHaveAttribute('data-rc-active');
 }
 
 test('RCMenubar renders with correct ARIA attributes', async () => {

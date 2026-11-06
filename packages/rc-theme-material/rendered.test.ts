@@ -718,19 +718,19 @@ test('adaptive menu actions fit their container without unexpected overflow', as
   scope.innerHTML = `
     <div style="inline-size: 184px">
       <rc-adaptive-menu max-shown="3" data-testid="adaptive-menu">
-        <rc-button icon-only class="rc-icon-button--standard" data-priority="30">
+        <rc-button icon-only class="rc-icon-button--standard" data-rc-action-priority="30">
           <button type="button" aria-label="Favorite">
             <span data-rc-icon aria-hidden="true">★</span>
             <span data-rc-label>Favorite</span>
           </button>
         </rc-button>
-        <rc-button icon-only class="rc-icon-button--standard" data-priority="20">
+        <rc-button icon-only class="rc-icon-button--standard" data-rc-action-priority="20">
           <button type="button" aria-label="Edit">
             <span data-rc-icon aria-hidden="true">✎</span>
             <span data-rc-label>Edit</span>
           </button>
         </rc-button>
-        <rc-button icon-only class="rc-icon-button--standard" data-priority="10">
+        <rc-button icon-only class="rc-icon-button--standard" data-rc-action-priority="10">
           <button type="button" aria-label="Share">
             <span data-rc-icon aria-hidden="true">↗</span>
             <span data-rc-label>Share</span>
@@ -774,19 +774,19 @@ test('a promoted action marked data-rc-action-show-label keeps its label visible
 
   scope.innerHTML = `
     <rc-adaptive-menu max-shown="2">
-      <rc-button class="rc-button--tonal" data-priority="30" data-rc-action-show-label>
+      <rc-button class="rc-button--tonal" data-rc-action-priority="30" data-rc-action-show-label>
         <button type="button" aria-label="Edit recipe">
           <span data-rc-icon aria-hidden="true">✎</span>
           <span data-rc-label data-testid="shown">Edit</span>
         </button>
       </rc-button>
-      <rc-button icon-only class="rc-icon-button--standard" data-priority="20">
+      <rc-button icon-only class="rc-icon-button--standard" data-rc-action-priority="20">
         <button type="button" aria-label="Favorite">
           <span data-rc-icon aria-hidden="true">★</span>
           <span data-rc-label data-testid="hidden">Favorite</span>
         </button>
       </rc-button>
-      <rc-button icon-only class="rc-icon-button--standard" data-rc-action-show-label data-priority="10">
+      <rc-button icon-only class="rc-icon-button--standard" data-rc-action-show-label data-rc-action-priority="10">
         <button type="button" aria-label="Share">
           <span data-rc-icon aria-hidden="true">↗</span>
           <span data-rc-label data-testid="overflowed">Share</span>
@@ -1015,13 +1015,13 @@ test.runIf(isChromium).each(['light', 'dark'] as const)(
       </rc-list>
       <div style="inline-size:184px;justify-self:end">
         <rc-adaptive-menu max-shown="2">
-          <rc-button icon-only class="rc-icon-button--standard" data-priority="20">
+          <rc-button icon-only class="rc-icon-button--standard" data-rc-action-priority="20">
             <button type="button" aria-label="Favorite">
               <span data-rc-icon aria-hidden="true">★</span>
               <span data-rc-label>Favorite</span>
             </button>
           </rc-button>
-          <rc-button icon-only class="rc-icon-button--standard" data-priority="10">
+          <rc-button icon-only class="rc-icon-button--standard" data-rc-action-priority="10">
             <button type="button" aria-label="Edit">
               <span data-rc-icon aria-hidden="true">✎</span>
               <span data-rc-label>Edit</span>

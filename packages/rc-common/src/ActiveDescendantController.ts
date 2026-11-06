@@ -170,10 +170,10 @@ export class ActiveDescendantController implements ReactiveController {
 
   /**
    * Clear the virtual cursor: removes `aria-activedescendant` from the host,
-   * removes `data-active` from the previously active item, and resets internal state.
+   * removes `data-rc-active` from the previously active item, and resets internal state.
    */
   clear(): void {
-    this._activeItem?.removeAttribute('data-active');
+    this._activeItem?.removeAttribute('data-rc-active');
     this._activeItem = null;
     this._activeIndex = -1;
 
@@ -201,7 +201,7 @@ export class ActiveDescendantController implements ReactiveController {
   }
 
   private _setActive(item: Element | null, index: number): void {
-    this._activeItem?.removeAttribute('data-active'); // clear before reassigning
+    this._activeItem?.removeAttribute('data-rc-active'); // clear before reassigning
     this._activeItem = item;
     this._activeIndex = index;
 
@@ -222,7 +222,7 @@ export class ActiveDescendantController implements ReactiveController {
     }
 
     host.setAttribute('aria-activedescendant', item.id);
-    item.setAttribute('data-active', '');
+    item.setAttribute('data-rc-active', '');
     item.scrollIntoView({ block: 'nearest' });
   }
 }

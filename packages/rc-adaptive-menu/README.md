@@ -17,11 +17,11 @@ npm install @rcarls/rc-adaptive-menu
 
 ```html
 <rc-adaptive-menu label="Document actions" max-shown="3">
-  <button type="button" data-priority="30">
+  <button type="button" data-rc-action-priority="30">
     <span data-rc-icon aria-hidden="true">★</span>
     <span data-rc-label>Favorite</span>
   </button>
-  <button type="button" data-priority="20">
+  <button type="button" data-rc-action-priority="20">
     <span data-rc-icon aria-hidden="true">✎</span>
     <span data-rc-label>Edit</span>
   </button>
@@ -35,17 +35,17 @@ npm install @rcarls/rc-adaptive-menu
 </script>
 ```
 
-Larger numeric `data-priority` values are promoted first, with DOM order as the
+Larger numeric `data-rc-action-priority` values are promoted first, with DOM order as the
 tie breaker, up to `max-shown` authored actions. Author `slot="overflow"` to
 keep an action in the overflow menu regardless of `max-shown`. A negative
-`data-priority` has the same effect: the action always overflows. The overflow
+`data-rc-action-priority` has the same effect: the action always overflows. The overflow
 menu renders in authored DOM order (native slot distribution isn't
 JS-ordered), so author negative-priority actions after normal-priority ones to
 have them appear last. Author the boolean `data-rc-action-show-label` on an
 action to keep its `[data-rc-label]` text visible while promoted, in a
 theme that otherwise shows promoted actions icon-only; it has no effect in the
 overflow menu. `max-shown` is a static declarative cap, re-evaluated
-whenever it or an authored action's `data-priority` changes: the component
+whenever it or an authored action's `data-rc-action-priority` changes: the component
 does not measure its own or its children's rendered size, so promoted actions
 are not guaranteed to visually fit any particular container. A consumer that
 needs the promoted count to react to available space (a breakpoint, a

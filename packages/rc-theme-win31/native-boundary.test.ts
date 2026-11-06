@@ -132,8 +132,8 @@ test('native opt-out and adaptive overflow rows remain unchanged across the nati
   const markup = `
     <div data-rc-native="off"><button id="opted-out" type="button">Third-party</button></div>
     <rc-adaptive-menu max-shown="1" style="--rc-adaptive-menu-item-gap: 17px">
-      <button id="promoted" data-priority="10" type="button">Promoted</button>
-      <button id="overflowed" data-priority="1" type="button">Overflow</button>
+      <button id="promoted" data-rc-action-priority="10" type="button">Promoted</button>
+      <button id="overflowed" data-rc-action-priority="1" type="button">Overflow</button>
     </rc-adaptive-menu>`;
   const unstyled = themed(markup);
 
@@ -193,7 +193,7 @@ test('native styles preserve FAB-menu triggers and grouped field controls', asyn
 
 test('native menu protection preserves authored active and current states', async () => {
   const markup = `<rc-menu style="--rc-menu-item-gap: 13px">
-    <button id="active" type="button" role="menuitem" data-active>Active</button>
+    <button id="active" type="button" role="menuitem" data-rc-active>Active</button>
     <button id="current" type="button" role="menuitem" aria-current="true">Current</button>
   </rc-menu>`;
   const unstyled = themed(markup);
