@@ -25,7 +25,7 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-search-bar[data-interaction-mode='keyboard']::part(root):focus-within {
+    rc-search-bar:has(:focus-visible)::part(root) {
     box-shadow: var(--rc-shadow-level2, none);
   }
 

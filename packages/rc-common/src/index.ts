@@ -2,7 +2,6 @@ export * from './ActiveDescendantController.js';
 export * from './ControlledIndexController.js';
 export * from './clickDelegate.js';
 export * from './ItemsCollectionController.js';
-export * from './KeyboardInteractionDirective.js';
 export * from './KeyboardNavigationDirective.js';
 export * from './DragController.js';
 export * from './DragGestureController.js';

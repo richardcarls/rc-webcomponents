@@ -32,7 +32,7 @@ import {
   ScrollObserverController,
   TypeaheadController,
 } from '@rcarls/rc-common';
-import { RovingTabIndexMixin, keyInteraction, keyNavigation } from '@rcarls/rc-common';
+import { RovingTabIndexMixin, keyNavigation } from '@rcarls/rc-common';
 import {
   findExtremeSnapIndex,
   findNearestScrollAncestor,
@@ -63,7 +63,6 @@ Check this inventory before adding package-local interaction or DOM utility code
 | `DragController`                                                       | Pointer and keyboard drag-to-move behavior                                                                                  |
 | `DragGestureController`                                                | Single-pointer activation, capture, deltas, duration, and recent velocity                                                   |
 | `ItemsCollectionController`                                            | Filtering selectable and action items while preserving their distinct option kinds                                          |
-| `KeyboardInteractionDirective` / `keyInteraction`                      | Tracking pointer vs keyboard interaction mode on a rendered element                                                         |
 | `KeyboardNavigationDirective` / `keyNavigation`                        | Mapping APG arrow-key models to navigation actions                                                                          |
 | `LocaleController`                                                     | Re-rendering on a host's UI locale change, for `Intl` formatting in render                                                  |
 | `MessagesController`, `registerMessages`, `resolveMessages`            | Built-in component text: per-element overrides, registered translations, English defaults                                   |

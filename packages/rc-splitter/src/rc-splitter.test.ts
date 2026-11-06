@@ -513,35 +513,6 @@ describe('RCSplitter', () => {
     });
   });
 
-  describe('interaction mode', () => {
-    test('switches from keyboard to pointer interaction mode', async () => {
-      const screen = render(html`
-        <rc-splitter data-testid="host" style="width: 400px; height: 300px;">
-          <div>Primary</div>
-          <div slot="secondary">Secondary</div>
-        </rc-splitter>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCSplitter;
-
-      await host.updateComplete;
-
-      const separator = await waitForInit(host);
-
-      await focusSeparator(separator);
-      // Dispatch keyboard event directly on the separator
-      separator.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
-
-      expect(separator.getAttribute('data-interaction-mode')).toBe('keyboard');
-
-      // Pointer interaction should clear it (keyInteraction listens for pointerdown)
-      separator.dispatchEvent(
-        new PointerEvent('pointerdown', { bubbles: true, cancelable: true, composed: true }),
-      );
-
-      expect(separator.hasAttribute('data-interaction-mode')).toBe(false);
-    });
-  });
 
   describe('pointer drag resizing - horizontal', () => {
     test('pointer drag changes value', async () => {

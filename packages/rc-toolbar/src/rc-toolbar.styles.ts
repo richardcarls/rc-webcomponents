@@ -35,12 +35,6 @@ export const toolbarStyles = css`
         var(--rc-toolbar-radius, var(--rc-control-radius, 0))
       );
     }
-
-    /* because :has(:focus-visible) doesn't work across slot boundary */
-    &[data-interaction-mode='keyboard']:focus-within {
-      outline: var(--rc-focus-ring, auto);
-      outline-offset: var(--rc-focus-ring-offset, 0);
-    }
   }
 
   #slot-wrap {

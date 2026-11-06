@@ -6,7 +6,6 @@ import {
   type AnchorPlacement,
   cssText,
   type KeyboardNavigationAction,
-  keyInteraction,
   keyNavigation,
   layoutOrientation,
   PopoverController,
@@ -625,7 +624,6 @@ export class RCMenuButton extends LitElement {
             handleActivate: true,
             handleEscape: this.open,
           })}
-          ${keyInteraction()}
           @click=${this._handleTriggerClick}
         >
           <slot name="trigger" @slotchange=${this._handleTriggerSlotChange}></slot>
