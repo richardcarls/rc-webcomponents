@@ -63,7 +63,9 @@ top-origin resize, downward swipe-dismiss, and fixed positioning at the
 viewport's bottom edge. Add an optional
 `[data-rc-bottom-sheet-handle]` element inside the dialog for a themed resize
 handle. Use `snap-points` to snap the sheet to declared CSS heights after
-resize gestures. Set `resize="none"` to hold the sheet at its current snap
+resize gestures. Activating the handle without dragging it, with a click, tap,
+Enter, or Space, moves the sheet to the next snap point, continuing in the
+direction it last moved and turning back at the first or last point. Set `resize="none"` to hold the sheet at its current snap
 point; the option is reactive, so restoring `resize="vertical"` re-enables
 dragging.
 
@@ -147,6 +149,15 @@ so its 48 pixel target reaches the sheet's top edge.
 
 `rc-dialog` supplies keyboard resizing for the authored handle, so pointer
 dragging is not the only way to resize the sheet.
+
+| Key (on the handle) | Action                                                                                    |
+| ------------------- | ----------------------------------------------------------------------------------------- |
+| Enter, Space        | Moves to the next snap point, continuing in the last direction and turning back at an end |
+| Arrow keys          | Resize the sheet in steps (from `rc-dialog`)                                              |
+
+A consumer that steps the sheet itself from the handle's click calls
+`preventDefault()` in a listener on the handle, which the sheet then leaves
+alone.
 
 ## Theming
 

@@ -1,5 +1,6 @@
 import { html } from 'lit';
 import { expect, test, vi } from 'vitest';
+import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
@@ -1152,3 +1153,122 @@ test.runIf('currentCSSZoom' in Element.prototype)(
     $host.close();
   },
 );
+
+function renderHandleSheet(snapSpy = vi.fn()) {
+  return render(html`
+    <rc-bottom-sheet
+      data-testid="host"
+      snap-points="200px 320px 460px"
+      @rc-bottom-sheet-snap=${snapSpy}
+    >
+      <dialog
+        aria-labelledby="sheet-title"
+        style="position: fixed; left: 100px; top: 240px; width: 360px; height: 280px; margin: 0;"
+      >
+        <h2 id="sheet-title">Filter recipes</h2>
+        <button
+          type="button"
+          data-rc-bottom-sheet-handle
+          data-rc-dialog-resize-axis="y"
+          data-rc-dialog-resize-origin="top"
+        >
+          Resize sheet
+        </button>
+        <button>Done</button>
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+}
+
+function clickHandle($handle: HTMLElement, detail = 1): MouseEvent {
+  const event = new MouseEvent('click', { bubbles: true, cancelable: true, detail });
+
+  $handle.dispatchEvent(event);
+
+  return event;
+}
+
+async function openHandleSheet(snapSpy = vi.fn()) {
+  const screen = renderHandleSheet(snapSpy);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+  $host.snapTo(0, 'instant');
+
+  return {
+    $host,
+    $dialog: $host.querySelector('dialog') as HTMLDialogElement,
+    $handle: $host.querySelector('[data-rc-bottom-sheet-handle]') as HTMLButtonElement,
+  };
+}
+
+const sheetHeight = ($dialog: HTMLElement) => Math.round($dialog.getBoundingClientRect().height);
+
+test('activating the handle steps up through the snap points, then back down', async () => {
+  const { $host, $dialog, $handle } = await openHandleSheet();
+
+  for (const expected of [320, 460, 320, 200, 320]) {
+    clickHandle($handle);
+    await vi.waitFor(() => expect(sheetHeight($dialog)).toBe(expected));
+  }
+
+  $host.close();
+});
+
+test('Enter and Space on the handle step like a click', async () => {
+  const snapSpy = vi.fn();
+  const { $host, $dialog, $handle } = await openHandleSheet(snapSpy);
+
+  $handle.focus();
+  await userEvent.keyboard('{Enter}');
+  await vi.waitFor(() => expect(sheetHeight($dialog)).toBe(320));
+
+  await vi.waitFor(() =>
+    expect(snapSpy.mock.calls.at(-1)?.[0].detail).toEqual({
+      index: 1,
+      height: 320,
+      trigger: 'activate',
+    }),
+  );
+
+  await userEvent.keyboard(' ');
+  await vi.waitFor(() => expect(sheetHeight($dialog)).toBe(460));
+
+  $host.close();
+});
+
+test('the click that ends a handle drag does not also step', async () => {
+  const { $host, $dialog, $handle } = await openHandleSheet();
+  const start = $dialog.getBoundingClientRect();
+
+  firePointerEvent($handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
+  firePointerEvent($handle, 'pointermove', { clientX: start.left + 20, clientY: start.top - 110 });
+  firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 110 });
+  clickHandle($handle);
+
+  // A slow drag of 110px from 200px settles at the nearest point, 320px.
+  await vi.waitFor(() => expect(sheetHeight($dialog)).toBe(320));
+  await wait(400);
+  expect(sheetHeight($dialog)).toBe(320);
+
+  // The next tap continues upward, the direction the drag moved.
+  firePointerEvent($handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top - 120 });
+  firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 120 });
+  clickHandle($handle);
+  await vi.waitFor(() => expect(sheetHeight($dialog)).toBe(460));
+
+  $host.close();
+});
+
+test('a handle click the consumer prevents leaves the sheet where it is', async () => {
+  const { $host, $dialog, $handle } = await openHandleSheet();
+
+  $handle.addEventListener('click', (event) => event.preventDefault(), { once: true });
+  clickHandle($handle);
+  await wait(400);
+
+  expect(sheetHeight($dialog)).toBe(200);
+
+  $host.close();
+});
