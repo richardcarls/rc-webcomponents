@@ -669,3 +669,78 @@ test('leaves a collapsed row at its start without scrolling it while measuring',
   expect(root.scrollLeft).toBe(0);
   expect(scrollTo).not.toHaveBeenCalled();
 });
+
+function wheelOver(root: HTMLElement, init: WheelEventInit): WheelEvent {
+  const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, ...init });
+
+  root.dispatchEvent(event);
+
+  return event;
+}
+
+test.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
+  'a vertical wheel scrolls a horizontal row toward its inline end in %s',
+  async (_label, flow) => {
+    const screen = render(inFlow(lateMarkerGroup(`wheel-${flow.dir}-${flow.writingMode}`), flow));
+    const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+    await settle(host);
+
+    const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+
+    await vi.waitFor(() => expect(root.dataset.mode).toBe('scroll'));
+
+    const offset = () =>
+      Math.abs(flow.writingMode === 'horizontal-tb' ? root.scrollLeft : root.scrollTop);
+    const down = wheelOver(root, { deltaY: 60 });
+
+    if (flow.writingMode !== 'horizontal-tb') {
+      // The inline axis is already the wheel's axis; the browser scrolls it.
+      expect(down.defaultPrevented).toBe(false);
+
+      return;
+    }
+
+    expect(down.defaultPrevented).toBe(true);
+    expect(Math.round(offset())).toBe(60);
+
+    // Back at the inline start, a further wheel up is left to the page.
+    expect(wheelOver(root, { deltaY: -60 }).defaultPrevented).toBe(true);
+    expect(Math.round(offset())).toBe(0);
+    expect(wheelOver(root, { deltaY: -60 }).defaultPrevented).toBe(false);
+  },
+);
+
+test('wheel gestures the browser already scrolls along the row are left alone', async () => {
+  const screen = render(lateMarkerGroup('wheel-native'));
+  const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+  await settle(host);
+
+  const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+
+  await vi.waitFor(() => expect(root.dataset.mode).toBe('scroll'));
+
+  expect(wheelOver(root, { deltaX: 40, deltaY: 10 }).defaultPrevented).toBe(false);
+  expect(wheelOver(root, { deltaY: 40, shiftKey: true }).defaultPrevented).toBe(false);
+  expect(wheelOver(root, { deltaY: 40, ctrlKey: true }).defaultPrevented).toBe(false);
+  expect(root.scrollLeft).toBe(0);
+});
+
+test('a wheel over a wrapping row scrolls the page as usual', async () => {
+  const screen = render(html`
+    <rc-chip-group data-testid="host" layout="wrap" style="inline-size: 12rem;">
+      ${Array.from(
+        { length: 8 },
+        (_, index) => html`<button type="button">Option ${index + 1}</button>`,
+      )}
+    </rc-chip-group>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+  await settle(host);
+
+  const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+
+  expect(wheelOver(root, { deltaY: 40 }).defaultPrevented).toBe(false);
+});

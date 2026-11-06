@@ -579,6 +579,51 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
     this._revealTarget = undefined;
   };
 
+  /**
+   * A mouse wheel only moves vertically, and the scrolling row hides its
+   * scrollbar, so a vertical wheel over a horizontal row scrolls the row
+   * along its inline axis. At either end of the row the wheel is left alone
+   * and scrolls the page as usual. Horizontal deltas (a touch pad, Shift+wheel)
+   * already scroll the row natively.
+   */
+  private readonly _handleWheel = (event: WheelEvent): void => {
+    this._releaseRevealTarget();
+
+    if (this._resolvedLayout !== 'scroll' || event.ctrlKey || event.shiftKey) {
+      return;
+    }
+
+    if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) {
+      return;
+    }
+
+    const $root = this._$root;
+    const flow = resolveFlow($root);
+
+    // In a vertical writing mode the inline axis is already the wheel's axis.
+    if (flow.inline !== 'x') {
+      return;
+    }
+
+    const lineHeight = 16;
+    const delta =
+      event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+        ? event.deltaY * $root.clientWidth
+        : event.deltaMode === WheelEvent.DOM_DELTA_LINE
+          ? event.deltaY * lineHeight
+          : event.deltaY;
+    const offset = this._inlineScrollOffset();
+    const max = Math.max(0, $root.scrollWidth - $root.clientWidth);
+    const next = Math.min(max, Math.max(0, offset + delta));
+
+    if (Math.abs(next - offset) < 0.5) {
+      return;
+    }
+
+    event.preventDefault();
+    this._setInlineScrollOffset(next);
+  };
+
   private readonly _toggleExpanded = (): void => {
     const oldValue = this.expanded;
     const requestedExpanded = !oldValue;
@@ -779,7 +824,7 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
         @keydown=${this._handleKeyDown}
         @change=${{ handleEvent: this._handleChange, capture: true }}
         @pointerdown=${this._releaseRevealTarget}
-        @wheel=${{ handleEvent: this._releaseRevealTarget, passive: true }}
+        @wheel=${{ handleEvent: this._handleWheel, passive: false }}
         @touchstart=${{ handleEvent: this._releaseRevealTarget, passive: true }}
       >
         <span id="toggle-wrap" ?hidden=${!showToggle}>
