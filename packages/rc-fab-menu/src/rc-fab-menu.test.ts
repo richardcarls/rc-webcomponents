@@ -278,3 +278,17 @@ test.each([
     $host.open = false;
   },
 );
+
+test('shows a pointer over the trigger', async () => {
+  const screen = render(html`
+    <rc-fab-menu data-testid="host">
+      <button slot="trigger" type="button" aria-label="Create">+</button>
+      <rc-menu label="Create"><button>Recipe</button></rc-menu>
+    </rc-fab-menu>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCFabMenu;
+
+  await host.updateComplete;
+
+  expect(getComputedStyle(host.querySelector('button[slot="trigger"]')!).cursor).toBe('pointer');
+});

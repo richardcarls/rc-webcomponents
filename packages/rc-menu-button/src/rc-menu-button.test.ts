@@ -937,3 +937,33 @@ test('RCMenuButton opens its popup at the block end in vertical text', async () 
     expect(popup.getBoundingClientRect().top).toBeCloseTo(root.getBoundingClientRect().top, 0);
   });
 });
+
+test('RCMenuButton shows a pointer over an enabled trigger only', async () => {
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <rc-menu-button data-testid="submenu-host" role="menuitem">
+          <button slot="trigger" data-testid="submenu-trigger">More</button>
+          <rc-menu label="More"><button>Item</button></rc-menu>
+        </rc-menu-button>
+      </rc-menu>
+    </rc-menu-button>
+    <rc-menu-button data-testid="disabled-host">
+      <button slot="trigger" data-testid="disabled-trigger" disabled>Disabled</button>
+      <rc-menu label="Disabled"><button>Item</button></rc-menu>
+    </rc-menu-button>
+  `);
+
+  await ((await screen.getByTestId('host').element()) as RCMenuButton).updateComplete;
+  await ((await screen.getByTestId('submenu-host').element()) as RCMenuButton).updateComplete;
+  await ((await screen.getByTestId('disabled-host').element()) as RCMenuButton).updateComplete;
+
+  const cursor = async (id: string) =>
+    getComputedStyle(await screen.getByTestId(id).element()).cursor;
+
+  expect(await cursor('trigger')).toBe('pointer');
+  expect(await cursor('disabled-trigger')).toBe('default');
+  // A submenu trigger is a row of its parent menu, like the menu's other items.
+  expect(await cursor('submenu-trigger')).toBe('default');
+});

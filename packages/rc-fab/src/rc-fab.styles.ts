@@ -53,6 +53,7 @@ export const fabStyles = css`
     font-weight: var(--rc-fab-font-weight, revert);
     letter-spacing: var(--rc-fab-letter-spacing, revert);
     white-space: nowrap;
+    cursor: pointer;
 
     transition: var(--rc-fab-transition, revert);
   }

@@ -107,9 +107,19 @@ export const menuButtonStyles = css`
     color: var(--rc-menu-button-trigger-color, var(--rc-button-text, ButtonText));
     font: inherit;
     text-decoration: none;
-    cursor: default;
+    cursor: pointer;
     user-select: none;
     transition: var(--rc-menu-button-trigger-transition);
+  }
+
+  /*
+   * A disabled trigger keeps the default cursor, and so does a cascading
+   * submenu trigger (a host marked role="menuitem"), which is a row of its
+   * parent menu like the menu's other items.
+   */
+  slot[name='trigger']::slotted(:is(:disabled, [aria-disabled='true'])),
+  :host([role='menuitem']) slot[name='trigger']::slotted(*) {
+    cursor: default;
   }
 
   slot[name='trigger']::slotted(button:hover),

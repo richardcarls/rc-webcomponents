@@ -65,9 +65,14 @@ const LIGHT_DOM_CSS = cssText`
     color: var(--rc-chip-selected-color, revert);
   }
 
+  rc-chip:not([readonly], [disabled]) > :is(button, a[href], label) {
+    cursor: pointer;
+  }
+
   rc-chip[disabled] > :is(button, label),
   rc-chip > label:has(> input:is([type='checkbox'], [type='radio']):disabled) {
     opacity: var(--rc-chip-disabled-opacity, revert);
+    cursor: default;
   }
 
   rc-chip > :is(button, a):focus-visible,
