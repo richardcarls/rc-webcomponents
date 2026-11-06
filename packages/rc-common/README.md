@@ -82,6 +82,7 @@ Check this inventory before adding package-local interaction or DOM utility code
 | `findNearestSnapIndex`, `findNextSnapIndex`, `findExtremeSnapIndex`    | Choosing numeric anchor indices without assigning component meaning                                                         |
 | `parseCssTime`                                                         | Reading a CSS `<time>` custom property (`300ms`, `.3s`) as milliseconds for Web Animations                                  |
 | `cssText`                                                              | Tagging light-DOM structural CSS strings so package builds minify them                                                      |
+| `setCustomState`                                                       | Adding or removing a `:state()` custom state, where the browser supports `CustomStateSet`                                   |
 | `isFocusable`                                                          | Filtering focusable items for keyboard navigation                                                                           |
 | `nativeLabelText`                                                      | Copying a native control's label text onto a shadow-DOM surface that stands in for it                                       |
 | `pinElementBox`                                                        | Converting an element's rendered box into explicit inline geometry for resize interactions                                  |
