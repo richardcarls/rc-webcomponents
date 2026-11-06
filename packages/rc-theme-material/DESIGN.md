@@ -1005,8 +1005,6 @@ coexists with the page.
     <button
       type="button"
       data-rc-bottom-sheet-handle
-      data-rc-dialog-resize-axis="y"
-      data-rc-dialog-resize-origin="top"
       aria-label="Resize sheet"
     ></button>
     …

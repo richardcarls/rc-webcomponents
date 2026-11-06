@@ -29,8 +29,6 @@ must have `aria-labelledby` or `aria-label`.
     <button
       type="button"
       data-rc-bottom-sheet-handle
-      data-rc-dialog-resize-axis="y"
-      data-rc-dialog-resize-origin="top"
       aria-label="Resize sheet"
     ></button>
     <button value="close" formmethod="dialog">Done</button>

@@ -180,8 +180,6 @@ semantics. A small keyboard-accessible resize button is injected at the bottom-r
     <button
       type="button"
       class="resize-handle"
-      data-rc-dialog-resize-axis="y"
-      data-rc-dialog-resize-origin="top"
       aria-label="Resize"
     ></button>
     <h2 id="sheet-title">Filters</h2>
