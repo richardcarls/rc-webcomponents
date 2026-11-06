@@ -837,6 +837,10 @@ var(--rc-app-bar-block-size))`; both values are published on the bar's
   `rc-button`: icon-only with `.rc-icon-button--standard` when promoted, and
   `.rc-button--text` with `slot="overflow"` when it should always stay in the
   menu. Larger `data-priority` values are promoted first, up to `max-shown`.
+  Promoted actions with an icon show icon-only; mark a pane's one primary
+  action `data-rc-action-show-label` on wide screens to keep its label, and
+  style it as a labeled button (`.rc-button--tonal`) rather than an icon
+  button.
   The component never measures space, so write `max-shown` from size-class
   state. Utilities like Settings and Help belong in overflow, not in
   navigation.

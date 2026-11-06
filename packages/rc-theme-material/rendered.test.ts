@@ -767,6 +767,55 @@ test('adaptive menu actions fit their container without unexpected overflow', as
   expect(menu!.querySelectorAll('[data-rc-action-promoted]')).toHaveLength(3);
 });
 
+test('a promoted action marked data-rc-action-show-label keeps its label visible', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+
+  scope.innerHTML = `
+    <rc-adaptive-menu max-shown="2">
+      <rc-button class="rc-button--tonal" data-priority="30" data-rc-action-show-label>
+        <button type="button" aria-label="Edit recipe">
+          <span data-rc-menu-leading aria-hidden="true">✎</span>
+          <span data-rc-menu-label data-testid="shown">Edit</span>
+        </button>
+      </rc-button>
+      <rc-button icon-only class="rc-icon-button--standard" data-priority="20">
+        <button type="button" aria-label="Favorite">
+          <span data-rc-menu-leading aria-hidden="true">★</span>
+          <span data-rc-menu-label data-testid="hidden">Favorite</span>
+        </button>
+      </rc-button>
+      <rc-button icon-only class="rc-icon-button--standard" data-rc-action-show-label data-priority="10">
+        <button type="button" aria-label="Share">
+          <span data-rc-menu-leading aria-hidden="true">↗</span>
+          <span data-rc-menu-label data-testid="overflowed">Share</span>
+        </button>
+      </rc-button>
+    </rc-adaptive-menu>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const label = (id: string) => scope.querySelector<HTMLElement>(`[data-testid="${id}"]`)!;
+  const menu = scope.querySelector('rc-adaptive-menu')!;
+
+  expect(label('shown').getBoundingClientRect().width).toBeGreaterThan(10);
+  expect(getComputedStyle(label('shown')).position).not.toBe('absolute');
+  expect(getComputedStyle(label('hidden')).position).toBe('absolute');
+  expect(label('hidden').getBoundingClientRect().width).toBeLessThanOrEqual(1);
+
+  // In the overflow menu the marker changes nothing: the label lays out as
+  // any other overflow item's does.
+  menu.openMenu();
+  await settle(scope);
+  expect(label('overflowed').closest('[data-rc-action-overflowed]')).not.toBeNull();
+  expect(label('overflowed').getBoundingClientRect().width).toBeGreaterThan(10);
+
+  scope.remove();
+});
+
 test('adaptive overflow labels use Material menu-item typography', async () => {
   const scope = document.createElement('div');
 

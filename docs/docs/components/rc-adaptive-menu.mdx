@@ -35,7 +35,9 @@ lower-priority actions into an overflow menu.
 
 Place native buttons as direct children and name the menu with `label`. Higher `data-priority`
 values stay visible first, up to `max-shown`; the rest move to the overflow menu, as does any
-action with `slot="overflow"`.
+action with `slot="overflow"`. A theme may show promoted actions with an icon as icon-only; mark an
+action `data-rc-action-show-label` to keep its label visible while it is promoted, such as a pane's
+primary action on a wide screen. The marker has no effect in the overflow menu.
 
 ```html
 <rc-adaptive-menu label="Document actions" max-shown="3">
