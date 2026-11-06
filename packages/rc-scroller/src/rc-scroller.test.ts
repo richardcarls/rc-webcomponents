@@ -50,7 +50,7 @@ test('lays out content and fullbleed direct children without changing source ord
   const screen = render(html`
     <rc-scroller layout="content" data-testid="host" style="inline-size: 30rem;">
       <section data-testid="content">Content</section>
-      <section data-testid="fullbleed" data-rc-scroller-span="fullbleed">Fullbleed</section>
+      <section data-testid="fullbleed" style="grid-column: fullbleed">Fullbleed</section>
       <section data-testid="content-two">More content</section>
     </rc-scroller>
   `);
@@ -61,7 +61,9 @@ test('lays out content and fullbleed direct children without changing source ord
   await host.updateComplete;
 
   expect(getComputedStyle(content).gridColumnStart).toBe('content');
-  expect(getComputedStyle(fullbleed).gridColumnStart).toBe('fullbleed');
+  // A page rule naming the fullbleed line outranks the default content track.
+  expect(fullbleed.getBoundingClientRect().width).toBeCloseTo(host.clientWidth, 0);
+  expect(content.getBoundingClientRect().width).toBeLessThan(host.clientWidth);
 
   expect(Array.from(host.children).map((child) => child.textContent?.trim())).toEqual([
     'Content',

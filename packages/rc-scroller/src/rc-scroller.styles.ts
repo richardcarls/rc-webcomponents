@@ -53,11 +53,6 @@ export const scrollerStyles = css`
     grid-column: content;
     min-inline-size: 0;
   }
-
-  :host([layout='content']) ::slotted([data-rc-scroller-span='fullbleed']) {
-    grid-column: fullbleed;
-    inline-size: 100%;
-  }
 `;
 
 export default scrollerStyles;

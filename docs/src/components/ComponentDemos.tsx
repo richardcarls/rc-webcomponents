@@ -351,7 +351,8 @@ const SCROLLER_DEMO_CSS = `
   padding-block: 1rem;
 }
 
-.scroller-demo > [data-rc-scroller-span='fullbleed'] {
+.scroller-demo > .fullbleed {
+  grid-column: fullbleed;
   padding-inline: 1rem;
   background: color-mix(in srgb, Highlight 12%, Canvas);
 }
@@ -371,7 +372,7 @@ export function ScrollerDemo() {
         role="region"
         aria-label="Recipe collection"
       >
-        <header data-rc-scroller-span="fullbleed">
+        <header className="fullbleed">
           <strong>Recipes</strong>
         </header>
         {['Apple pie', 'Mushroom risotto', 'Lentil soup', 'Lemon tart', 'Tomato galette'].map(

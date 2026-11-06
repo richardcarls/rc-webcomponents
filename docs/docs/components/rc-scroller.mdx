@@ -31,7 +31,7 @@ events, restoration, and observers work without reaching into shadow DOM.
 
 ```html
 <rc-scroller layout="content" role="region" aria-label="Recipes">
-  <header data-rc-scroller-span="fullbleed">Recipes</header>
+  <header class="fullbleed">Recipes</header>
   <article>Apple pie</article>
 </rc-scroller>
 ```
@@ -57,8 +57,8 @@ keyboard users must scroll such content in every browser.
 Set `layout="content"` to place direct children on a centered content track.
 The track uses `--rc-scroller-content-padding-inline` for its minimum gutters
 and `--rc-scroller-content-max-inline-size` for its maximum width. A direct
-child with `data-rc-scroller-span="fullbleed"` spans the entire available
-inline size while preserving source order.
+child given `grid-column: fullbleed` spans the entire available inline size
+while preserving source order.
 
 Without `layout="content"`, the component only establishes a native
 scrollport. It does not impose padding or child layout.

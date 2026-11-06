@@ -38,10 +38,9 @@ declare global {
  * fullbleed layout tracks. The custom element host is the scroll container,
  * so native scrolling APIs and events work directly on `<rc-scroller>`.
  *
- * With `layout="content"`, direct children use the centered content track.
- * Add `data-rc-scroller-span="fullbleed"` to a direct child to span the full
- * available inline size. This child attribute is a layout convention rather
- * than component state.
+ * With `layout="content"`, direct children use the centered `content` grid
+ * track. Give a direct child `grid-column: fullbleed` to span the full
+ * available inline size; page rules outrank the component's default.
  *
  * The author owns the accessible name and landmark semantics when the region
  * needs them. The component does not add `role` or `tabindex` automatically.

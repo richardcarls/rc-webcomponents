@@ -5,7 +5,7 @@ layout and fullbleed track.
 
 ```html
 <rc-scroller layout="content" role="region" aria-label="Recipes">
-  <header data-rc-scroller-span="fullbleed">Recipes</header>
+  <header class="fullbleed">Recipes</header>
   <article>Apple pie</article>
 </rc-scroller>
 ```
@@ -16,8 +16,14 @@ the `scroll` event, scroll restoration, and scroll observers work directly on
 
 `axis` accepts `block` (the default), `inline`, or `both`. `layout` accepts
 `none` (the default) or `content`. In content layout, direct children use the
-centered content track; a direct child with
-`data-rc-scroller-span="fullbleed"` spans the available inline size.
+centered `content` grid track. Place a direct child on the `fullbleed` track to
+span the available inline size:
+
+```css
+rc-scroller > .fullbleed {
+  grid-column: fullbleed;
+}
+```
 
 The component intentionally adds no landmark role, accessible name, or
 `tabindex`. Add native semantics to the host when the surrounding document

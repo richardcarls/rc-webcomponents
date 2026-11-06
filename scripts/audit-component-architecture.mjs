@@ -45,7 +45,6 @@ export const MARKER_CONTRACTS = {
   'data-rc-range-slider-reflector': 'internal-component',
   'data-rc-reorder-handle': 'authored-behavior',
   'data-rc-resize-corner': 'internal-controller',
-  'data-rc-scroller-span': 'authored-behavior',
   'data-rc-segmented-button-selected-icon': 'authored-structure',
   'data-rc-type-scale': 'authored-theme-hook',
   'data-rc-win31-default': 'authored-theme-hook',
