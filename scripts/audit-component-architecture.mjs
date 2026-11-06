@@ -48,7 +48,6 @@ export const MARKER_CONTRACTS = {
   'data-rc-scroller-span': 'authored-behavior',
   'data-rc-segmented-button-selected-icon': 'authored-structure',
   'data-rc-type-scale': 'authored-theme-hook',
-  'data-rc-view-transition': 'authored-theme-hook',
   'data-rc-win31-default': 'authored-theme-hook',
   'data-rc-win31-inactive': 'authored-theme-hook',
   'data-rc-win31-toggle': 'authored-theme-hook',

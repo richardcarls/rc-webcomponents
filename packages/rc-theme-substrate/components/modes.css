@@ -16,12 +16,6 @@
     outline-offset: var(--rc-focus-ring-offset, 2px);
   }
 
-  @supports (view-transition-name: none) {
-    :where(.rc-theme-substrate, :host(.rc-theme-substrate)) [data-rc-view-transition] {
-      view-transition-name: var(--rc-view-transition-name, none);
-    }
-  }
-
   /*
    * The vestibular harm reduced motion guards against is movement across the
    * visual field, which a color or opacity change does not trigger; removing
