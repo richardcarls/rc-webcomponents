@@ -605,8 +605,14 @@ test.each(['open', 'closed'] as const)('keeps focus within a %s item shadow root
   $shadow.append($button);
   $button.focus();
   await new Promise(requestAnimationFrame);
-  port.scrollTop = 4000;
-  await vi.waitFor(() => expect(range().end).toBeGreaterThan(100));
+
+  // WebKit scrolls the focused button back into view when a concurrent test
+  // page returns window focus, so the scroll is reapplied on each attempt.
+  await vi.waitFor(() => {
+    port.scrollTop = 4000;
+    expect(range().end).toBeGreaterThan(100);
+  });
+
   expect(range().start).toBe(1);
   expect($button.isConnected).toBe(true);
   expect($shadow.activeElement).toBe($button);

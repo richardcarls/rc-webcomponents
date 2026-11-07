@@ -94,8 +94,14 @@ test('warns once and without dumping an unsupported child', async () => {
 });
 
 test('uses its shape-clipped state layer for focus feedback', async () => {
+  // Headless WebKit can leave a finished transition's first sample as the
+  // computed value, so the opacity is checked without motion.
   const screen = render(html`
-    <rc-chip data-testid="host" variant="filter" style="--rc-chip-radius: 999px">
+    <rc-chip
+      data-testid="host"
+      variant="filter"
+      style="--rc-chip-radius: 999px; --rc-chip-state-layer-transition-duration: 0s"
+    >
       <button type="button">Quick</button>
     </rc-chip>
   `);
