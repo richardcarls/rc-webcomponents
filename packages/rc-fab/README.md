@@ -37,18 +37,21 @@ import '@rcarls/rc-fab/define';
 <!-- Always-visible action -->
 <rc-fab>
   <button type="button" aria-label="Create">
-    <span class="material-symbols-outlined" aria-hidden="true">add</span>
+    <span class="material-symbols-outlined" data-rc-icon aria-hidden="true">add</span>
   </button>
 </rc-fab>
 
 <!-- Extended FAB (icon + visible label) -->
 <rc-fab>
   <button type="button">
-    <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+    <span class="material-symbols-outlined" data-rc-icon aria-hidden="true">edit</span>
     Compose
   </button>
 </rc-fab>
 ```
+
+Mark the icon with `data-rc-icon` so packaged themes size it as an icon (24px in
+`rc-theme-material`) instead of at the button's font size.
 
 ## Key attributes and CSS custom properties
 
