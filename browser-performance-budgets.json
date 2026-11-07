@@ -1,38 +1,6 @@
 {
   "version": 1,
   "measurements": {
-    "create100Buttons": {
-      "median": 20.5,
-      "p95": 29.5
-    },
-    "create50Selects": {
-      "median": 35.19999999925494,
-      "p95": 43
-    },
-    "mount220RouteComponents": {
-      "median": 33.399999998509884,
-      "p95": 50.30000000074506
-    },
-    "filter1000OptionCombobox": {
-      "median": 96.09999999776483,
-      "p95": 120.40000000223517
-    },
-    "render1000LineTextarea": {
-      "median": 111.19999999925494,
-      "p95": 134.90000000223517
-    },
-    "update50ActionAdaptiveMenu": {
-      "median": 33.399999998509884,
-      "p95": 33.5
-    },
-    "settleAnchoredPopup": {
-      "median": 233.30000000074506,
-      "p95": 233.40000000223517
-    },
-    "mount30PagePageTurner": {
-      "median": 16.600000001490116,
-      "p95": 16.800000000745058
-    },
     "materialNavigationRailExpandMotion": {
       "median": 300.1000000014901,
       "p95": 316.6000000014901,
@@ -70,38 +38,6 @@
     }
   },
   "budgets": {
-    "create100Buttons": {
-      "median": 37.16666666666667,
-      "p95": 46.16666666666667
-    },
-    "create50Selects": {
-      "median": 51.86666666592161,
-      "p95": 59.66666666666667
-    },
-    "mount220RouteComponents": {
-      "median": 50.066666665176555,
-      "p95": 66.96666666741173
-    },
-    "filter1000OptionCombobox": {
-      "median": 115.31999999731778,
-      "p95": 144.4800000026822
-    },
-    "render1000LineTextarea": {
-      "median": 133.43999999910594,
-      "p95": 161.8800000026822
-    },
-    "update50ActionAdaptiveMenu": {
-      "median": 50.066666665176555,
-      "p95": 50.16666666666667
-    },
-    "settleAnchoredPopup": {
-      "median": 279.96000000089407,
-      "p95": 280.0800000026822
-    },
-    "mount30PagePageTurner": {
-      "median": 33.26666666815679,
-      "p95": 33.46666666741173
-    },
     "materialNavigationRailExpandMotion": {
       "median": 360.1200000017881,
       "p95": 379.92000000178814,

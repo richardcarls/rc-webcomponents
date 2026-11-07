@@ -442,6 +442,7 @@ yarn.cmd test:full
 yarn.cmd validate:packages
 yarn.cmd audit:performance
 yarn.cmd benchmark:browser
+yarn.cmd benchmark:compare
 ```
 
 ```bash
@@ -454,10 +455,12 @@ yarn test:full
 yarn validate:packages
 yarn audit:performance
 yarn benchmark:browser
+yarn benchmark:compare
 ```
 
-`test`, `test:full`, `ci`, `benchmark:browser`, and `test:screenshots:update` run inside the
-Playwright Docker image whose version matches `yarn.lock`, through
+`test`, `test:full`, `ci`, `benchmark:browser`, `benchmark:compare`, and
+`test:screenshots:update` run inside the Playwright Docker image whose version matches `yarn.lock`,
+through
 `scripts/playwright-env.mjs`, on every host and in CI. Docker is required. The wrapper bind-mounts
 the checkout and keeps every `node_modules` in its own volume, so it works from Windows and
 macOS too, and it installs dependencies there only when `yarn.lock` changes. Each script has a
@@ -487,8 +490,11 @@ Vite HMR does not watch dependency `dist/` output through `node_modules`; restar
 the docs dev server after rebuilding a dependency.
 
 Performance audits consume built package exports. Run the root build first.
-Update tracked size or runtime budgets only after reviewing the generated
-`.performance/` report and confirming that a change is intentional.
+Update tracked size or motion budgets only after reviewing the generated
+`.performance/` report and confirming that a change is intentional. Runtime
+timings have no tracked budget: `yarn benchmark:compare` builds the runtime
+scenarios from HEAD's and a base commit's package sources and compares them
+with Tachometer, so its result doesn't depend on the machine's speed.
 
 ## Testing
 

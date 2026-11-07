@@ -202,8 +202,13 @@ bound browser-session resource use. CI always runs the full browser matrix.
 The documentation site uses Docusaurus.
 
 After `yarn build`, `yarn audit:performance` checks package and theme size budgets and
-`yarn benchmark:browser` checks representative Chromium runtime budgets. Reports are written to
-the ignored `.performance/` directory.
+`yarn benchmark:browser` checks frame-count budgets for theme and component motion.
+`yarn benchmark:compare` times the runtime scenarios against a base commit with
+[Tachometer](https://github.com/google/tachometer): the merge base with `origin/develop`, or
+`HEAD^` on `develop` (export another base with `node scripts/benchmark-compare.mjs prepare <ref>`).
+It fails only when a scenario's 95% interval is entirely above +10%. The Benchmarks workflow runs
+it for pushes to `develop` and for pull requests. Reports are written to the ignored
+`.performance/` directory.
 
 Maintainers should follow the [tag-driven npm release guide](RELEASING.md) when versioning or
 publishing the synchronized workspace packages.

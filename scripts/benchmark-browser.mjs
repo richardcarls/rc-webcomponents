@@ -16,12 +16,13 @@ function readJson(path) {
 }
 
 /*
- * `measureScenario()` in benchmarks/browser.ts always includes `samples`
- * (the raw per-run timings) alongside whatever metrics it measured. It's
- * report detail, not a budgeted metric, so it's excluded here rather than
- * required to have a RUNTIME_METRICS entry.
+ * `measureMotionScenario()` in benchmarks/browser.ts always includes
+ * `samples` (the raw per-run timings) alongside whatever metrics it measured.
+ * It's report detail, not a budgeted metric, so it's excluded here rather
+ * than required to have a RUNTIME_METRICS entry. Runtime scenario timings are
+ * compared against the base commit by scripts/benchmark-compare.mjs instead.
  */
-const NON_METRIC_RESULT_FIELDS = new Set(['samples', 'frameWaitSamples']);
+const NON_METRIC_RESULT_FIELDS = new Set(['samples']);
 
 /*
  * Three budget semantics, mirroring BYTE_METRICS/COUNT_METRICS in
