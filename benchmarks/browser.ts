@@ -1,36 +1,16 @@
-import type { LitElement } from 'lit';
-
-import type { RCAdaptiveMenu } from '@rcarls/rc-adaptive-menu';
-import type { RCAppBar } from '@rcarls/rc-app-bar';
-import type { RCCarousel } from '@rcarls/rc-carousel';
-import type { RCCombobox } from '@rcarls/rc-combobox';
 import type { RCMenuButton } from '@rcarls/rc-menu-button';
 import type { RCNavigationRail } from '@rcarls/rc-navigation-rail';
-import type { RCPageTurner } from '@rcarls/rc-page-turner';
-import type { RCSelect } from '@rcarls/rc-select';
-import type { RCScroller } from '@rcarls/rc-scroller';
 import type { RCSwitch } from '@rcarls/rc-switch';
-import type { RCTextarea } from '@rcarls/rc-textarea';
-import '@rcarls/rc-adaptive-menu/define';
-import '@rcarls/rc-app-bar/define';
-import '@rcarls/rc-button/define';
-import '@rcarls/rc-carousel/define';
-import '@rcarls/rc-combobox/define';
 import '@rcarls/rc-menu-button/define';
 import '@rcarls/rc-menu/define';
 import '@rcarls/rc-navigation-rail/define';
 import '@rcarls/rc-page-turner/define';
-import '@rcarls/rc-select/define';
-import '@rcarls/rc-scroller/define';
 import '@rcarls/rc-switch/define';
-import '@rcarls/rc-textarea/define';
+import { $root, createPageTurner, percentile, resetRoot, settle } from './shared';
 
-type BenchmarkResult = {
-  median: number;
-  p95: number;
-  samples: number[];
-  frameWaitSamples: number[];
-};
+// Motion scenarios, checked against frame-count budgets in validate
+// (scripts/benchmark-browser.mjs). Runtime timings are compared against the
+// base commit with Tachometer instead (benchmarks/runtime-scenarios.ts).
 
 type MotionBenchmarkResult = {
   median: number;
@@ -40,60 +20,6 @@ type MotionBenchmarkResult = {
   animationCount: number;
   samples: number[];
 };
-
-const $root = document.querySelector<HTMLElement>('#benchmarks');
-
-if (!$root) {
-  throw new Error('Missing benchmark root.');
-}
-
-function percentile(samples: number[], percentileValue: number): number {
-  const sorted = [...samples].sort((left, right) => left - right);
-  const index = Math.min(sorted.length - 1, Math.ceil(percentileValue * sorted.length) - 1);
-
-  return sorted[index] ?? 0;
-}
-
-let measuringFrameWaits = false;
-let pendingFrameWaits = 0;
-let frameWaitStartedAt = 0;
-let frameWaitMs = 0;
-let frameWaitGeneration = 0;
-
-function nextFrame(): Promise<void> {
-  const generation = frameWaitGeneration;
-
-  if (measuringFrameWaits && pendingFrameWaits++ === 0) {
-    frameWaitStartedAt = performance.now();
-  }
-
-  return new Promise((resolve) =>
-    requestAnimationFrame(() => {
-      if (measuringFrameWaits && generation === frameWaitGeneration && --pendingFrameWaits === 0) {
-        frameWaitMs += performance.now() - frameWaitStartedAt;
-      }
-
-      resolve();
-    }),
-  );
-}
-
-async function settle(element: Element): Promise<void> {
-  const updateComplete = (element as LitElement).updateComplete;
-
-  if (updateComplete) {
-    await updateComplete;
-  }
-
-  await nextFrame();
-}
-
-function options(count: number): string {
-  return Array.from(
-    { length: count },
-    (_, index) => `<option value="value-${index}">Option ${index}</option>`,
-  ).join('');
-}
 
 /*
  * A dropped frame moves in ~16.7ms quanta at 60Hz; two dropped frames back to
@@ -231,248 +157,11 @@ async function measureMotionScenario(
   };
 }
 
-function resetRoot(): void {
-  $root.replaceChildren();
-}
-
-async function createButtons(): Promise<void> {
-  resetRoot();
-
-  const fragment = document.createDocumentFragment();
-
-  for (let index = 0; index < 100; index += 1) {
-    const host = document.createElement('rc-button');
-    const button = document.createElement('button');
-
-    button.textContent = `Action ${index}`;
-    host.append(button);
-    fragment.append(host);
-  }
-
-  $root.append(fragment);
-  await Promise.all(Array.from($root.children, (element) => settle(element)));
-}
-
-async function createSelects(): Promise<void> {
-  resetRoot();
-
-  const fragment = document.createDocumentFragment();
-
-  for (let index = 0; index < 50; index += 1) {
-    const host = document.createElement('rc-select');
-
-    host.innerHTML = `<select aria-label="Choice ${index}">${options(20)}</select>`;
-    fragment.append(host);
-  }
-
-  $root.append(fragment);
-  await Promise.all(Array.from($root.children, (element) => settle(element)));
-}
-
-async function mountRouteComponentBatch(): Promise<void> {
-  resetRoot();
-
-  const fragment = document.createDocumentFragment();
-  const hosts: LitElement[] = [];
-
-  for (let index = 0; index < 40; index += 1) {
-    const host = document.createElement('rc-scroller') as RCScroller;
-
-    host.style.blockSize = '6rem';
-    host.innerHTML = `<div style="block-size: 12rem">Scrollable ${index}</div>`;
-    hosts.push(host);
-    fragment.append(host);
-  }
-
-  for (let index = 0; index < 30; index += 1) {
-    const host = document.createElement('rc-carousel') as RCCarousel;
-
-    host.setAttribute('aria-label', `Carousel ${index}`);
-
-    host.innerHTML = `
-      <rc-carousel-item>One</rc-carousel-item>
-      <rc-carousel-item>Two</rc-carousel-item>
-      <rc-carousel-item>Three</rc-carousel-item>
-    `;
-
-    hosts.push(host);
-    fragment.append(host);
-  }
-
-  for (let index = 0; index < 20; index += 1) {
-    const host = document.createElement('rc-menu-button') as RCMenuButton;
-
-    host.innerHTML = `
-      <button slot="trigger">Menu ${index}</button>
-      <rc-menu label="Menu ${index}"><button>Action</button></rc-menu>
-    `;
-
-    hosts.push(host);
-    fragment.append(host);
-  }
-
-  for (let index = 0; index < 10; index += 1) {
-    const host = document.createElement('rc-app-bar') as RCAppBar;
-
-    host.textContent = `Title ${index}`;
-    hosts.push(host);
-    fragment.append(host);
-  }
-
-  for (let index = 0; index < 10; index += 1) {
-    const host = document.createElement('rc-select') as RCSelect;
-
-    host.innerHTML = `<select aria-label="Choice ${index}">${options(5)}</select>`;
-    hosts.push(host);
-    fragment.append(host);
-  }
-
-  $root.append(fragment);
-  await Promise.all(hosts.map((host) => settle(host)));
-  await nextFrame();
-}
-
-async function openAndFilterCombobox(): Promise<void> {
-  resetRoot();
-
-  const host = document.createElement('rc-combobox') as RCCombobox;
-
-  host.innerHTML = `<select aria-label="Large choice set">${options(1000)}</select>`;
-  $root.append(host);
-  await settle(host);
-
-  host.openPopup();
-  await settle(host);
-
-  const input = host.renderRoot.querySelector<HTMLInputElement>('#trigger');
-
-  if (!input) {
-    throw new Error('Combobox trigger was not rendered.');
-  }
-
-  input.value = 'Option 99';
-  input.dispatchEvent(new InputEvent('input', { bubbles: true }));
-  await settle(host);
-  host.closePopup(false);
-}
-
-async function renderLargeTextarea(): Promise<void> {
-  resetRoot();
-
-  const host = document.createElement('rc-textarea') as RCTextarea;
-  const textarea = document.createElement('textarea');
-  const lines = Array.from(
-    { length: 1000 },
-    (_, index) => `${index}: const value = ${index}; ${index % 8 === 0 ? 'TODO revisit' : ''}`,
-  );
-
-  textarea.setAttribute('aria-label', 'Benchmark source');
-  host.append(textarea);
-  host.addPattern({ pattern: /TODO/g, className: 'benchmark-todo' });
-  host.value = lines.join('\n');
-  $root.append(host);
-  await settle(host);
-
-  host.value += '\n1001: TODO final edit';
-  await settle(host);
-}
-
-async function updateAdaptiveMenu(): Promise<void> {
-  resetRoot();
-
-  const host = document.createElement('rc-adaptive-menu') as RCAdaptiveMenu;
-
-  host.setAttribute('label', 'Benchmark actions');
-
-  for (let index = 0; index < 50; index += 1) {
-    const button = document.createElement('button');
-
-    button.textContent = `Action ${index}`;
-    host.append(button);
-  }
-
-  $root.append(host);
-  await settle(host);
-
-  for (const maximum of [5, 20, 1, 50, 3]) {
-    host.maxShown = maximum;
-    await host.updateComplete;
-  }
-
-  await nextFrame();
-}
-
-async function settleAnchoredPopup(): Promise<void> {
-  resetRoot();
-
-  const host = document.createElement('rc-select') as RCSelect;
-
-  host.innerHTML = `<select aria-label="Anchored choice">${options(20)}</select>`;
-  $root.append(host);
-  await settle(host);
-  host.openPopup();
-  await settle(host);
-
-  host.style.translate = '1px 1px';
-  window.dispatchEvent(new Event('resize'));
-
-  for (let frame = 0; frame < 12; frame += 1) {
-    await nextFrame();
-  }
-
-  host.closePopup(false);
-}
-
-/** A page turner of `count` recipe-step pages, each with text and controls. */
-function createPageTurner(count: number): RCPageTurner {
-  const turner = document.createElement('rc-page-turner') as RCPageTurner;
-
-  turner.setAttribute('aria-label', 'Steps');
-  turner.style.cssText = 'display: block; inline-size: 24rem; block-size: 20rem;';
-
-  turner.innerHTML = Array.from(
-    { length: count },
-    (_, index) => `
-      <rc-page-turner-page>
-        <h2>Step ${index + 1}</h2>
-        <p>Whisk the eggs with the sugar until pale, then fold in the flour in three additions.</p>
-        <label><input type="checkbox" /> Done</label>
-        <button type="button">Start 5 minute timer</button>
-      </rc-page-turner-page>
-    `,
-  ).join('');
-
-  return turner;
-}
-
-async function mountPageTurner(): Promise<void> {
-  resetRoot();
-
-  const turner = createPageTurner(30);
-
-  $root.append(turner);
-  await settle(turner);
-}
-
-const scenarios: Record<string, () => Promise<void>> = {
-  create100Buttons: createButtons,
-  create50Selects: createSelects,
-  mount220RouteComponents: mountRouteComponentBatch,
-  filter1000OptionCombobox: openAndFilterCombobox,
-  render1000LineTextarea: renderLargeTextarea,
-  update50ActionAdaptiveMenu: updateAdaptiveMenu,
-  settleAnchoredPopup,
-  mount30PagePageTurner: mountPageTurner,
-};
-
 /*
  * Each setup imports its own theme dynamically, inside the function, rather
- * than as a static top-level import. A motion scenario is the only place
- * benchmarks/browser.ts reaches for a theme at all, and loading three themes'
- * CSS unconditionally for every scenario (including the many that have
- * nothing to do with theming) would be pure overhead on every page load this
- * harness makes. window.rcBenchmarkNames below still resolves synchronously
- * either way, since none of these imports are awaited at module scope.
+ * than as a static top-level import, so a scenario loads only the theme it
+ * animates. window.rcBenchmarkNames below still resolves synchronously, since
+ * none of these imports are awaited at module scope.
  */
 async function setupMaterialNavigationRailExpand(): Promise<{
   root: Element;
@@ -634,56 +323,9 @@ const motionScenarios: Record<string, () => Promise<MotionBenchmarkResult>> = {
   pageTurnerTurnMotion: () => runMotionScenario(setupPageTurnerTurn),
 };
 
-async function measureScenario(run: () => Promise<void>): Promise<BenchmarkResult> {
-  const warmups = 3;
-  // With 20 samples, p95 is the second-slowest sample rather than the slowest.
-  const measuredRuns = 20;
+window.rcBenchmarkNames = Object.keys(motionScenarios);
 
-  for (let index = 0; index < warmups; index += 1) {
-    await run();
-  }
-
-  const samples: number[] = [];
-  const frameWaitSamples: number[] = [];
-
-  for (let index = 0; index < measuredRuns; index += 1) {
-    frameWaitMs = 0;
-    pendingFrameWaits = 0;
-    frameWaitGeneration += 1;
-    measuringFrameWaits = true;
-
-    const startedAt = performance.now();
-
-    try {
-      await run();
-      samples.push(performance.now() - startedAt);
-      frameWaitSamples.push(frameWaitMs);
-    } finally {
-      measuringFrameWaits = false;
-    }
-  }
-
-  return {
-    median: percentile(samples, 0.5),
-    p95: percentile(samples, 0.95),
-    samples,
-    frameWaitSamples,
-  };
-}
-
-window.rcBenchmarkNames = [...Object.keys(scenarios), ...Object.keys(motionScenarios)];
-
-window.runRcBenchmark = async (name: string): Promise<BenchmarkResult | MotionBenchmarkResult> => {
-  const run = scenarios[name];
-
-  if (run) {
-    const result = await measureScenario(run);
-
-    resetRoot();
-
-    return result;
-  }
-
+window.runRcBenchmark = async (name: string): Promise<MotionBenchmarkResult> => {
   const runMotion = motionScenarios[name];
 
   if (!runMotion) {
@@ -701,6 +343,6 @@ window.runRcBenchmark = async (name: string): Promise<BenchmarkResult | MotionBe
 declare global {
   interface Window {
     rcBenchmarkNames: string[];
-    runRcBenchmark: (name: string) => Promise<BenchmarkResult | MotionBenchmarkResult>;
+    runRcBenchmark: (name: string) => Promise<MotionBenchmarkResult>;
   }
 }

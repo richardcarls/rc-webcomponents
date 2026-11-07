@@ -57,7 +57,7 @@ test('the motion metrics added for frame sampling have the right budget semantic
 
 test('createRuntimeBudgets excludes diagnostic samples', () => {
   assert.deepEqual(
-    createRuntimeBudgets({ example: { median: 10, p95: 20, samples: [], frameWaitSamples: [] } }),
+    createRuntimeBudgets({ example: { median: 10, p95: 20, samples: [] } }),
     {
       example: { median: 10 + FRAME_MS, p95: 20 + FRAME_MS },
     },

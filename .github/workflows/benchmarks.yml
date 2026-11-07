@@ -1,0 +1,129 @@
+name: Benchmarks
+
+# Compares runtime benchmark timings with the base commit using Tachometer.
+# Both variants run interleaved on the same runner, so the result is a
+# relative change that doesn't depend on the runner's speed. A scenario fails
+# only when its whole 95% interval is above +10%.
+
+on:
+  pull_request:
+    paths:
+      - 'packages/*/src/**'
+      - 'benchmarks/**'
+      - 'scripts/benchmark-compare.mjs'
+      - 'package.json'
+      - 'yarn.lock'
+      - 'tsconfig.base.json'
+      - 'vite.shared.ts'
+      - '.github/workflows/benchmarks.yml'
+  push:
+    branches: [develop]
+    paths:
+      - 'packages/*/src/**'
+      - 'benchmarks/**'
+      - 'scripts/benchmark-compare.mjs'
+      - 'package.json'
+      - 'yarn.lock'
+      - 'tsconfig.base.json'
+      - 'vite.shared.ts'
+      - '.github/workflows/benchmarks.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmarks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      # A push compares with the branch tip it replaced; a pull request with
+      # its merge base.
+      - name: Choose the base commit
+        id: base
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "$EVENT_NAME" = pull_request ]; then
+            base=$(git merge-base "$PR_BASE" HEAD)
+          elif [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            base=$BEFORE
+          else
+            base=$(git rev-parse HEAD^)
+          fi
+          echo "sha=$base" >> "$GITHUB_OUTPUT"
+
+      - name: Export the base package sources
+        env:
+          BASE_SHA: ${{ steps.base.outputs.sha }}
+        run: node scripts/benchmark-compare.mjs prepare "$BASE_SHA"
+
+      - name: Compare runtime benchmarks in the Playwright image
+        run: node scripts/playwright-env.mjs benchmark:compare:host
+
+      - name: Write the job summary
+        if: always()
+        run: |
+          if [ -f .performance/tachometer/summary.md ]; then
+            cat .performance/tachometer/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload Tachometer results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tachometer-results
+          path: |
+            .performance/tachometer/results/
+            .performance/tachometer/report.json
+            .performance/tachometer/summary.md
+          if-no-files-found: ignore
+          include-hidden-files: true
+
+      # Fork pull requests get a read-only token, so they keep the job summary.
+      - name: Comment on the pull request
+        if: >-
+          always() && github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const path = '.performance/tachometer/summary.md';
+
+            if (!fs.existsSync(path)) {
+              return;
+            }
+
+            const marker = '<!-- rc-benchmarks -->';
+            const body = `${marker}\n${fs.readFileSync(path, 'utf8')}`;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+            });
+            const existing = comments.find((comment) => comment.body?.startsWith(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
