@@ -1261,6 +1261,29 @@ test('the click that ends a handle drag does not also step', async () => {
   $host.close();
 });
 
+test('a handle drag that returns to its starting height does not step on click', async () => {
+  const snapSpy = vi.fn();
+  const { $host, $dialog, $handle } = await openHandleSheet(snapSpy);
+  const start = $dialog.getBoundingClientRect();
+  const x = start.left + 20;
+  const y = start.top;
+
+  firePointerEvent($handle, 'pointerdown', { clientX: x, clientY: y });
+  firePointerEvent($handle, 'pointermove', { clientX: x, clientY: y - 80 });
+  firePointerEvent($handle, 'pointermove', { clientX: x, clientY: y });
+  firePointerEvent($handle, 'pointerup', { clientX: x, clientY: y });
+  clickHandle($handle);
+
+  await wait(400);
+  expect(sheetHeight($dialog)).toBe(200);
+  expect(snapSpy.mock.calls.some(([event]) => event.detail.trigger === 'activate')).toBe(false);
+
+  clickHandle($handle);
+  await vi.waitFor(() => expect(sheetHeight($dialog)).toBe(320));
+
+  $host.close();
+});
+
 test('a handle click the consumer prevents leaves the sheet where it is', async () => {
   const { $host, $dialog, $handle } = await openHandleSheet();
 

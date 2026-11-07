@@ -464,8 +464,8 @@ export class RCBottomSheet extends RCDialog {
   // Which way activating the handle steps through the snap points: up (1)
   // until the last point, then down (-1) until the first.
   private _activateDirection: 1 | -1 = 1;
-  // Pointer travel of the last resize gesture, so the click that ends a drag
-  // doesn't also step.
+  // Maximum pointer displacement during the last resize gesture, so a drag
+  // that returns to its starting height doesn't also count as a tap.
   private _lastGestureDistance = 0;
 
   private readonly _onClick = (event: MouseEvent): void => {
@@ -645,6 +645,8 @@ export class RCBottomSheet extends RCDialog {
   }
 
   protected override _onResizeStart(detail: ResizeLifecycleDetail): void {
+    this._lastGestureDistance = 0;
+
     // A gesture interrupts a running snap. The resize controller has already
     // pinned the animated box inline, so dropping the animation's forwards
     // fill keeps the sheet where it is instead of letting the snap settle
@@ -661,9 +663,16 @@ export class RCBottomSheet extends RCDialog {
     );
   }
 
+  protected override _onResize(detail: ResizeLifecycleDetail): void {
+    if (detail.inputType === 'pointer') {
+      this._lastGestureDistance = Math.max(this._lastGestureDistance, Math.abs(detail.deltaY));
+    }
+  }
+
   protected override _onResizeEnd(detail: ResizeLifecycleDetail): void {
-    this._lastGestureDistance =
-      detail.inputType === 'pointer' ? Math.abs(detail.height - detail.startHeight) : 0;
+    if (detail.inputType === 'pointer') {
+      this._lastGestureDistance = Math.max(this._lastGestureDistance, Math.abs(detail.deltaY));
+    }
 
     if (detail.inputType === 'pointer' && this.swipeDismiss && this._shouldSwipeDismiss(detail)) {
       this.requestClose();
