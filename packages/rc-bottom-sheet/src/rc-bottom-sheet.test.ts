@@ -4,6 +4,7 @@ import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { waitForTransitionTo } from '../../../test-helpers/transitions.js';
 import './define.js';
 import type { RCBottomSheet } from './rc-bottom-sheet.js';
 
@@ -47,12 +48,12 @@ test('rc-bottom-sheet fades in and out through CSS alone, with no JavaScript gat
   $host.showModal();
   expect($host.open).toBe(true);
 
-  await vi.waitFor(() => expect(getComputedStyle($dialog).opacity).toBe('1'));
+  await waitForTransitionTo($dialog, 'opacity', '1');
 
   $host.close();
   expect($host.open).toBe(false);
 
-  await vi.waitFor(() => expect(getComputedStyle($dialog).opacity).toBe('0'));
+  await waitForTransitionTo($dialog, 'opacity', '0');
 });
 
 test('rc-bottom-sheet entrance does not shift measured geometry, unlike a slide transform would', async () => {
