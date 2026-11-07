@@ -79,7 +79,7 @@ Add the `scroll-reveal` attribute to hide the FAB until the user has scrolled pa
 ```html
 <rc-fab scroll-reveal>
   <button type="button" aria-label="Back to top" onclick="scrollTo({ top: 0, behavior: 'smooth' })">
-    <span class="material-symbols-outlined" aria-hidden="true">vertical_align_top</span>
+    <span class="material-symbols-outlined" data-rc-icon aria-hidden="true">vertical_align_top</span>
   </button>
 </rc-fab>
 ```
@@ -109,7 +109,7 @@ rounded-square shape.
 ```html
 <rc-fab>
   <button type="button">
-    <span class="material-symbols-outlined" aria-hidden="true">chat</span>
+    <span class="material-symbols-outlined" data-rc-icon aria-hidden="true">chat</span>
     Chat with us
   </button>
 </rc-fab>
@@ -152,7 +152,7 @@ dialog open is wrapped in `document.startViewTransition()`.
 ```html
 <rc-fab style="view-transition-name: fab">
   <button type="button" aria-label="Compose" id="compose-btn">
-    <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+    <span class="material-symbols-outlined" data-rc-icon aria-hidden="true">edit</span>
   </button>
 </rc-fab>
 ```
@@ -185,14 +185,14 @@ between them.
 <!-- page-a.html -->
 <rc-fab style="view-transition-name: page-fab">
   <button type="button" aria-label="Edit">
-    <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+    <span class="material-symbols-outlined" data-rc-icon aria-hidden="true">edit</span>
   </button>
 </rc-fab>
 
 <!-- page-b.html -->
 <rc-fab style="view-transition-name: page-fab">
   <button type="button" aria-label="Delete">
-    <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+    <span class="material-symbols-outlined" data-rc-icon aria-hidden="true">delete</span>
   </button>
 </rc-fab>
 ```
@@ -227,7 +227,7 @@ scroll-up, entirely in CSS using a scroll-driven animation.
 ```html
 <rc-fab id="extended-fab">
   <button type="button">
-    <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+    <span class="material-symbols-outlined" data-rc-icon aria-hidden="true">edit</span>
     <span class="fab-label">Compose</span>
   </button>
 </rc-fab>

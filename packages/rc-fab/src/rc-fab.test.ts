@@ -1,6 +1,7 @@
 import { html } from 'lit';
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
+import { userEvent } from 'vitest/browser';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
@@ -264,4 +265,72 @@ test('shows a pointer over the button', async () => {
   await host.updateComplete;
 
   expect(getComputedStyle(host.querySelector('button')!).cursor).toBe('pointer');
+});
+
+test('draws the slotted button hover, focus, and disabled states', async () => {
+  const screen = render(html`
+    <button type="button">Before</button>
+    <rc-fab
+      data-testid="host"
+      style="--rc-fab-bg: rgb(0, 0, 255); --rc-fab-bg-hover: rgb(0, 128, 0);
+        --rc-fab-focus-ring: 3px solid rgb(255, 0, 0); --rc-fab-disabled-opacity: 0.5;"
+    >
+      <button type="button" aria-label="Add">+</button>
+    </rc-fab>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCFab;
+
+  await host.updateComplete;
+
+  const $button = host.querySelector('button')!;
+
+  expect(getComputedStyle($button).backgroundColor).toBe('rgb(0, 0, 255)');
+
+  await userEvent.hover($button);
+  await expect.poll(() => getComputedStyle($button).backgroundColor).toBe('rgb(0, 128, 0)');
+  await userEvent.unhover($button);
+
+  screen.container.querySelector<HTMLButtonElement>('button')!.focus();
+  await userEvent.tab();
+  await expect.element($button).toHaveFocus();
+  expect(getComputedStyle($button).outlineWidth).toBe('3px');
+  expect(getComputedStyle($button).outlineColor).toBe('rgb(255, 0, 0)');
+
+  $button.disabled = true;
+  expect(getComputedStyle($button).opacity).toBe('0.5');
+});
+
+test('scroll-reveal keeps a focused FAB visible above the threshold', async () => {
+  const screen = render(html`
+    <div data-testid="scroller" style="position: relative; block-size: 200px; overflow: auto">
+      <div style="block-size: 3000px">
+        <button type="button">Before</button>
+        <rc-fab
+          data-testid="host"
+          scroll-reveal
+          style="--rc-fab-position: sticky; --rc-fab-scroll-threshold: 1000px;
+            --rc-fab-scroll-timeline: scroll(nearest block);"
+        >
+          <button type="button" aria-label="Add">+</button>
+        </rc-fab>
+      </div>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCFab;
+  const scroller = screen.getByTestId('scroller').element();
+
+  await host.updateComplete;
+  await expect.poll(() => getComputedStyle(host).opacity).toBe('0');
+
+  scroller.scrollTop = 2000;
+  await expect.poll(() => getComputedStyle(host).visibility).toBe('visible');
+
+  screen.container.querySelector<HTMLButtonElement>('button')!.focus({ preventScroll: true });
+  await userEvent.tab();
+  await expect.element(host.querySelector('button')!).toHaveFocus();
+
+  scroller.scrollTop = 0;
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  expect(getComputedStyle(host).opacity).toBe('1');
+  expect(getComputedStyle(host).visibility).toBe('visible');
 });

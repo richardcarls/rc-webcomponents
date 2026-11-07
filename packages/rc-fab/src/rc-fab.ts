@@ -5,11 +5,53 @@ import { property } from 'lit/decorators.js';
 import {
   NativeChildController,
   ScrollObserverController,
+  cssText,
+  defineLightDomBaseStyles,
   findNearestScrollAncestor,
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
 
 import fabStyles from './rc-fab.styles.js';
+
+/*
+ * The slotted button's states, drawn from light DOM: shadow CSS can't read a
+ * slotted element's pseudo-classes, and :host(:has()) matches only in WebKit.
+ * An unset state property falls back to the button's resting value.
+ */
+const LIGHT_DOM_CSS = cssText`
+@layer rc-base {
+  rc-fab > button:hover {
+    background: var(--rc-fab-bg-hover, var(--rc-fab-bg, revert));
+    box-shadow: var(--rc-fab-shadow-hover, var(--rc-fab-shadow, revert));
+  }
+
+  rc-fab > button:active {
+    box-shadow: var(--rc-fab-shadow-active, var(--rc-fab-shadow, revert));
+    transform: var(--rc-fab-active-transform, revert);
+  }
+
+  rc-fab > button:focus-visible {
+    outline: var(--rc-fab-focus-ring, revert);
+    outline-offset: var(--rc-fab-focus-ring-offset, revert);
+  }
+
+  rc-fab > button:disabled {
+    opacity: var(--rc-fab-disabled-opacity, revert);
+    pointer-events: none;
+    box-shadow: var(--rc-fab-disabled-shadow, var(--rc-fab-shadow, revert));
+  }
+
+  /* Keyboard escape hatch: a scroll-revealed FAB shows while it has focus. */
+  rc-fab[scroll-reveal]:has(> button:focus-visible) {
+    animation: none;
+    opacity: 1;
+    visibility: visible;
+    transition: none;
+  }
+}
+`;
+
+const ensureLightDomBaseStyles = defineLightDomBaseStyles('rc-fab', LIGHT_DOM_CSS);
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -45,7 +87,7 @@ declare global {
  * ```html
  * <rc-fab>
  *   <button type="button" aria-label="Create">
- *     <span class="material-symbols-outlined" aria-hidden="true">add</span>
+ *     <span class="material-symbols-outlined" data-rc-icon aria-hidden="true">add</span>
  *   </button>
  * </rc-fab>
  * ```
@@ -54,7 +96,7 @@ declare global {
  * ```html
  * <rc-fab>
  *   <button type="button">
- *     <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+ *     <span class="material-symbols-outlined" data-rc-icon aria-hidden="true">edit</span>
  *     Compose
  *   </button>
  * </rc-fab>
@@ -154,6 +196,11 @@ export class RCFab extends LitElement {
         }
       },
     });
+  }
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    ensureLightDomBaseStyles(this.getRootNode());
   }
 
   protected override updated(changed: PropertyValues): void {

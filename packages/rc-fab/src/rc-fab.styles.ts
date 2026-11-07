@@ -58,27 +58,6 @@ export const fabStyles = css`
     transition: var(--rc-fab-transition, revert);
   }
 
-  :host(:has(button:hover)) ::slotted(button) {
-    background: var(--rc-fab-bg-hover, revert);
-    box-shadow: var(--rc-fab-shadow-hover, revert);
-  }
-
-  :host(:has(button:active)) ::slotted(button) {
-    box-shadow: var(--rc-fab-shadow-active, revert);
-    transform: var(--rc-fab-active-transform, revert);
-  }
-
-  :host(:has(button:focus-visible)) ::slotted(button) {
-    outline: var(--rc-fab-focus-ring, revert);
-    outline-offset: var(--rc-fab-focus-ring-offset, revert);
-  }
-
-  :host(:has(button:disabled)) ::slotted(button) {
-    opacity: var(--rc-fab-disabled-opacity, revert);
-    pointer-events: none;
-    box-shadow: var(--rc-fab-disabled-shadow, revert);
-  }
-
   @keyframes rc-fab-scroll-reveal {
     from {
       opacity: 0;
@@ -108,13 +87,6 @@ export const fabStyles = css`
       animation-timeline: var(--rc-fab-scroll-timeline);
       animation-range: calc(var(--rc-fab-scroll-threshold, 300px) - 100px)
         var(--rc-fab-scroll-threshold, 300px);
-    }
-
-    /* Keyboard escape hatch: always visible when the button has focus */
-    :host([scroll-reveal]):has(button:focus-visible) {
-      animation: none;
-      opacity: 1;
-      visibility: visible;
     }
 
     /*
@@ -151,13 +123,6 @@ export const fabStyles = css`
       transition:
         opacity 200ms linear,
         visibility 0s linear 200ms;
-    }
-
-    /* Keyboard escape hatch */
-    :host([scroll-reveal][scroll-below-threshold]):has(button:focus-visible) {
-      opacity: 1;
-      visibility: visible;
-      transition: none;
     }
 
     /* Effects motion (opacity/visibility): shortened rather than removed. */
