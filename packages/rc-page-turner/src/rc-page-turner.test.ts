@@ -689,7 +689,15 @@ describe('dragging', () => {
     const { turner, pages } = await setup();
     const reported = changes(turner);
 
-    await drag(turner, -0.2);
+    // Holding past the 100 ms velocity window leaves no release velocity,
+    // however long a busy runner takes to dispatch the drag itself.
+    const target = await drag(turner, -0.2, { release: false });
+    const rect = target.getBoundingClientRect();
+    const end = { clientX: rect.left + rect.width * 0.3, clientY: rect.top + rect.height / 2 };
+
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    pointer(target, 'pointermove', end);
+    pointer(target, 'pointerup', end);
     await settled(pages);
 
     expect(reported).toEqual([]);
