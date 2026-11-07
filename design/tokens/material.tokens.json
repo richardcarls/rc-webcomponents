@@ -7532,6 +7532,32 @@
           }
         },
         {
+          "name": "chip/touch-target-overlap-block-end",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-touch-target-overlap-block-end)"
+          },
+          "cssVar": "--rc-chip-touch-target-overlap-block-end",
+          "description": "Applied where rc-field is themed.",
+          "values": {
+            "Value": 8
+          }
+        },
+        {
+          "name": "chip/touch-target-overlap-block-start",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-touch-target-overlap-block-start)"
+          },
+          "cssVar": "--rc-chip-touch-target-overlap-block-start",
+          "description": "Applied where rc-field is themed.",
+          "values": {
+            "Value": 8
+          }
+        },
+        {
           "name": "combobox/chip-padding-block",
           "type": "FLOAT",
           "scopes": [
@@ -7594,6 +7620,22 @@
           "description": "Applied where rc-combobox is themed.",
           "values": {
             "Value": 56
+          }
+        },
+        {
+          "name": "combobox/padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-combobox-padding-block)"
+          },
+          "cssVar": "--rc-combobox-padding-block",
+          "description": "Applied where rc-field is themed.",
+          "values": {
+            "Value": 0
           }
         },
         {
@@ -8502,6 +8544,56 @@
           "description": "Applied where rc-pagination is themed.",
           "values": {
             "Value": 40
+          }
+        },
+        {
+          "name": "core/popover-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popover-color)"
+          },
+          "cssVar": "--rc-popover-color",
+          "description": "Applied where rc-popover is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface-variant",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/popover-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popover-padding-block)"
+          },
+          "cssVar": "--rc-popover-padding-block",
+          "description": "Applied where rc-popover is themed.",
+          "values": {
+            "Value": 12
+          }
+        },
+        {
+          "name": "core/popover-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popover-padding-inline)"
+          },
+          "cssVar": "--rc-popover-padding-inline",
+          "description": "Applied where rc-popover is themed.",
+          "values": {
+            "Value": 16
           }
         },
         {
@@ -9738,6 +9830,21 @@
               "alias": "color/computed/field-color",
               "collection": "Color"
             }
+          }
+        },
+        {
+          "name": "field/control-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-control-gap)"
+          },
+          "cssVar": "--rc-field-control-gap",
+          "description": "Applied where rc-field is themed.",
+          "values": {
+            "Value": 12
           }
         },
         {
@@ -13255,6 +13362,22 @@
           }
         },
         {
+          "name": "select/padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-select-padding-block)"
+          },
+          "cssVar": "--rc-select-padding-block",
+          "description": "Applied where rc-field is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
           "name": "select/padding-inline",
           "type": "FLOAT",
           "scopes": [
@@ -14217,22 +14340,6 @@
           }
         },
         {
-          "name": "textarea/padding-block",
-          "type": "FLOAT",
-          "scopes": [
-            "GAP",
-            "WIDTH_HEIGHT"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-textarea-padding-block)"
-          },
-          "cssVar": "--rc-textarea-padding-block",
-          "description": "Applied where rc-textarea is themed.",
-          "values": {
-            "Value": 16
-          }
-        },
-        {
           "name": "textarea/padding-inline",
           "type": "FLOAT",
           "scopes": [
@@ -14243,7 +14350,7 @@
             "WEB": "var(--rc-textarea-padding-inline)"
           },
           "cssVar": "--rc-textarea-padding-inline",
-          "description": "Applied where rc-textarea is themed.",
+          "description": "Applied where rc-field is themed.",
           "values": {
             "Value": 16
           }
@@ -15315,6 +15422,11 @@
         "name": "navigation-rail/item-text-decoration"
       },
       {
+        "property": "--rc-popover-max-inline-size",
+        "raw": "min(20rem, 100dvi - 1rem)",
+        "name": "core/popover-max-inline-size"
+      },
+      {
         "property": "--rc-popover-shadow",
         "raw": "var(--rc-shadow-level2, none)",
         "name": "core/popover-shadow",
@@ -15501,6 +15613,11 @@
         "property": "--rc-textarea-gutter-border",
         "raw": "1px solid var(--md-sys-color-outline-variant, ButtonBorder)",
         "name": "textarea/gutter-border"
+      },
+      {
+        "property": "--rc-textarea-padding-block",
+        "raw": "0 0.5rem",
+        "name": "textarea/padding-block"
       },
       {
         "property": "--rc-theme-material-disclosure-easing",
