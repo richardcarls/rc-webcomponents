@@ -101,12 +101,12 @@
       "lazyChunks": 0
     },
     "materialTheme": {
-      "initialRaw": 235082,
-      "initialGzip": 34543,
-      "initialBrotli": 26753,
-      "totalRaw": 235082,
-      "totalGzip": 34543,
-      "totalBrotli": 26753,
+      "initialRaw": 247737,
+      "initialGzip": 36100,
+      "initialBrotli": 27953,
+      "totalRaw": 247737,
+      "totalGzip": 36100,
+      "totalBrotli": 27953,
       "largestLazyGzip": 0,
       "initialChunks": 1,
       "lazyChunks": 0
@@ -283,10 +283,10 @@
       "lazyChunks": 0
     },
     "materialTheme": {
-      "initialGzip": 36211,
-      "initialBrotli": 27920,
-      "totalGzip": 36211,
-      "totalBrotli": 27920,
+      "initialGzip": 37905,
+      "initialBrotli": 29351,
+      "totalGzip": 37905,
+      "totalBrotli": 29351,
       "largestLazyGzip": 1024,
       "initialChunks": 1,
       "lazyChunks": 0
