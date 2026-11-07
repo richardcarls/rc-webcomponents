@@ -37,10 +37,20 @@
     --rc-adaptive-menu-item-gap: 0.75rem;
   }
 
+  /*
+   * Only the action's own label: a direct child of the action or of its native
+   * trigger. A promoted rc-menu-button's popup items carry the same markers and
+   * must keep their labels.
+   */
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-adaptive-menu
-    > [data-rc-action-promoted]:not([data-rc-action-show-label]):has([data-rc-icon])
-    [data-rc-label] {
+    > [data-rc-action-promoted]:not([data-rc-action-show-label]):has(> [data-rc-icon])
+    > [data-rc-label],
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-adaptive-menu
+    > [data-rc-action-promoted]:not([data-rc-action-show-label]):has(> :is(button, a) > [data-rc-icon])
+    > :is(button, a)
+    > [data-rc-label] {
     position: absolute;
     inline-size: 1px;
     block-size: 1px;

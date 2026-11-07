@@ -816,6 +816,45 @@ test('a promoted action marked data-rc-action-show-label keeps its label visible
   scope.remove();
 });
 
+test("a promoted icon-only menu button's popup items keep their labels", async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+
+  scope.innerHTML = `
+    <rc-adaptive-menu>
+      <rc-menu-button icon-only>
+        <button slot="trigger" type="button" aria-label="View">
+          <span data-rc-icon aria-hidden="true">▦</span>
+          <span data-rc-label data-testid="trigger">View</span>
+        </button>
+        <rc-menu label="View">
+          <button type="button" role="menuitemradio" aria-checked="true">
+            <span data-rc-icon aria-hidden="true">▦</span>
+            <span data-rc-label data-testid="item">Grid</span>
+          </button>
+        </rc-menu>
+      </rc-menu-button>
+    </rc-adaptive-menu>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const label = (id: string) => scope.querySelector<HTMLElement>(`[data-testid="${id}"]`)!;
+  const menuButton = scope.querySelector('rc-menu-button')!;
+
+  expect(menuButton.hasAttribute('data-rc-action-promoted')).toBe(true);
+  expect(getComputedStyle(label('trigger')).position).toBe('absolute');
+
+  menuButton.openMenu();
+  await settle(scope);
+  expect(getComputedStyle(label('item')).position).not.toBe('absolute');
+  expect(label('item').getBoundingClientRect().width).toBeGreaterThan(10);
+
+  scope.remove();
+});
+
 test('adaptive overflow labels use Material menu-item typography', async () => {
   const scope = document.createElement('div');
 
