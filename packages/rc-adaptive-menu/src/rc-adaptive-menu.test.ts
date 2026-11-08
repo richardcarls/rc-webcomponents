@@ -323,6 +323,44 @@ test('keeps the outer popup open for a demoted submenu trigger and restores its 
   expect(submenu).not.toHaveAttribute('orientation');
 });
 
+test('dismisses the overflow popup when a promoted action is pressed', async () => {
+  const screen = render(html`
+    <rc-adaptive-menu data-testid="host" max-shown="1">
+      <rc-menu-button data-testid="submenu">
+        <button data-testid="submenu-trigger" type="button" slot="trigger" aria-haspopup="menu">
+          View
+        </button>
+        <rc-menu label="View">
+          <button type="button">Grid</button>
+        </rc-menu>
+      </rc-menu-button>
+      <button data-testid="leaf" type="button">Settings</button>
+    </rc-adaptive-menu>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCAdaptiveMenu;
+  const submenuTrigger = await screen.getByTestId('submenu-trigger').element();
+  const leaf = await screen.getByTestId('leaf').element();
+
+  await settle(host);
+
+  expect(leaf).toHaveAttribute('data-rc-action-overflowed');
+  host.openMenu('none');
+  await settle(host);
+
+  const popup = host.shadowRoot?.querySelector<HTMLElement>('#popup');
+
+  expect(popup?.matches(':popover-open')).toBe(true);
+
+  await userEvent.click(submenuTrigger);
+  await settle(host);
+
+  expect(popup?.matches(':popover-open')).toBe(false);
+  expect(host.open).toBe(false);
+
+  // Later tests assert unhovered colors at this same toolbar position.
+  await userEvent.unhover(submenuTrigger);
+});
+
 test('uses real DOM focus for toolbar and overflow keyboard navigation', async () => {
   const screen = render(html`
     <rc-adaptive-menu data-testid="host" max-shown="1">

@@ -853,7 +853,16 @@ export class RCAdaptiveMenu extends LitElement {
   };
 
   private _onDocumentPointerDown = (event: PointerEvent): void => {
-    if (this.open && !event.composedPath().includes(this)) {
+    if (!this.open) {
+      return;
+    }
+
+    // A promoted action is the host's own child, so test against the popup
+    // and its trigger: pressing a promoted action, such as another menu
+    // button, must dismiss the overflow menu like any outside press.
+    const path = event.composedPath();
+
+    if (!path.includes(this._$popup) && !path.includes(this._$trigger)) {
       this._requestUserOpen(false, false);
     }
   };
