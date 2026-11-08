@@ -33,10 +33,11 @@ const REGISTRY_FIELDS = [
 ];
 // npm sometimes prints "Your package is being processed and may take a few
 // minutes to become available" right after a successful publish; the SLSA
-// provenance attestation can lag the package itself by several minutes. Use a
-// bounded exponential backoff so a delayed attestation gets about 12.5 minutes
-// to propagate without querying the registry every few seconds for that whole
-// window.
+// provenance attestation can lag the package itself by several minutes. Every
+// package is published before any is verified, so most attestations are
+// already visible by the first check. One that is not gets a bounded
+// exponential backoff of about 12.5 minutes to propagate without querying the
+// registry every few seconds for that whole window.
 const DEFAULT_PROVENANCE_MAX_RETRIES = 10;
 const DEFAULT_PROVENANCE_INITIAL_DELAY_MS = 5_000;
 const DEFAULT_PROVENANCE_MAX_DELAY_MS = 120_000;
@@ -529,6 +530,12 @@ async function waitForVerifiedPackage({
 }) {
   let metadata = initialMetadata;
 
+  if (metadata === undefined) {
+    const result = await operations.query(workspace);
+
+    metadata = result.state === 'found' ? result.metadata : undefined;
+  }
+
   for (let retry = 0; retry <= provenanceMaxRetries; retry += 1) {
     if (metadata) {
       validatePublishedManifest({
@@ -572,6 +579,16 @@ async function waitForVerifiedPackage({
   );
 }
 
+function validateRegistryManifest({ internalNames, metadata, workspace }) {
+  validatePublishedManifest({
+    internalNames,
+    manifest: metadata,
+    packageName: workspace.name,
+    sourceManifest: workspace.manifest,
+    version: workspace.manifest.version,
+  });
+}
+
 function addUnattempted(summary, ordered, index) {
   summary.unattempted.push(...ordered.slice(index + 1).map(({ name }) => name));
 }
@@ -598,8 +615,12 @@ export async function executePublication({
     skipped: [],
     unattempted: [],
     unregistered: [],
+    unverified: [],
     validated: [],
   };
+  // Provenance can lag a publish by minutes, so every package is published
+  // before any is verified rather than waiting on each one in turn.
+  const pendingVerification = [];
 
   for (const [index, workspace] of ordered.entries()) {
     try {
@@ -626,27 +647,15 @@ export async function executePublication({
       const existing = await operations.query(workspace);
 
       if (existing.state === 'found') {
-        const packageSpec = `${workspace.name}@${workspace.manifest.version}`;
-        const provenanceVerified = await waitForVerifiedPackage({
-          allowMissingProvenance: provenanceExceptions.has(packageSpec),
-          initialMetadata: existing.metadata,
-          internalNames,
-          log,
-          operations,
-          provenanceInitialDelayMs,
-          provenanceMaxDelayMs,
-          provenanceMaxRetries,
-          workspace,
-        });
-
+        // A mismatched registry manifest stops the run before dependents publish.
+        validateRegistryManifest({ internalNames, metadata: existing.metadata, workspace });
         summary.skipped.push(workspace.name);
 
-        if (provenanceVerified) {
-          log.log(`skip (published and verified): ${packageSpec}`);
-        } else {
-          summary.provenanceExceptions.push(packageSpec);
-          log.log(`skip (published without provenance by recovery exception): ${packageSpec}`);
-        }
+        pendingVerification.push({
+          initialMetadata: existing.metadata,
+          kind: 'skipped',
+          workspace,
+        });
 
         continue;
       }
@@ -667,14 +676,11 @@ export async function executePublication({
           const raced = await operations.query(workspace);
 
           if (raced.state === 'found') {
-            await waitForVerifiedPackage({
+            validateRegistryManifest({ internalNames, metadata: raced.metadata, workspace });
+
+            pendingVerification.push({
               initialMetadata: raced.metadata,
-              internalNames,
-              log,
-              operations,
-              provenanceInitialDelayMs,
-              provenanceMaxDelayMs,
-              provenanceMaxRetries,
+              kind: 'raceRecovered',
               workspace,
             });
 
@@ -702,7 +708,27 @@ export async function executePublication({
         continue;
       }
 
-      await waitForVerifiedPackage({
+      summary.published.push(workspace.name);
+      log.log(`published: ${workspace.name}@${workspace.manifest.version}`);
+      pendingVerification.push({ kind: 'published', workspace });
+    } catch (error) {
+      summary.failed.push(workspace.name);
+      addUnattempted(summary, ordered, index);
+      error.publicationSummary = summary;
+
+      throw error;
+    }
+  }
+
+  const verificationErrors = [];
+
+  for (const { initialMetadata, kind, workspace } of pendingVerification) {
+    const packageSpec = `${workspace.name}@${workspace.manifest.version}`;
+
+    try {
+      const provenanceVerified = await waitForVerifiedPackage({
+        allowMissingProvenance: kind === 'skipped' && provenanceExceptions.has(packageSpec),
+        initialMetadata,
         internalNames,
         log,
         operations,
@@ -712,14 +738,33 @@ export async function executePublication({
         workspace,
       });
 
-      summary.published.push(workspace.name);
+      if (!provenanceVerified) {
+        summary.provenanceExceptions.push(packageSpec);
+        log.log(`skip (published without provenance by recovery exception): ${packageSpec}`);
+      } else if (kind === 'skipped') {
+        log.log(`skip (published and verified): ${packageSpec}`);
+      } else {
+        log.log(`verified: ${packageSpec}`);
+      }
     } catch (error) {
-      summary.failed.push(workspace.name);
-      addUnattempted(summary, ordered, index);
-      error.publicationSummary = summary;
-
-      throw error;
+      summary.unverified.push(workspace.name);
+      verificationErrors.push(error);
+      log.log(`verification failed: ${error.message}`);
     }
+  }
+
+  if (verificationErrors.length > 0) {
+    const error =
+      verificationErrors.length === 1
+        ? verificationErrors[0]
+        : new Error(
+            `${verificationErrors.length} packages failed verification: ` +
+              verificationErrors.map(({ message }) => message).join('; '),
+          );
+
+    error.publicationSummary = summary;
+
+    throw error;
   }
 
   if (summary.unregistered.length > 0) {
@@ -746,6 +791,7 @@ export function printPublicationSummary(summary, log = console) {
     ['already published', summary.skipped],
     ['provenance exceptions', summary.provenanceExceptions],
     ['race recovered', summary.raceRecovered],
+    ['unverified', summary.unverified],
     ['failed', summary.failed],
     ['not attempted', summary.unattempted],
   ]) {

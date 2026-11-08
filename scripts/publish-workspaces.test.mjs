@@ -631,6 +631,134 @@ test('skips verified versions and publishes only missing packages in dependency 
   ]);
 });
 
+test('publishes every missing package before verifying any provenance', async () => {
+  const foundation = createWorkspace('foundation');
+  const aggregate = createWorkspace('aggregate', { [foundation.name]: 'workspace:*' });
+  const calls = [];
+  const published = new Set();
+
+  const summary = await executePublication({
+    dryRun: false,
+    log: quietLog,
+    operations: {
+      async pack(workspace) {
+        return { manifest: packedManifest(workspace), tarballPath: `${workspace.name}.tgz` };
+      },
+      async publish(_tarballPath, workspace) {
+        calls.push(`publish:${workspace.name}`);
+        published.add(workspace.name);
+      },
+      async query(workspace) {
+        calls.push(`query:${workspace.name}`);
+
+        return published.has(workspace.name)
+          ? { metadata: registryManifest(workspace), state: 'found' }
+          : { state: 'missing' };
+      },
+      async sleep() {
+        calls.push('sleep');
+      },
+    },
+    provenanceInitialDelayMs: 0,
+    provenanceMaxDelayMs: 0,
+    provenanceMaxRetries: 1,
+    workspaces: [aggregate, foundation],
+  });
+
+  assert.deepEqual(summary.published, [foundation.name, aggregate.name]);
+
+  assert.deepEqual(calls, [
+    `query:${foundation.name}`,
+    `publish:${foundation.name}`,
+    `query:${aggregate.name}`,
+    `publish:${aggregate.name}`,
+    `query:${foundation.name}`,
+    `query:${aggregate.name}`,
+  ]);
+});
+
+test('verifies every published package and reports each one missing provenance', async () => {
+  const first = createWorkspace('first');
+  const second = createWorkspace('second');
+  const third = createWorkspace('third');
+  const withoutProvenance = new Set([first.name, third.name]);
+  const published = new Set();
+
+  await assert.rejects(
+    executePublication({
+      dryRun: false,
+      log: quietLog,
+      operations: {
+        async pack(workspace) {
+          return { manifest: packedManifest(workspace), tarballPath: `${workspace.name}.tgz` };
+        },
+        async publish(_tarballPath, workspace) {
+          published.add(workspace.name);
+        },
+        async query(workspace) {
+          if (!published.has(workspace.name)) {
+            return { state: 'missing' };
+          }
+
+          return {
+            metadata: registryManifest(workspace, {
+              provenance: !withoutProvenance.has(workspace.name),
+            }),
+            state: 'found',
+          };
+        },
+        async sleep() {},
+      },
+      provenanceInitialDelayMs: 0,
+      provenanceMaxDelayMs: 0,
+      provenanceMaxRetries: 1,
+      workspaces: [first, second, third],
+    }),
+    (error) => {
+      assert.match(error.message, /2 packages failed verification/);
+      assert.deepEqual(error.publicationSummary.published, [first.name, second.name, third.name]);
+      assert.deepEqual(error.publicationSummary.unverified, [first.name, third.name]);
+      assert.deepEqual(error.publicationSummary.unattempted, []);
+
+      return true;
+    },
+  );
+});
+
+test('stops before publishing dependents when a registry manifest is invalid', async () => {
+  const foundation = createWorkspace('foundation');
+  const aggregate = createWorkspace('aggregate', { [foundation.name]: 'workspace:*' });
+  const calls = [];
+
+  await assert.rejects(
+    executePublication({
+      dryRun: false,
+      log: quietLog,
+      operations: {
+        async publish(_tarballPath, workspace) {
+          calls.push(`publish:${workspace.name}`);
+        },
+        async query(workspace) {
+          return {
+            metadata: { ...registryManifest(workspace), repository: undefined },
+            state: 'found',
+          };
+        },
+        async sleep() {},
+      },
+      workspaces: [aggregate, foundation],
+    }),
+    (error) => {
+      assert.deepEqual(error.publicationSummary.failed, [foundation.name]);
+      assert.deepEqual(error.publicationSummary.unattempted, [aggregate.name]);
+
+      return true;
+    },
+  );
+
+  assert.deepEqual(calls, []);
+});
+
 test('recovers when a failed publish raced with another successful publisher', async () => {
   const workspace = createWorkspace('package');
   let queryCount = 0;
@@ -722,8 +850,8 @@ test('retries a publish once after a transparency log conflict that published no
   });
 
   assert.deepEqual(summary.published, [workspace.name]);
-  // The first sleep is the retry delay; the second is the provenance wait before its query.
-  assert.deepEqual(calls, ['query', 'publish:1', 'query', 'sleep', 'publish:2', 'sleep', 'query']);
+  // The sleep is the retry delay; verification checks the registry before any provenance wait.
+  assert.deepEqual(calls, ['query', 'publish:1', 'query', 'sleep', 'publish:2', 'query']);
 });
 
 test('stops after a second transparency log conflict', async () => {
