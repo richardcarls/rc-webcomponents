@@ -77,8 +77,13 @@ export const browserTestConfig = createBrowserTestConfig();
  * Vite's dependency scan reads decorator settings only from a `tsconfig.json` at
  * the Vite root. The repository root has none, so without this the scan rejects
  * decorated `declare` fields, skips pre-bundling, and re-optimizes mid-run.
+ *
+ * The SSR hydration test imports Lit's hydrate support from a generated page
+ * script, which the scan can't see. Discovering it mid-run reloads the browser
+ * and fails whichever test file is loading at that moment.
  */
 export const browserOptimizeDeps: UserConfig['optimizeDeps'] = {
+  include: ['@lit-labs/ssr-client/lit-element-hydrate-support.js'],
   esbuildOptions: {
     tsconfig: fileURLToPath(new URL('./tsconfig.base.json', import.meta.url)),
   },
