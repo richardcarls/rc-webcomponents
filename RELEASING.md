@@ -3,7 +3,7 @@
 Releases use GitFlow, one synchronized Changesets version, and a protected `vX.Y.Z` tag. Yarn
 creates each workspace tarball so internal `workspace:*` dependencies become real versions. The
 npm CLI publishes those tarballs through [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers/)
-and verifies the registry metadata and SLSA provenance before continuing.
+and, once every package is published, verifies each one's registry metadata and SLSA provenance.
 
 Important: Do not add `registry-url`, `.npmrc` credentials, `NODE_AUTH_TOKEN`, `NPM_TOKEN`, or
 `YARN_NPM_AUTH_TOKEN` to the release job. A configured credential would let npm fall back from
@@ -143,9 +143,11 @@ Registry, authentication, parsing, or invalid immutable-version errors stop the 
 The one exception is a `TLOG_CREATE_ENTRY_ERROR` transparency log conflict: Sigstore recorded the
 provenance entry but npm's request failed, so nothing was published. When the version is still
 missing, the publisher waits 30 seconds and publishes that package once more before stopping.
-After a successful publish, provenance verification retries with exponentially increasing delays
-for roughly 12.5 minutes before treating a still-missing attestation as a transient failure. The
-workflow logs each scheduled retry; let that bounded wait finish before manually rerunning it.
+Provenance verification starts after the last package is published, so most attestations are
+already visible. A still-missing one is retried with exponentially increasing delays for roughly
+12.5 minutes before being treated as a transient failure. Verification continues through the
+remaining packages and the summary lists every unverified one. The workflow logs each scheduled
+retry; let that bounded wait finish before manually rerunning it.
 If an existing version contains incorrect metadata, it cannot be overwritten; correct the issue
 in a new patch release.
 
