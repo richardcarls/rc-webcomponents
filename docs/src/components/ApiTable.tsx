@@ -106,7 +106,14 @@ function findDeclaration(tag: string) {
 interface ApiSection {
   id: string;
   title: string;
-  table: ReactNode;
+  entries: ApiEntry[];
+}
+
+interface ApiEntry {
+  key: string;
+  name: ReactNode;
+  description: string;
+  details?: Array<{ label: string; value: ReactNode }>;
 }
 
 export function ApiTable({ tag }: ApiTableProps) {
@@ -148,50 +155,38 @@ export function ApiTable({ tag }: ApiTableProps) {
     sections.push({
       id: 'api-properties',
       title: 'Properties',
-      table: (
-        <table>
-          <thead>
-            <tr>
-              <th>Property</th>
-              <th>Markup</th>
-              <th>Type</th>
-              <th>Default</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            {publicFields.map((member) => (
-              <tr key={member.name}>
-                <td>
-                  <code>{member.name}</code>
-                </td>
-                <td>
-                  {member.attribute ? (
-                    <code>{member.attribute}</code>
-                  ) : (
-                    <span className={styles.na}>JS property only</span>
-                  )}
-                </td>
-                <td>
-                  {member.type?.text ? (
-                    <code className={styles.type}>{member.type.text}</code>
-                  ) : (
-                    <span className={styles.na}>Unknown</span>
-                  )}
-                </td>
-                <td>
-                  {member.default !== undefined ? (
-                    <code>{member.default}</code>
-                  ) : (
-                    <span className={styles.na}>Not specified</span>
-                  )}
-                </td>
-                <td>{member.description ?? 'No description provided.'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ),
+      entries: publicFields.map((member) => ({
+        key: member.name,
+        name: <code>{member.name}</code>,
+        description: member.description ?? 'No description provided.',
+        details: [
+          {
+            label: 'Markup',
+            value: member.attribute ? (
+              <code>{member.attribute}</code>
+            ) : (
+              <span className={styles.na}>JS property only</span>
+            ),
+          },
+          {
+            label: 'Type',
+            value: member.type?.text ? (
+              <code className={styles.type}>{member.type.text}</code>
+            ) : (
+              <span className={styles.na}>Unknown</span>
+            ),
+          },
+          {
+            label: 'Default',
+            value:
+              member.default !== undefined ? (
+                <code>{member.default}</code>
+              ) : (
+                <span className={styles.na}>Not specified</span>
+              ),
+          },
+        ],
+      })),
     });
   }
 
@@ -199,26 +194,11 @@ export function ApiTable({ tag }: ApiTableProps) {
     sections.push({
       id: 'api-methods',
       title: 'Methods',
-      table: (
-        <table>
-          <thead>
-            <tr>
-              <th>Method</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            {publicMethods.map((member) => (
-              <tr key={member.name}>
-                <td>
-                  <code>{methodSignature(member)}</code>
-                </td>
-                <td>{member.description ?? 'No description provided.'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ),
+      entries: publicMethods.map((member) => ({
+        key: member.name,
+        name: <code>{methodSignature(member)}</code>,
+        description: member.description ?? 'No description provided.',
+      })),
     });
   }
 
@@ -226,34 +206,21 @@ export function ApiTable({ tag }: ApiTableProps) {
     sections.push({
       id: 'api-events',
       title: 'Events',
-      table: (
-        <table>
-          <thead>
-            <tr>
-              <th>Event</th>
-              <th>Detail type</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            {events.map((event) => (
-              <tr key={event.name}>
-                <td>
-                  <code>{event.name}</code>
-                </td>
-                <td>
-                  {event.type?.text ? (
-                    <code className={styles.type}>{event.type.text}</code>
-                  ) : (
-                    <span className={styles.na}>No detail type documented</span>
-                  )}
-                </td>
-                <td>{event.description ?? 'No description provided.'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ),
+      entries: events.map((event) => ({
+        key: event.name,
+        name: <code>{event.name}</code>,
+        description: event.description ?? 'No description provided.',
+        details: [
+          {
+            label: 'Detail type',
+            value: event.type?.text ? (
+              <code className={styles.type}>{event.type.text}</code>
+            ) : (
+              <span className={styles.na}>No detail type documented</span>
+            ),
+          },
+        ],
+      })),
     });
   }
 
@@ -261,26 +228,11 @@ export function ApiTable({ tag }: ApiTableProps) {
     sections.push({
       id: 'api-slots',
       title: 'Slots',
-      table: (
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            {slots.map((slot) => (
-              <tr key={slot.name}>
-                <td>
-                  <code>{slot.name || '(default)'}</code>
-                </td>
-                <td>{slot.description ?? 'No description provided.'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ),
+      entries: slots.map((slot) => ({
+        key: slot.name,
+        name: <code>{slot.name || '(default)'}</code>,
+        description: slot.description ?? 'No description provided.',
+      })),
     });
   }
 
@@ -288,34 +240,21 @@ export function ApiTable({ tag }: ApiTableProps) {
     sections.push({
       id: 'api-css-custom-properties',
       title: 'CSS Custom Properties',
-      table: (
-        <table>
-          <thead>
-            <tr>
-              <th>Property</th>
-              <th>Default</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cssProperties.map((prop) => (
-              <tr key={prop.name}>
-                <td>
-                  <code>{prop.name}</code>
-                </td>
-                <td>
-                  {prop.default ? (
-                    <code>{prop.default}</code>
-                  ) : (
-                    <span className={styles.na}>Not specified</span>
-                  )}
-                </td>
-                <td>{prop.description ?? 'No description provided.'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ),
+      entries: cssProperties.map((prop) => ({
+        key: prop.name,
+        name: <code>{prop.name}</code>,
+        description: prop.description ?? 'No description provided.',
+        details: [
+          {
+            label: 'Default',
+            value: prop.default ? (
+              <code>{prop.default}</code>
+            ) : (
+              <span className={styles.na}>Not specified</span>
+            ),
+          },
+        ],
+      })),
     });
   }
 
@@ -323,26 +262,11 @@ export function ApiTable({ tag }: ApiTableProps) {
     sections.push({
       id: 'api-css-parts',
       title: 'CSS Parts',
-      table: (
-        <table>
-          <thead>
-            <tr>
-              <th>Part</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cssParts.map((part) => (
-              <tr key={part.name}>
-                <td>
-                  <code>{part.name}</code>
-                </td>
-                <td>{part.description ?? 'No description provided.'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ),
+      entries: cssParts.map((part) => ({
+        key: part.name,
+        name: <code>{part.name}</code>,
+        description: part.description ?? 'No description provided.',
+      })),
     });
   }
 
@@ -371,7 +295,26 @@ export function ApiTable({ tag }: ApiTableProps) {
           <Heading as="h3" id={section.id}>
             {section.title}
           </Heading>
-          {section.table}
+          <dl className={styles.entries}>
+            {section.entries.map((entry) => (
+              <div key={entry.key} className={styles.entry}>
+                <dt className={styles.name}>{entry.name}</dt>
+                <dd className={styles.description}>
+                  <p>{entry.description}</p>
+                  {entry.details && (
+                    <dl className={styles.details}>
+                      {entry.details.map((detail) => (
+                        <div key={detail.label}>
+                          <dt>{detail.label}</dt>
+                          <dd>{detail.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
+                </dd>
+              </div>
+            ))}
+          </dl>
         </section>
       ))}
     </div>

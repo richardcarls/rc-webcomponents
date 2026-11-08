@@ -4,7 +4,6 @@
 
 .section {
   max-width: 100%;
-  overflow-x: auto;
 }
 
 .section h3 {
@@ -14,26 +13,60 @@
   border: 0;
 }
 
-.section table {
-  width: 100%;
-  margin-bottom: 1rem;
+.entries {
+  margin: 0 0 1rem;
   font-size: 0.875rem;
 }
 
-.section th,
-.section td {
-  padding: 0.5rem 0.75rem;
-  text-align: left;
-  vertical-align: top;
+.entry {
+  min-inline-size: 0;
+  padding: 0.75rem;
+  border-block-start: 1px solid var(--ifm-color-emphasis-300);
 }
 
-.section th {
-  white-space: nowrap;
+.entry:last-child {
+  border-block-end: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.name {
+  margin-block-end: 0.25rem;
+  font-weight: 600;
+}
+
+.description {
+  min-inline-size: 0;
+  margin: 0;
+}
+
+.description p {
+  margin: 0;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  gap: 0.5rem 1rem;
+  margin: 0.5rem 0 0;
+}
+
+.details > div {
+  min-inline-size: 0;
+}
+
+.details dt {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.75rem;
+}
+
+.details dd {
+  min-inline-size: 0;
+  margin: 0;
 }
 
 .section code {
   font-size: 0.8125rem;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .type {
