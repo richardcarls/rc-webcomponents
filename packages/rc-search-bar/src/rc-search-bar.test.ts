@@ -346,6 +346,24 @@ test('no slotted search input warns and degrades with no chrome', async () => {
   warn.mockRestore();
 });
 
+test('sizes 1em leading icons from --rc-search-bar-icon-size', async () => {
+  const screen = render(html`
+    <rc-search-bar data-testid="host" style="font-size: 14px; --rc-search-bar-icon-size: 24px">
+      <svg slot="leading" aria-hidden="true" width="1em" height="1em"></svg>
+      <input type="search" aria-label="Search" />
+    </rc-search-bar>
+  `);
+
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
+  await $host.updateComplete;
+
+  const $icon = $host.querySelector('svg')!;
+
+  expect($icon.getBoundingClientRect().width).toBe(24);
+  expect(getComputedStyle($host.querySelector('input')!).fontSize).toBe('14px');
+});
+
 test('has no automated accessibility violations with a live clear button', async () => {
   const screen = render(html`
     <div data-testid="wrap">

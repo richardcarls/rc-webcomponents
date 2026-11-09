@@ -54,6 +54,7 @@ export const searchBarStyles = css`
     flex: none;
     align-items: center;
     color: var(--rc-search-bar-icon-color, GrayText);
+    font-size: var(--rc-search-bar-icon-size, inherit);
   }
 
   #leading.empty {
