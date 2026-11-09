@@ -1575,6 +1575,7 @@ declare module 'react' {
     '--rc-search-bar-gap'?: string | number;
     '--rc-search-bar-height'?: string | number;
     '--rc-search-bar-icon-color'?: string | number;
+    '--rc-search-bar-icon-size'?: string | number;
     '--rc-search-bar-input-color'?: string | number;
     '--rc-search-bar-input-font-family'?: string | number;
     '--rc-search-bar-input-font-size'?: string | number;
