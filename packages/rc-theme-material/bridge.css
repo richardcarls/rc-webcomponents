@@ -372,6 +372,7 @@
       --md-search-bar-leading-icon-color,
       var(--md-sys-color-on-surface, GrayText)
     );
+    --rc-search-bar-icon-size: var(--md-search-bar-leading-icon-size, 1.5rem);
     --rc-search-bar-clear-color: var(
       --md-search-bar-trailing-icon-color,
       var(--md-sys-color-on-surface-variant, GrayText)

@@ -78,6 +78,7 @@ The native WebKit cancel button is suppressed automatically. Set
 | `--rc-search-bar-bg`                        | `Field`                                     | Wrapper background                                     |
 | `--rc-search-bar-color`                     | `FieldText`                                 | Wrapper text color                                     |
 | `--rc-search-bar-icon-color`                | `GrayText`                                  | Leading icon color                                     |
+| `--rc-search-bar-icon-size`                 | inherit                                     | Leading slot font size; `1em` icons follow it          |
 | `--rc-search-bar-clear-color`               | `GrayText`                                  | Clear button glyph color                               |
 | `--rc-search-bar-radius`                    | `var(--rc-control-radius, 0.125em)`         | Wrapper border radius                                  |
 | `--rc-search-bar-height`                    | `var(--rc-control-block-size, 2.5rem)`      | Wrapper block size                                     |

@@ -212,6 +212,15 @@ test('includes a forced-colors bridge', () => {
   expect(hasForcedColorsRule).toBe(true);
 });
 
+test('sizes the search bar leading icon at the M3 24dp', () => {
+  const scope = renderMaterialScope();
+  const $bar = document.createElement('rc-search-bar');
+
+  scope.append($bar);
+
+  expect(getComputedStyle($bar).getPropertyValue('--rc-search-bar-icon-size').trim()).toBe('1.5rem');
+});
+
 test('maps the supported core component set', () => {
   const scope = renderMaterialScope();
   const expectations = new Map<string, string>([

@@ -161,6 +161,7 @@ declare module '@rcarls/rc-common' {
  * @cssprop [--rc-search-bar-bg=Field] - Wrapper background
  * @cssprop [--rc-search-bar-color=FieldText] - Wrapper text color
  * @cssprop [--rc-search-bar-icon-color=GrayText] - Leading icon color
+ * @cssprop [--rc-search-bar-icon-size] - Leading slot font size, so `1em` icons size to it (inherits when unset)
  * @cssprop [--rc-search-bar-clear-color=GrayText] - Clear button glyph color
  * @cssprop [--rc-search-bar-radius=var(--rc-control-radius,0.125em)] - Wrapper border radius
  * @cssprop [--rc-search-bar-height=var(--rc-control-block-size,2.5rem)] - Wrapper block size
