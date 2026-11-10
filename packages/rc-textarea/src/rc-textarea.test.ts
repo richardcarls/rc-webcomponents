@@ -596,6 +596,72 @@ describe('RCTextarea — value', () => {
     expect(lines[1].querySelector('br')).not.toBeNull();
   });
 
+  test('typing after Enter at the end of a line starts in the new line', async () => {
+    const host = await renderTextarea();
+
+    host.value = 'Mix well.';
+
+    await waitRender();
+
+    const editor = getEditor(host);
+
+    placeCaretAtEnd(editor);
+
+    await userEvent.keyboard('{Enter}');
+    document.dispatchEvent(new Event('selectionchange'));
+    await waitRender();
+
+    expect(host.shadowRoot?.activeElement).toBe(editor);
+
+    await userEvent.keyboard('Add salt');
+    await waitRender();
+
+    expect(host.value).toBe('Mix well.\nAdd salt');
+  });
+
+  test('Backspace immediately after Enter removes the new line', async () => {
+    const host = await renderTextarea();
+
+    host.value = 'Mix well.';
+
+    await waitRender();
+
+    const editor = getEditor(host);
+
+    placeCaretAtEnd(editor);
+
+    await userEvent.keyboard('{Enter}');
+    document.dispatchEvent(new Event('selectionchange'));
+    await waitRender();
+
+    expect(host.shadowRoot?.activeElement).toBe(editor);
+
+    await userEvent.keyboard('{Backspace}');
+    await waitRender();
+
+    expect(host.value).toBe('Mix well.');
+  });
+
+  test('Backspace at the start of a populated line joins the previous line', async () => {
+    const host = await renderTextarea();
+
+    host.value = 'Mix well.\nAdd salt';
+
+    await waitRender();
+
+    const editor = getEditor(host);
+    const secondLine = editor.querySelectorAll('.line')[1];
+    const selection = window.getSelection()!;
+
+    editor.focus();
+    selection.collapse(secondLine, 0);
+
+    await userEvent.keyboard('{Backspace}');
+    await waitRender();
+
+    expect(host.value).toBe('Mix well.Add salt');
+  });
+
   test('consecutive Enter presses immediately render consecutive empty lines', async () => {
     const host = await renderTextarea();
 

@@ -376,6 +376,14 @@ export function restoreSelection($root: Element, saved: SavedSelection): void {
       return;
     }
 
+    if (saved.anchorOffset === saved.focusOffset) {
+      // WebKit does not reliably register a newly added collapsed Range in
+      // contenteditable; collapse() places the caret directly.
+      selection.collapse(anchor.node, anchor.offset);
+
+      return;
+    }
+
     const range = document.createRange();
 
     range.setStart(anchor.node, anchor.offset);

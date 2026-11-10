@@ -479,6 +479,7 @@ export class RCTextarea extends LitElement {
   protected _$slot!: HTMLSlotElement;
 
   private _value = '';
+  private _renderedValue: string | null = null;
   private _defaultValue: string | undefined;
   private _initialValueResolved = false;
   private _valueSetByHost = false;
@@ -1154,6 +1155,12 @@ export class RCTextarea extends LitElement {
 
   protected _onSelectionChange = (): void => {
     if (!this._$editor) {
+      return;
+    }
+
+    // A model-owned edit can queue selectionchange before its DOM rebuild.
+    // Offsets from the old DOM would replace the caret saved for the new value.
+    if (!this.readOnly && this._renderedValue !== this._value) {
       return;
     }
 
@@ -1934,6 +1941,7 @@ export class RCTextarea extends LitElement {
 
       this._syncContentDirection();
       this._document.build(renderValue, allDecorations);
+      this._renderedValue = renderValue;
       this._syncLineDirections(renderValue);
 
       if (
