@@ -109,6 +109,22 @@ Custom properties inherit into shadow roots, so a menu rendered inside another
 component's shadow root, where element selectors such as `.my-theme rc-menu`
 cannot reach, still gets the theme's popup surface.
 
+### Editor support
+
+The aggregate package ships VS Code CSS custom data for every shared and
+component token, with descriptions, accepted syntax, defaults, and the elements
+that read each one. Point `css.customData` at it to get completion and hover
+documentation in stylesheets:
+
+```json
+{
+  "css.customData": ["./node_modules/@rcarls/rc-webcomponents/dist/css-custom-data.json"]
+}
+```
+
+The same `syntax` values appear on each element's `cssProperties` in its
+`custom-elements.json`.
+
 ## Per-component tokens
 
 Each component also exposes its own scoped tokens for fine-grained control.

@@ -291,6 +291,14 @@ false` `@property` a matching `@attr` line; use bracket form (`@attr [name]`)
   or absent (describe what it defers to in the text). These bracket rules are a
   human-readability convention only; `cem:analyze` parses either form into the
   same manifest entry.
+- Give a new or changed `@cssprop` its accepted grammar as a CSS syntax string:
+  `@cssprop {<length-percentage>} [--rc-example-gap=0.5em] - Description.` The
+  manifest plugin (`scripts/cem-css-properties.mjs`) stores it as the schema's
+  `syntax` field and fails analysis on an invalid string; write the full
+  grammar (`<number> | normal | bold`), not a type inferred from the default.
+  The audit ratchets `CSS_PROPERTY_SYNTAX_BASELINE` down as coverage grows.
+  When a fallback is a shared token, document the default as `var(--rc-name)`
+  without repeating the contract's literal.
 - When adding a `@cssprop` tag, copy the literal default straight from the
   component's own current `.styles.ts` (or an imperatively injected `<style>`
   string, if the component uses one) at the moment you write the tag, not from

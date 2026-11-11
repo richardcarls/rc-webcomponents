@@ -206,6 +206,22 @@ export const THEME_SELECTOR_BUDGETS = {
  * for a component's own source, and theme names for motion a theme package
  * adds on top of a component (see rc-theme-material below).
  */
+/*
+ * Documented CSS custom properties that still lack a `syntax` in the
+ * manifest (`@cssprop {<syntax>} --name`). The count may only go down: new or
+ * changed properties should state their syntax, and lowering this number
+ * after a backfill keeps it from creeping back up.
+ */
+export const CSS_PROPERTY_SYNTAX_BASELINE = 961;
+
+/** Counts documented CSS properties with and without a manifest syntax. */
+export function cssPropertySyntaxCoverage(declarations) {
+  const properties = declarations.flatMap((declaration) => declaration.cssProperties ?? []);
+  const withSyntax = properties.filter((property) => property.syntax).length;
+
+  return { total: properties.length, withSyntax, missing: properties.length - withSyntax };
+}
+
 export const ANIMATED_LAYOUT_PROPERTY_BUDGETS = {
   // The `<details>` panel measures its open state as actual box height;
   // `calc-size()` isn't broadly supported enough yet to be the primary
@@ -965,6 +981,17 @@ export function runAudit(root = DEFAULT_ROOT) {
     }
   }
 
+  const syntaxCoverage = cssPropertySyntaxCoverage(declarations);
+
+  if (syntaxCoverage.missing > CSS_PROPERTY_SYNTAX_BASELINE) {
+    errors.push(
+      `${syntaxCoverage.missing - CSS_PROPERTY_SYNTAX_BASELINE} new CSS custom properties lack a syntax; document them as @cssprop {<syntax>} --name.`,
+    );
+  } else if (syntaxCoverage.missing < CSS_PROPERTY_SYNTAX_BASELINE) {
+    warnings.push(
+      `Lower CSS_PROPERTY_SYNTAX_BASELINE to ${syntaxCoverage.missing}; more custom properties now state a syntax.`,
+    );
+  }
 
   for (const path of sourceFiles) {
     for (const token of findRawSharedTokenReads(read(path), baseTokens)) {
@@ -1186,6 +1213,7 @@ export function runAudit(root = DEFAULT_ROOT) {
       customElements: declarations.length,
       sharedTokens: baseTokens.size,
       classifiedMarkers: Object.keys(MARKER_CONTRACTS).length,
+      cssPropertySyntax: syntaxCoverage,
     },
     markerContracts: MARKER_CONTRACTS,
     packages,
@@ -1206,6 +1234,10 @@ function printAudit(result, json) {
 
   console.log(
     `Audited ${summary.componentPackages} component packages, ${summary.customElements} custom elements, ${summary.sharedTokens} shared tokens, and ${summary.classifiedMarkers} marker contracts.`,
+  );
+
+  console.log(
+    `${summary.cssPropertySyntax.withSyntax} of ${summary.cssPropertySyntax.total} documented CSS custom properties state a syntax.`,
   );
 
   for (const warning of result.warnings) {

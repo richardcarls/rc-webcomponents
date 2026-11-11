@@ -82,6 +82,11 @@ fallbacks:
 @import '@rcarls/rc-webcomponents/themes/base.css';
 ```
 
+Components carry the same defaults as fallbacks, so the file is optional. For
+editor completion of every shared and component token, add
+`node_modules/@rcarls/rc-webcomponents/dist/css-custom-data.json` to VS Code's
+`css.customData` setting.
+
 ## Server-Rendered Pages
 
 Two more optional stylesheets lay out the native markup before the elements

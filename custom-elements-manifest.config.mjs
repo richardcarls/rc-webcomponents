@@ -1,4 +1,6 @@
-module.exports = {
+import { cssPropertiesPlugin } from './scripts/cem-css-properties.mjs';
+
+export default {
   globs: ['packages/*/src/*.ts'],
   exclude: [
     '**/*.test.ts',
@@ -9,4 +11,5 @@ module.exports = {
   ],
   litelement: true,
   outdir: 'dist',
+  plugins: [cssPropertiesPlugin()],
 };

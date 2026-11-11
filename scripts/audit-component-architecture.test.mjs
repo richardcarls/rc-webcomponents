@@ -4,9 +4,11 @@ import { test } from 'node:test';
 import {
   ANIMATED_LAYOUT_PROPERTY_BUDGETS,
   CROSS_COMPONENT_TOKEN_CONTRACTS,
+  CSS_PROPERTY_SYNTAX_BASELINE,
   PRIVATE_THEME_TOKEN_CONTRACTS,
   REMOVED_TOKEN_CONTRACTS,
   THEME_PACKAGES,
+  cssPropertySyntaxCoverage,
   extractMarkers,
   extractThemeSelectorMetrics,
   extractTokenDefinitions,
@@ -273,4 +275,17 @@ test('reports hand-written var() reads of shared tokens outside comments', () =>
   `;
 
   assert.deepEqual(findRawSharedTokenReads(source, shared), ['--rc-control-gap']);
+});
+
+test('counts documented CSS properties that state a syntax', () => {
+  assert.deepEqual(
+    cssPropertySyntaxCoverage([
+      { cssProperties: [{ name: '--rc-a', syntax: '<length>' }, { name: '--rc-b' }] },
+      { cssProperties: [{ name: '--rc-c' }] },
+      {},
+    ]),
+    { total: 3, withSyntax: 1, missing: 2 },
+  );
+
+  assert.ok(Number.isInteger(CSS_PROPERTY_SYNTAX_BASELINE));
 });
