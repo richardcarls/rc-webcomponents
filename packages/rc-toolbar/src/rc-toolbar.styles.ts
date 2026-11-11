@@ -1,5 +1,7 @@
 import { css } from 'lit';
 
+import { rcToken } from '@rcarls/rc-common';
+
 export const toolbarStyles = css`
   :host {
     display: inline-block;
@@ -9,19 +11,19 @@ export const toolbarStyles = css`
     display: flex;
     flex-direction: row;
     flex-wrap: var(--rc-toolbar-flex-wrap, nowrap);
-    gap: var(--rc-toolbar-gap-inline, var(--rc-control-gap, 0.25em));
+    gap: var(--rc-toolbar-gap-inline, ${rcToken('--rc-control-gap')});
     padding-inline: var(
       --rc-toolbar-padding-inline,
-      calc(var(--rc-control-padding-inline, 0.5em) / 2)
+      calc(${rcToken('--rc-control-padding-inline')} / 2)
     );
     padding-block: var(
       --rc-toolbar-padding-block,
-      calc(var(--rc-control-padding-block, 0.25em) / 2)
+      calc(${rcToken('--rc-control-padding-block')} / 2)
     );
-    border-radius: var(--rc-toolbar-radius, var(--rc-control-radius, 0));
-    font-family: var(--rc-font-family, inherit);
-    font-size: var(--rc-font-size, inherit);
-    line-height: var(--rc-line-height, normal);
+    border-radius: var(--rc-toolbar-radius, ${rcToken('--rc-control-radius')});
+    font-family: ${rcToken('--rc-font-family', 'inherit')};
+    font-size: ${rcToken('--rc-font-size', 'inherit')};
+    line-height: ${rcToken('--rc-line-height')};
 
     /*
      * Layout keys off the author's orientation, not aria-orientation: the
@@ -32,7 +34,7 @@ export const toolbarStyles = css`
       flex-direction: column;
       border-radius: var(
         --rc-toolbar-vertical-radius,
-        var(--rc-toolbar-radius, var(--rc-control-radius, 0))
+        var(--rc-toolbar-radius, ${rcToken('--rc-control-radius')})
       );
     }
   }

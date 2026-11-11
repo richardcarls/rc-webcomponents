@@ -6288,6 +6288,7 @@ __metadata:
     husky: "npm:^9.1.7"
     idiomorph: "npm:0.8.0"
     lit: "npm:^3.0.0"
+    magic-string: "npm:^0.30.21"
     playwright: "npm:^1.56.0"
     prettier: "npm:^3.8.4"
     rollup: "npm:^4.60.2"

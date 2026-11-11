@@ -10,6 +10,7 @@ import {
   defineLightDomBaseStyles,
   MorphRecoveryController,
   setCustomState,
+  rcToken,
 } from '@rcarls/rc-common';
 
 import fieldStyles from './rc-field.styles.js';
@@ -48,7 +49,7 @@ const LIGHT_DOM_CSS = cssText`
     flex: 1 1 auto;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0 var(--rc-field-control-gap, var(--rc-control-gap, 0.25rem));
+    gap: 0 var(--rc-field-control-gap, ${rcToken('--rc-control-gap')});
     min-inline-size: 0;
     margin: 0;
     padding: 0;
@@ -63,7 +64,7 @@ const LIGHT_DOM_CSS = cssText`
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    color: var(--rc-field-label-color, var(--rc-field-text, CanvasText));
+    color: var(--rc-field-label-color, ${rcToken('--rc-field-text')});
     line-height: 1.25;
   }
 
@@ -168,24 +169,24 @@ function groupControls($group: HTMLFieldSetElement): RCFieldControl[] {
  * @cssstate invalid - While an attempted or forced validation state is invalid
  * @cssstate multiline - While the native control is a textarea outside a group
  *
- * @cssprop [--rc-field-min-block-size=var(--rc-control-block-size, 2.5rem)] - Minimum field surface block size
- * @cssprop [--rc-field-gap=var(--rc-control-gap, 0.5rem)] - Gap between leading, content, and trailing regions
- * @cssprop [--rc-field-padding=var(--rc-control-padding-block, 0.5rem) var(--rc-control-padding-inline, 0.75rem)] - Field surface padding
- * @cssprop [--rc-field-border=var(--rc-border, 1px solid ButtonBorder)] - Field surface border
- * @cssprop [--rc-field-radius=var(--rc-control-radius, 0.125rem)] - Field surface corner radius
- * @cssprop [--rc-field-background=var(--rc-field, Field)] - Field surface background
- * @cssprop [--rc-field-color=var(--rc-field-text, FieldText)] - Input and affix text color
- * @cssprop [--rc-field-label-color=var(--rc-field-text, CanvasText)] - Label color
- * @cssprop [--rc-field-control-gap=var(--rc-control-gap, 0.25rem)] - Gap between control and prefix or suffix
- * @cssprop [--rc-field-supporting-gap=var(--rc-control-gap, 0.5rem)] - Gap between supporting text and counter
+ * @cssprop [--rc-field-min-block-size=var(--rc-control-block-size)] - Minimum field surface block size
+ * @cssprop [--rc-field-gap=var(--rc-control-gap)] - Gap between leading, content, and trailing regions
+ * @cssprop [--rc-field-padding=var(--rc-control-padding-block) var(--rc-control-padding-inline)] - Field surface padding
+ * @cssprop [--rc-field-border=var(--rc-border)] - Field surface border
+ * @cssprop [--rc-field-radius=var(--rc-control-radius)] - Field surface corner radius
+ * @cssprop [--rc-field-background=var(--rc-field)] - Field surface background
+ * @cssprop [--rc-field-color=var(--rc-field-text)] - Input and affix text color
+ * @cssprop [--rc-field-label-color=var(--rc-field-text)] - Label color
+ * @cssprop [--rc-field-control-gap=var(--rc-control-gap)] - Gap between control and prefix or suffix
+ * @cssprop [--rc-field-supporting-gap=var(--rc-control-gap)] - Gap between supporting text and counter
  * @cssprop [--rc-field-supporting-padding-block-start=0.25rem] - Supporting text top padding
- * @cssprop [--rc-field-supporting-padding-inline=var(--rc-control-padding-inline, 0.75rem)] - Supporting text inline padding
- * @cssprop [--rc-field-supporting-color=var(--rc-field-text, CanvasText)] - Hint and counter color
+ * @cssprop [--rc-field-supporting-padding-inline=var(--rc-control-padding-inline)] - Supporting text inline padding
+ * @cssprop [--rc-field-supporting-color=var(--rc-field-text)] - Hint and counter color
  * @cssprop [--rc-field-supporting-font-size=0.75rem] - Hint, error, and counter font size
  * @cssprop [--rc-field-error-color=Mark] - Invalid outline, label, and error color
- * @cssprop [--rc-field-disabled-opacity=var(--rc-disabled-opacity, 0.6)] - Disabled field opacity
- * @cssprop [--rc-field-focus-outline=var(--rc-focus-ring, 2px solid Highlight)] - Focus outline
- * @cssprop [--rc-field-focus-outline-offset=var(--rc-focus-ring-offset, 0)] - Focus outline offset
+ * @cssprop [--rc-field-disabled-opacity=var(--rc-disabled-opacity)] - Disabled field opacity
+ * @cssprop [--rc-field-focus-outline=var(--rc-focus-ring)] - Focus outline
+ * @cssprop [--rc-field-focus-outline-offset=var(--rc-focus-ring-offset)] - Focus outline offset
  *
  * @csspart field - Field surface
  * @csspart content - Label and editable content column

@@ -8,6 +8,7 @@ import {
   NativeChildController,
   valueToPercent,
   warnMissingDirectChild,
+  rcToken,
 } from '@rcarls/rc-common';
 
 export interface RCSliderValueEvent {
@@ -138,11 +139,11 @@ export class RCSlider extends LitElement {
 
     .rc-slider-root {
       display: grid;
-      gap: var(--rc-slider-gap, var(--rc-control-gap, 0.5rem));
+      gap: var(--rc-slider-gap, ${rcToken('--rc-control-gap')});
       align-items: center;
-      font-family: var(--rc-font-family, inherit);
-      font-size: var(--rc-font-size, inherit);
-      line-height: var(--rc-line-height, normal);
+      font-family: ${rcToken('--rc-font-family', 'inherit')};
+      font-size: ${rcToken('--rc-font-size', 'inherit')};
+      line-height: ${rcToken('--rc-line-height')};
     }
 
     .rc-slider-root[data-display='inline-start'] {
@@ -157,7 +158,7 @@ export class RCSlider extends LitElement {
       position: relative;
       display: block;
       min-width: 0;
-      min-height: var(--rc-slider-control-size, var(--rc-control-block-size, 1.5rem));
+      min-height: var(--rc-slider-control-size, ${rcToken('--rc-control-block-size')});
     }
 
     .rc-slider-track,
@@ -172,7 +173,7 @@ export class RCSlider extends LitElement {
       block-size: var(--rc-slider-track-size, 0.1875rem);
       background: var(--rc-slider-track-background, CanvasText);
       opacity: var(--rc-slider-track-opacity, 0.25);
-      border-radius: var(--rc-slider-track-radius, var(--rc-control-radius, 0));
+      border-radius: var(--rc-slider-track-radius, ${rcToken('--rc-control-radius')});
       overflow: hidden;
       z-index: 0;
     }
@@ -185,7 +186,7 @@ export class RCSlider extends LitElement {
 
     .rc-slider-progress {
       inset-block: 0;
-      background: var(--rc-slider-progress-background, var(--rc-accent, Highlight));
+      background: var(--rc-slider-progress-background, ${rcToken('--rc-accent')});
       border-radius: inherit;
       z-index: 1;
     }
@@ -203,7 +204,7 @@ export class RCSlider extends LitElement {
     .rc-slider-value {
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
-      color: var(--rc-slider-value-color, var(--rc-text-disabled, GrayText));
+      color: var(--rc-slider-value-color, ${rcToken('--rc-text-disabled')});
     }
 
     .rc-slider-root[data-display='float'] .rc-slider-value {
@@ -227,7 +228,7 @@ export class RCSlider extends LitElement {
     }
 
     :host([orientation='vertical']) .rc-slider-control {
-      inline-size: var(--rc-slider-control-size, var(--rc-control-block-size, 1.5rem));
+      inline-size: var(--rc-slider-control-size, ${rcToken('--rc-control-block-size')});
       block-size: var(--rc-slider-vertical-size, 12.5rem);
     }
 
@@ -377,11 +378,7 @@ export class RCSlider extends LitElement {
     `;
 
     return html`
-      <div
-        part="root"
-        class="rc-slider-root"
-        data-display=${this.display ?? nothing}
-      >
+      <div part="root" class="rc-slider-root" data-display=${this.display ?? nothing}>
         ${this.display === 'inline-start' ? valueDisplay : nothing}
 
         <span part="control" class="rc-slider-control">

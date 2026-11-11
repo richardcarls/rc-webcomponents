@@ -12,6 +12,7 @@ import {
   renderedOrientation,
   RovingTabIndexMixin,
   MorphRecoveryController,
+  rcToken,
 } from '@rcarls/rc-common';
 
 import toolbarStyles from './rc-toolbar.styles.js';
@@ -20,8 +21,8 @@ const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   /* :host(:has()) is not supported in Chromium or Firefox, so the light DOM draws the ring. */
   rc-toolbar:has(:focus-visible)::part(root) {
-    outline: var(--rc-focus-ring, auto);
-    outline-offset: var(--rc-focus-ring-offset, 0);
+    outline: ${rcToken('--rc-focus-ring')};
+    outline-offset: ${rcToken('--rc-focus-ring-offset')};
   }
 }
 `;

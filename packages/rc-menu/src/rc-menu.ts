@@ -7,6 +7,7 @@ import {
   isFocusable,
   defineLightDomBaseStyles,
   MorphRecoveryController,
+  rcToken,
 } from '@rcarls/rc-common';
 
 import menuStyles from './rc-menu.styles.js';
@@ -56,12 +57,12 @@ const LIGHT_DOM_CSS = cssText`
     display: flex;
     flex-shrink: 0;
     align-items: center;
-    gap: var(--rc-menu-item-gap, var(--rc-item-gap, 0.5em));
+    gap: var(--rc-menu-item-gap, ${rcToken('--rc-item-gap')});
     min-block-size: var(--rc-menu-item-min-block-size, 0px);
     width: 100%;
     text-align: start;
-    padding: var(--rc-menu-item-padding-block, var(--rc-item-padding-block, 0.3em))
-      var(--rc-menu-item-padding-inline, var(--rc-item-padding-inline, 0.75em));
+    padding: var(--rc-menu-item-padding-block, ${rcToken('--rc-item-padding-block')})
+      var(--rc-menu-item-padding-inline, ${rcToken('--rc-item-padding-inline')});
     appearance: none;
     box-sizing: border-box;
     border: none;
@@ -139,8 +140,8 @@ const LIGHT_DOM_CSS = cssText`
   rc-menu :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'])
     [data-rc-icon] {
     flex: none;
-    font-size: var(--rc-item-icon-size, inherit);
-    line-height: var(--rc-item-icon-size, inherit);
+    font-size: ${rcToken('--rc-item-icon-size', 'inherit')};
+    line-height: ${rcToken('--rc-item-icon-size', 'inherit')};
   }
 
   rc-menu :not([role='group']) > [data-rc-label] {
@@ -165,8 +166,8 @@ const LIGHT_DOM_CSS = cssText`
   rc-menu [role='separator'],
   rc-menu hr {
     border: none;
-    border-block-start: var(--rc-menu-separator-border, var(--rc-border, 1px solid ButtonBorder));
-    margin-block: var(--rc-menu-separator-margin-block, var(--rc-control-gap, 0.25em));
+    border-block-start: var(--rc-menu-separator-border, ${rcToken('--rc-border')});
+    margin-block: var(--rc-menu-separator-margin-block, ${rcToken('--rc-control-gap')});
     margin-inline: var(--rc-menu-separator-margin-inline, 0px);
   }
 
@@ -189,8 +190,8 @@ const LIGHT_DOM_CSS = cssText`
   /* Disabled items */
   rc-menu button:disabled,
   rc-menu [aria-disabled='true'] {
-    color: var(--rc-menu-disabled-color, var(--rc-text-disabled, GrayText));
-    opacity: var(--rc-menu-disabled-opacity, var(--rc-disabled-opacity, 0.55));
+    color: var(--rc-menu-disabled-color, ${rcToken('--rc-text-disabled')});
+    opacity: var(--rc-menu-disabled-opacity, ${rcToken('--rc-disabled-opacity')});
     pointer-events: none;
   }
 }

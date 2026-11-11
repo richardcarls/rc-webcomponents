@@ -1,4 +1,4 @@
-import { cssText, defineLightDomBaseStyles } from '@rcarls/rc-common';
+import { cssText, defineLightDomBaseStyles, rcToken } from '@rcarls/rc-common';
 
 /**
  * Light-DOM base styles for the dialog surface.
@@ -74,19 +74,19 @@ export const DIALOG_BASE_CSS = cssText`
     rc-dialog > dialog[open] {
       opacity: 1;
       transition:
-        opacity var(--rc-motion-effects-duration-default, 200ms)
-          var(--rc-motion-effects-easing-enter, ease-out),
-        overlay var(--rc-motion-effects-duration-default, 200ms) allow-discrete,
-        display var(--rc-motion-effects-duration-default, 200ms) allow-discrete;
+        opacity ${rcToken('--rc-motion-effects-duration-default')}
+          ${rcToken('--rc-motion-effects-easing-enter')},
+        overlay ${rcToken('--rc-motion-effects-duration-default')} allow-discrete,
+        display ${rcToken('--rc-motion-effects-duration-default')} allow-discrete;
     }
 
     rc-dialog > dialog:not([open]) {
       opacity: 0;
       transition:
-        opacity var(--rc-motion-effects-duration-default, 200ms)
-          var(--rc-motion-effects-easing-exit, ease-in),
-        overlay var(--rc-motion-effects-duration-default, 200ms) allow-discrete,
-        display var(--rc-motion-effects-duration-default, 200ms) allow-discrete;
+        opacity ${rcToken('--rc-motion-effects-duration-default')}
+          ${rcToken('--rc-motion-effects-easing-exit')},
+        overlay ${rcToken('--rc-motion-effects-duration-default')} allow-discrete,
+        display ${rcToken('--rc-motion-effects-duration-default')} allow-discrete;
     }
 
     @starting-style {
@@ -98,14 +98,14 @@ export const DIALOG_BASE_CSS = cssText`
     /* The scrim fades in step with the surface, not instantly. */
     rc-dialog > dialog[open]::backdrop {
       opacity: 1;
-      transition: opacity var(--rc-motion-effects-duration-default, 200ms)
-        var(--rc-motion-effects-easing-enter, ease-out);
+      transition: opacity ${rcToken('--rc-motion-effects-duration-default')}
+        ${rcToken('--rc-motion-effects-easing-enter')};
     }
 
     rc-dialog > dialog:not([open])::backdrop {
       opacity: 0;
-      transition: opacity var(--rc-motion-effects-duration-default, 200ms)
-        var(--rc-motion-effects-easing-exit, ease-in);
+      transition: opacity ${rcToken('--rc-motion-effects-duration-default')}
+        ${rcToken('--rc-motion-effects-easing-exit')};
     }
 
     @starting-style {

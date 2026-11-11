@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -205,6 +206,22 @@ export const THEME_SELECTOR_BUDGETS = {
  * for a component's own source, and theme names for motion a theme package
  * adds on top of a component (see rc-theme-material below).
  */
+/*
+ * Documented CSS custom properties that still lack a `syntax` in the
+ * manifest (`@cssprop {<syntax>} --name`). The count may only go down: new or
+ * changed properties should state their syntax, and lowering this number
+ * after a backfill keeps it from creeping back up.
+ */
+export const CSS_PROPERTY_SYNTAX_BASELINE = 961;
+
+/** Counts documented CSS properties with and without a manifest syntax. */
+export function cssPropertySyntaxCoverage(declarations) {
+  const properties = declarations.flatMap((declaration) => declaration.cssProperties ?? []);
+  const withSyntax = properties.filter((property) => property.syntax).length;
+
+  return { total: properties.length, withSyntax, missing: properties.length - withSyntax };
+}
+
 export const ANIMATED_LAYOUT_PROPERTY_BUDGETS = {
   // The `<details>` panel measures its open state as actual box height;
   // `calc-size()` isn't broadly supported enough yet to be the primary
@@ -424,8 +441,40 @@ export function extractTokenReferences(text) {
   const fromStyleQueries = [...text.matchAll(/style\(\s*(--(?:_)?rc-[a-z0-9-]+)\s*:/g)].map(
     (match) => match[1],
   );
+  // rcToken() writes the var() at runtime, so the source only names the token.
+  const fromRcToken = [...text.matchAll(/rcToken\(\s*['"](--rc-[a-z0-9-]+)['"]/g)].map(
+    (match) => match[1],
+  );
 
-  return new Set([...fromVars, ...fromComputedStyles, ...fromStyleQueries]);
+  return new Set([...fromVars, ...fromComputedStyles, ...fromStyleQueries, ...fromRcToken]);
+}
+
+/** Shared token names from the token contract, the owner of their defaults. */
+export function readSharedTokens(root) {
+  const contractPath = join(root, 'packages/rc-webcomponents/themes/token-contract.mjs');
+
+  if (!existsSync(contractPath)) {
+    return extractTokenDefinitions(read(join(root, 'packages/rc-webcomponents/themes/base.css')));
+  }
+
+  return new Set(Object.keys(createRequire(import.meta.url)(contractPath).tokens));
+}
+
+/**
+ * Finds hand-written var() reads of shared tokens in component source. They
+ * must go through rcToken() so their fallback matches the contract default.
+ * Comments are ignored, since @cssprop text documents defaults as var().
+ */
+export function findRawSharedTokenReads(text, sharedTokens) {
+  const withoutComments = text.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, ' ');
+
+  return sorted(
+    new Set(
+      [...withoutComments.matchAll(/var\(\s*(--rc-[a-z0-9-]+)/g)]
+        .map((match) => match[1])
+        .filter((token) => sharedTokens.has(token)),
+    ),
+  );
 }
 
 /*
@@ -871,8 +920,7 @@ export function inspectTheme(root, themeName) {
 export function runAudit(root = DEFAULT_ROOT) {
   const errors = [];
   const warnings = [];
-  const baseCss = read(join(root, 'packages/rc-webcomponents/themes/base.css'));
-  const baseTokens = extractTokenDefinitions(baseCss);
+  const baseTokens = readSharedTokens(root);
   const stylingGuide = read(join(root, 'docs/docs/guide/styling.mdx'));
   const declarations = manifestDeclarations(root);
   const packages = componentPackages(root).map((directory) =>
@@ -930,6 +978,26 @@ export function runAudit(root = DEFAULT_ROOT) {
   for (const token of baseTokens) {
     if (!stylingGuide.includes(token)) {
       errors.push(`Shared token ${token} is missing from the styling guide.`);
+    }
+  }
+
+  const syntaxCoverage = cssPropertySyntaxCoverage(declarations);
+
+  if (syntaxCoverage.missing > CSS_PROPERTY_SYNTAX_BASELINE) {
+    errors.push(
+      `${syntaxCoverage.missing - CSS_PROPERTY_SYNTAX_BASELINE} new CSS custom properties lack a syntax; document them as @cssprop {<syntax>} --name.`,
+    );
+  } else if (syntaxCoverage.missing < CSS_PROPERTY_SYNTAX_BASELINE) {
+    warnings.push(
+      `Lower CSS_PROPERTY_SYNTAX_BASELINE to ${syntaxCoverage.missing}; more custom properties now state a syntax.`,
+    );
+  }
+
+  for (const path of sourceFiles) {
+    for (const token of findRawSharedTokenReads(read(path), baseTokens)) {
+      errors.push(
+        `${relative(root, path)}: read shared token ${token} with rcToken() instead of var().`,
+      );
     }
   }
 
@@ -1145,6 +1213,7 @@ export function runAudit(root = DEFAULT_ROOT) {
       customElements: declarations.length,
       sharedTokens: baseTokens.size,
       classifiedMarkers: Object.keys(MARKER_CONTRACTS).length,
+      cssPropertySyntax: syntaxCoverage,
     },
     markerContracts: MARKER_CONTRACTS,
     packages,
@@ -1165,6 +1234,10 @@ function printAudit(result, json) {
 
   console.log(
     `Audited ${summary.componentPackages} component packages, ${summary.customElements} custom elements, ${summary.sharedTokens} shared tokens, and ${summary.classifiedMarkers} marker contracts.`,
+  );
+
+  console.log(
+    `${summary.cssPropertySyntax.withSyntax} of ${summary.cssPropertySyntax.total} documented CSS custom properties state a syntax.`,
   );
 
   for (const warning of result.warnings) {

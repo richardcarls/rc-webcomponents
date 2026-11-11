@@ -1,5 +1,7 @@
 import { css } from 'lit';
 
+import { rcToken } from '@rcarls/rc-common';
+
 export const snackbarStyles = css`
   :host {
     position: fixed;
@@ -39,20 +41,20 @@ export const snackbarStyles = css`
       opacity: 1;
       translate: none;
       transition:
-        opacity var(--rc-motion-effects-duration-default, 200ms)
-          var(--rc-motion-effects-easing-enter, ease-out),
-        translate var(--rc-motion-spatial-duration-default, 400ms)
-          var(--rc-motion-spatial-easing-enter, ease-out),
-        display var(--rc-motion-effects-duration-default, 200ms) allow-discrete;
+        opacity ${rcToken('--rc-motion-effects-duration-default')}
+          ${rcToken('--rc-motion-effects-easing-enter')},
+        translate ${rcToken('--rc-motion-spatial-duration-default')}
+          ${rcToken('--rc-motion-spatial-easing-enter')},
+        display ${rcToken('--rc-motion-effects-duration-default')} allow-discrete;
     }
 
     :host(:not([open])) {
       transition:
-        opacity var(--rc-motion-effects-duration-default, 200ms)
-          var(--rc-motion-effects-easing-exit, ease-in),
-        translate var(--rc-motion-spatial-duration-default, 400ms)
-          var(--rc-motion-spatial-easing-exit, ease-in),
-        display var(--rc-motion-effects-duration-default, 200ms) allow-discrete;
+        opacity ${rcToken('--rc-motion-effects-duration-default')}
+          ${rcToken('--rc-motion-effects-easing-exit')},
+        translate ${rcToken('--rc-motion-spatial-duration-default')}
+          ${rcToken('--rc-motion-spatial-easing-exit')},
+        display ${rcToken('--rc-motion-effects-duration-default')} allow-discrete;
     }
 
     @starting-style {

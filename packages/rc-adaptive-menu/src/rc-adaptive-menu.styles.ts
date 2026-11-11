@@ -1,5 +1,7 @@
 import { css } from 'lit';
 
+import { rcToken } from '@rcarls/rc-common';
+
 export const adaptiveMenuStyles = css`
   :host {
     display: block;
@@ -44,7 +46,7 @@ export const adaptiveMenuStyles = css`
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: var(--rc-adaptive-menu-gap, var(--rc-control-gap, 0.25em));
+    gap: var(--rc-adaptive-menu-gap, ${rcToken('--rc-control-gap')});
     min-inline-size: 0;
     max-inline-size: 100%;
   }
@@ -88,7 +90,7 @@ export const adaptiveMenuStyles = css`
     min-block-size: var(--rc-adaptive-menu-trigger-block-size, 2.5em);
     padding: var(--rc-adaptive-menu-trigger-padding, 0.5em);
     border: var(--rc-adaptive-menu-trigger-border, 1px solid ButtonBorder);
-    border-radius: var(--rc-adaptive-menu-trigger-radius, var(--rc-control-radius, 0));
+    border-radius: var(--rc-adaptive-menu-trigger-radius, ${rcToken('--rc-control-radius')});
     background: var(--rc-adaptive-menu-trigger-background, ButtonFace);
     color: var(--rc-adaptive-menu-trigger-color, ButtonText);
     box-shadow: var(--rc-adaptive-menu-trigger-shadow, none);
@@ -134,8 +136,8 @@ export const adaptiveMenuStyles = css`
   }
 
   #overflow-trigger:focus-visible {
-    outline: var(--rc-focus-ring, auto);
-    outline-offset: var(--rc-focus-ring-offset, 0);
+    outline: ${rcToken('--rc-focus-ring')};
+    outline-offset: ${rcToken('--rc-focus-ring-offset')};
   }
 
   #overflow-icon {
@@ -155,31 +157,16 @@ export const adaptiveMenuStyles = css`
     margin: 0;
     padding-block: var(
       --rc-adaptive-menu-popup-padding-block,
-      var(--rc-popup-padding-block, 0.25em)
+      ${rcToken('--rc-popup-padding-block')}
     );
-    border: var(
-      --rc-adaptive-menu-popup-border,
-      var(--rc-popup-border, var(--rc-border, 1px solid ButtonBorder))
-    );
-    border-radius: var(
-      --rc-adaptive-menu-popup-radius,
-      var(--rc-popup-radius, var(--rc-radius-sm, 0))
-    );
-    background: var(
-      --rc-adaptive-menu-popup-background,
-      var(--rc-popup-background, var(--rc-surface, Canvas))
-    );
+    border: var(--rc-adaptive-menu-popup-border, ${rcToken('--rc-popup-border')});
+    border-radius: var(--rc-adaptive-menu-popup-radius, ${rcToken('--rc-popup-radius')});
+    background: var(--rc-adaptive-menu-popup-background, ${rcToken('--rc-popup-background')});
     box-shadow: var(
       --rc-adaptive-menu-popup-shadow,
-      var(
-        --rc-popup-shadow,
-        var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent))
-      )
+      ${rcToken('--rc-popup-shadow')}
     );
-    color: var(
-      --rc-adaptive-menu-popup-color,
-      var(--rc-popup-color, var(--rc-field-text, CanvasText))
-    );
+    color: var(--rc-adaptive-menu-popup-color, ${rcToken('--rc-popup-color')});
     overflow: auto;
     overscroll-behavior: contain;
     scrollbar-gutter: stable;

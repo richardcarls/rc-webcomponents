@@ -82,11 +82,10 @@ fallbacks:
 @import '@rcarls/rc-webcomponents/themes/base.css';
 ```
 
-Build tools can load `@rcarls/rc-webcomponents/themes/property-mappings.json`
-for the shared token names, CSS syntax hints, and values from `base.css`. Entries
-with a `registration` object have a syntactically valid CSS Properties and Values
-API descriptor; `null` means the fallback cannot be used as a typed initial
-value. This JSON does not register properties or add browser runtime work.
+Components carry the same defaults as fallbacks, so the file is optional. For
+editor completion of every shared and component token, add
+`node_modules/@rcarls/rc-webcomponents/dist/css-custom-data.json` to VS Code's
+`css.customData` setting.
 
 ## Server-Rendered Pages
 

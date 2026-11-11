@@ -9,6 +9,7 @@ import {
   NativeChildController,
   numberFormat,
   warnMissingDirectChild,
+  rcToken,
 } from '@rcarls/rc-common';
 
 declare global {
@@ -129,11 +130,11 @@ export class RCProgress extends LitElement {
 
     .rc-progress-root {
       display: grid;
-      gap: var(--rc-progress-gap, var(--rc-control-gap, 0.5rem));
+      gap: var(--rc-progress-gap, ${rcToken('--rc-control-gap')});
       align-items: center;
-      font-family: var(--rc-font-family, inherit);
-      font-size: var(--rc-font-size, inherit);
-      line-height: var(--rc-line-height, normal);
+      font-family: ${rcToken('--rc-font-family', 'inherit')};
+      font-size: ${rcToken('--rc-font-size', 'inherit')};
+      line-height: ${rcToken('--rc-line-height')};
     }
 
     .rc-progress-root[data-display='inline-start'] {
@@ -171,7 +172,7 @@ export class RCProgress extends LitElement {
       block-size: var(--rc-progress-control-size, 0.5rem);
       background: var(--rc-progress-track-background, CanvasText);
       opacity: var(--rc-progress-track-opacity, 0.25);
-      border-radius: var(--rc-progress-track-radius, var(--rc-control-radius, 0));
+      border-radius: var(--rc-progress-track-radius, ${rcToken('--rc-control-radius')});
       overflow: hidden;
       z-index: 0;
     }
@@ -189,7 +190,7 @@ export class RCProgress extends LitElement {
     .rc-progress-fill {
       inset-block: 0;
       inset-inline-start: 0;
-      background: var(--rc-progress-fill-background, var(--rc-accent, Highlight));
+      background: var(--rc-progress-fill-background, ${rcToken('--rc-accent')});
       border-radius: inherit;
       z-index: 1;
       transition: inline-size var(--rc-progress-fill-transition-duration, 150ms)
@@ -244,7 +245,7 @@ export class RCProgress extends LitElement {
     .rc-progress-value {
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
-      color: var(--rc-progress-value-color, var(--rc-text-disabled, GrayText));
+      color: var(--rc-progress-value-color, ${rcToken('--rc-text-disabled')});
     }
 
     .rc-progress-root[data-display='overlay'] .rc-progress-value {
@@ -423,11 +424,7 @@ export class RCProgress extends LitElement {
     `;
 
     return html`
-      <div
-        part="root"
-        class="rc-progress-root"
-        data-display=${this.display ?? nothing}
-      >
+      <div part="root" class="rc-progress-root" data-display=${this.display ?? nothing}>
         ${this.display === 'inline-start' ? valueDisplay : nothing}
 
         <span part="control" class="rc-progress-control">

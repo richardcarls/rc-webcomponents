@@ -1,5 +1,7 @@
 import { css } from 'lit';
 
+import { rcToken } from '@rcarls/rc-common';
+
 export const chipStyles = css`
   :host {
     display: inline-grid;
@@ -91,8 +93,11 @@ export const chipStyles = css`
     background: var(--rc-chip-state-layer-color, currentColor);
     opacity: 0;
     transition: opacity
-      var(--rc-chip-state-layer-transition-duration, var(--rc-motion-effects-duration-fast, 80ms))
-      var(--rc-chip-state-layer-transition-easing, var(--rc-motion-effects-easing-fast, ease-out));
+      var(
+        --rc-chip-state-layer-transition-duration,
+        ${rcToken('--rc-motion-effects-duration-fast')}
+      )
+      var(--rc-chip-state-layer-transition-easing, ${rcToken('--rc-motion-effects-easing-fast')});
   }
 
   :host([selected]) [part='state-layer'] {

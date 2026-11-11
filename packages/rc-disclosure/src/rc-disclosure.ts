@@ -55,7 +55,7 @@ declare global {
  * @cssprop [--rc-disclosure-summary-marker-color=currentColor] - Native disclosure marker color.
  *   A theme that replaces the marker with its own affordance should hide `::marker` itself.
  * @cssprop [--rc-disclosure-summary-hover-background=transparent] - Summary hover background.
- * @cssprop [--rc-disclosure-focus-ring=var(--rc-focus-ring, 2px solid Highlight)] - Summary
+ * @cssprop [--rc-disclosure-focus-ring=var(--rc-focus-ring)] - Summary
  *   focus-visible outline.
  * @cssprop [--rc-disclosure-focus-ring-offset=0] - Summary focus-visible outline offset.
  * @cssprop [--rc-disclosure-content-padding-block=0] - Content block padding.

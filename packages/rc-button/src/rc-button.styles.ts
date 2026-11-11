@@ -1,5 +1,7 @@
 import { css } from 'lit';
 
+import { rcToken } from '@rcarls/rc-common';
+
 export const buttonStyles = css`
   :host {
     position: relative;
@@ -78,7 +80,7 @@ export const buttonStyles = css`
     padding-inline: var(--rc-button-padding-inline, revert);
     border: var(--rc-button-border, revert);
     border-radius: var(--rc-button-radius, revert);
-    background: var(--rc-button-bg, revert);
+    background: ${rcToken('--rc-button-bg', 'revert')};
     color: var(--rc-button-color, revert);
     box-shadow: var(--rc-button-shadow, revert);
     font: var(--rc-button-font, revert);
@@ -104,11 +106,11 @@ export const buttonStyles = css`
   :host([icon-only]) ::slotted(button) {
     inline-size: var(
       --rc-button-icon-size,
-      var(--rc-button-block-size, var(--rc-control-block-size, 2.5rem))
+      var(--rc-button-block-size, ${rcToken('--rc-control-block-size')})
     );
     min-inline-size: var(
       --rc-button-icon-size,
-      var(--rc-button-block-size, var(--rc-control-block-size, 2.5rem))
+      var(--rc-button-block-size, ${rcToken('--rc-control-block-size')})
     );
     padding-inline: 0;
     overflow: visible;
