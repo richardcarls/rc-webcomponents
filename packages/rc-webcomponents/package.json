@@ -58,6 +58,7 @@
     "./blazor/rc-webcomponents.lib.module.js": "./blazor/rc-webcomponents.lib.module.js",
     "./blazor/RcWebComponents.Events.cs": "./blazor/RcWebComponents.Events.cs",
     "./themes/base.css": "./themes/base.css",
+    "./themes/property-mappings.json": "./dist/property-mappings.json",
     "./rc-textarea/folding": {
       "import": {
         "types": "./dist/types/rc-textarea/folding.d.ts",
@@ -605,7 +606,7 @@
   ],
   "scripts": {
     "test:typings": "vue-tsc -p typings/tsconfig.vue.json && svelte-check --workspace typings/svelte --tsconfig ./tsconfig.json --fail-on-warnings",
-    "build": "tsc && vite build && node ../../scripts/emit-pre-upgrade-css.mjs"
+    "build": "tsc && vite build && node ../../scripts/emit-pre-upgrade-css.mjs && node ../../scripts/generate-property-mappings.mjs"
   },
   "dependencies": {
     "@lit-labs/ssr-client": "^1.1.8",
