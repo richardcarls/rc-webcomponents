@@ -164,6 +164,9 @@ alone.
 
 ## Theming
 
+The `<rc-bottom-sheet>` element is `display: contents`, so it takes no space in
+the element that contains it. Style the inner `<dialog>` instead of the host.
+
 The component docks the dialog to the bottom edge and centers authored
 `[data-rc-bottom-sheet-handle]` handles by default. `rc-theme-material`
 applies the Material surface, level-one elevation, scrim, 32 by 4 pixel drag

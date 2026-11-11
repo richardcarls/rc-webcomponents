@@ -1403,3 +1403,30 @@ test('nextActivationIndex follows the stepping order and is null while closed', 
   $host.close();
   expect($host.nextActivationIndex).toBeNull();
 });
+
+test('rc-bottom-sheet takes no grid cell while its sheet is closed', async () => {
+  const screen = render(html`
+    <div
+      data-testid="grid"
+      style="display: grid; grid-template-columns: repeat(2, 50px); gap: 10px"
+    >
+      <span>A</span>
+      <rc-bottom-sheet data-testid="host">
+        <dialog aria-label="Layout test sheet"><p>Content</p></dialog>
+      </rc-bottom-sheet>
+      <span data-testid="b">B</span>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as HTMLElement & {
+    updateComplete: Promise<boolean>;
+  };
+
+  await host.updateComplete;
+
+  const first = screen.container.querySelector('[data-testid="grid"] > span')!;
+  const second = (await screen.getByTestId('b').element()) as HTMLElement;
+
+  expect(getComputedStyle(host).display).toBe('contents');
+  // B fills the second column of the first row instead of wrapping below.
+  expect(second.getBoundingClientRect().top).toBeCloseTo(first.getBoundingClientRect().top, 0);
+});

@@ -47,6 +47,11 @@ Place a native `<dialog>` as the direct child and name it with `aria-labelledby`
 <button type="button" onclick="document.querySelector('#my-dialog').showModal()">Open</button>
 ```
 
+The `<rc-dialog>` element is `display: contents`, so it takes no space where you
+place it: a dialog beside its trigger in a flex or grid container adds no gap
+or cell. Style the inner `<dialog>` instead of the host; margins, padding, and
+borders on `<rc-dialog>` itself have no box to apply to.
+
 ## Fullscreen variant
 
 Use `variant="fullscreen"` for a surface that follows the current visual viewport, including

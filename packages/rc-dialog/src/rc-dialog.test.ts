@@ -1543,3 +1543,29 @@ test('move-bounds="parent" also limits resizing to the containing element', asyn
 
   host.close();
 });
+
+test('rc-dialog takes no flex slot, so a closed dialog adds no gap beside its trigger', async () => {
+  const screen = render(html`
+    <div data-testid="column" style="display: flex; flex-direction: column; gap: 20px">
+      <button>First</button>
+      <rc-dialog data-testid="host">
+        <dialog aria-label="Layout test"><button>Close</button></dialog>
+      </rc-dialog>
+      <button>Second</button>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+
+  const [first, second] = screen.container.querySelectorAll<HTMLButtonElement>(
+    '[data-testid="column"] > button',
+  );
+
+  expect(getComputedStyle(host).display).toBe('contents');
+
+  expect(second.getBoundingClientRect().top - first.getBoundingClientRect().bottom).toBeCloseTo(
+    20,
+    0,
+  );
+});

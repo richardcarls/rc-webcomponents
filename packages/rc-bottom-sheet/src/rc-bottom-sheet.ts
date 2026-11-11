@@ -88,6 +88,14 @@ function splitSnapPoints(value: string): string[] {
 
 const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
+  /*
+   * Like rc-dialog, the host only wraps the sheet's <dialog>. Without a box
+   * it takes no flex or grid slot in the element that contains it.
+   */
+  rc-bottom-sheet {
+    display: contents;
+  }
+
   rc-bottom-sheet > dialog {
     position: var(--rc-bottom-sheet-position, fixed);
     inset-block-start: auto;
