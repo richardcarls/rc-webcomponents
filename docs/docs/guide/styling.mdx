@@ -57,6 +57,31 @@ The semantic layer is deliberately smaller than the sum of every component's
 styling API. Components consume these shared decisions and expose narrower
 component tokens where their structure needs an additional adaptation point.
 
+### Tooling metadata for shared tokens
+
+The aggregate package exports a generated JSON map for build tools and editor
+integrations:
+
+```js
+import mappings from '@rcarls/rc-webcomponents/themes/property-mappings.json' with { type: 'json' };
+
+const accent = mappings.properties['--rc-accent'];
+// { fallback: 'Highlight', syntax: '<color>', ... }
+```
+
+Each of the shared tokens has its `base.css` fallback, an inferred CSS syntax
+when one is unambiguous, and `inherits: true`. A `registration` object appears
+only when the fallback is a valid, computationally independent typed initial
+value; otherwise it is `null` with an `ineligibleReason`. The conditional
+`AccentColor` override is recorded separately from `--rc-accent`'s base
+`Highlight` fallback. Packaged themes can supply different values.
+
+The map does not register properties or change rendering. Tools can use it for
+completion and validation, but registration in an app still requires reviewing
+the effect of typed computation on inherited values and `var()` aliases. No
+runtime interpolation or invalid-value fallback is gained just by importing
+the JSON.
+
 | Role                 | Tokens and defaults                                                                                                                                                                                                                                                                                                                                                                        |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Surfaces             | `--rc-surface: Canvas`; `--rc-field: Field`; `--rc-button-bg: ButtonFace`                                                                                                                                                                                                                                                                                                                  |
