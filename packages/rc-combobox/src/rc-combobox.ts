@@ -126,7 +126,7 @@ declare module '@rcarls/rc-common' {
  * @cssprop [--rc-combobox-chip-padding-block=0.1em] - Multi-select chip block-axis padding.
  * @cssprop [--rc-combobox-chip-padding-inline-start=0.3em] - Multi-select chip leading padding.
  * @cssprop [--rc-combobox-chip-padding-inline-end=calc(var(--rc-chip-remove-target-size, 1.5rem) + var(--rc-chip-remove-offset-inline, 0.125rem))] - Multi-select chip trailing padding, including the remove affordance.
- * @cssprop [--rc-combobox-chip-gap=calc(var(--rc-control-gap, 0.25em) * 0.8)] - Gap between chip
+ * @cssprop [--rc-combobox-chip-gap=calc(var(--rc-control-gap) * 0.8)] - Gap between chip
  *   content items.
  * @cssprop [--rc-combobox-chip-border=var(--rc-border)] - Multi-select chip border.
  * @cssprop [--rc-chip-remove-target-size=1.5rem] - Inherited remove-target width reserved by

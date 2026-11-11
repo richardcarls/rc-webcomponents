@@ -1,5 +1,7 @@
 import { css } from 'lit';
 
+import { rcToken } from '@rcarls/rc-common';
+
 export const searchBarStyles = css`
   :host {
     display: inline-flex;
@@ -16,23 +18,17 @@ export const searchBarStyles = css`
     flex: 1 1 auto;
     align-items: center;
     min-inline-size: 0;
-    gap: var(--rc-search-bar-gap, var(--rc-control-gap, 0.25em));
-    block-size: var(--rc-search-bar-height, var(--rc-control-block-size, 2.5rem));
-    padding-inline: var(--rc-search-bar-padding-inline, var(--rc-control-padding-inline, 0.75rem));
-    border: var(
-      --rc-search-bar-border,
-      var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder))
-    );
-    border-radius: var(
-      --rc-search-bar-radius,
-      var(--rc-control-radius, var(--rc-radius-sm, 0.125em))
-    );
+    gap: var(--rc-search-bar-gap, ${rcToken('--rc-control-gap')});
+    block-size: var(--rc-search-bar-height, ${rcToken('--rc-control-block-size')});
+    padding-inline: var(--rc-search-bar-padding-inline, ${rcToken('--rc-control-padding-inline')});
+    border: var(--rc-search-bar-border, ${rcToken('--rc-border')});
+    border-radius: var(--rc-search-bar-radius, ${rcToken('--rc-control-radius')});
     box-shadow: var(--rc-search-bar-shadow, none);
-    background: var(--rc-search-bar-bg, var(--rc-field, Field));
-    color: var(--rc-search-bar-color, var(--rc-field-text, FieldText));
-    font-family: var(--rc-font-family, inherit);
-    font-size: var(--rc-font-size, inherit);
-    line-height: var(--rc-line-height, normal);
+    background: var(--rc-search-bar-bg, ${rcToken('--rc-field')});
+    color: var(--rc-search-bar-color, ${rcToken('--rc-field-text')});
+    font-family: ${rcToken('--rc-font-family', 'inherit')};
+    font-size: ${rcToken('--rc-font-size', 'inherit')};
+    line-height: ${rcToken('--rc-line-height')};
     transition:
       background-color 120ms,
       border-color 120ms,
@@ -104,8 +100,8 @@ export const searchBarStyles = css`
   }
 
   #clear:focus-visible {
-    outline: var(--rc-focus-ring, auto);
-    outline-offset: var(--rc-focus-ring-offset, 0);
+    outline: ${rcToken('--rc-focus-ring')};
+    outline-offset: ${rcToken('--rc-focus-ring-offset')};
   }
 
   #view {
@@ -121,20 +117,20 @@ export const searchBarStyles = css`
     padding-block: var(--rc-search-bar-view-padding-block, 0.5rem);
     border: var(
       --rc-search-bar-view-border,
-      var(--rc-search-bar-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)))
+      var(--rc-search-bar-border, ${rcToken('--rc-border')})
     );
     border-radius: var(
       --rc-search-bar-view-radius,
-      var(--rc-search-bar-radius, var(--rc-control-radius, var(--rc-radius-sm, 0.125em)))
+      var(--rc-search-bar-radius, ${rcToken('--rc-control-radius')})
     );
     box-shadow: var(--rc-search-bar-view-shadow, var(--rc-search-bar-shadow, none));
-    background: var(--rc-search-bar-view-bg, var(--rc-search-bar-bg, var(--rc-field, Field)));
+    background: var(--rc-search-bar-view-bg, var(--rc-search-bar-bg, ${rcToken('--rc-field')}));
     color: var(
       --rc-search-bar-view-color,
-      var(--rc-search-bar-color, var(--rc-field-text, FieldText))
+      var(--rc-search-bar-color, ${rcToken('--rc-field-text')})
     );
-    font-family: var(--rc-font-family, inherit);
-    font-size: var(--rc-font-size, inherit);
+    font-family: ${rcToken('--rc-font-family', 'inherit')};
+    font-size: ${rcToken('--rc-font-size', 'inherit')};
   }
 
   #view-surface.empty {
@@ -170,8 +166,8 @@ export const searchBarStyles = css`
   }
 
   [part='suggestion']:focus-visible {
-    outline: var(--rc-focus-ring, auto);
-    outline-offset: var(--rc-focus-ring-offset, 0);
+    outline: ${rcToken('--rc-focus-ring')};
+    outline-offset: ${rcToken('--rc-focus-ring-offset')};
   }
 `;
 

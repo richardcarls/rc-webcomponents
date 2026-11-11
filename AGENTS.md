@@ -50,6 +50,27 @@ short and tell the tool to read `AGENTS.md` before project work.
   component adaptation points, and `--_rc-*` tokens are private implementation
   details. Theme packages map their design-system tokens into the public RC
   layers; components must not depend directly on Material or Substrate tokens.
+- Shared tokens are defined in one place: `packages/rc-webcomponents/themes/token-contract.mjs`
+  owns each `--rc-*` token's default and syntax. `yarn codegen:tokens` writes
+  `themes/base.css`, `rc-common`'s `tokenFallbacks.ts`, and the styling guide's
+  token table from it; never edit those by hand (`codegen:tokens:check` runs in
+  CI). Component styles read a shared token with `rcToken('--rc-name')` from
+  `@rcarls/rc-common`, never a hand-written `var(--rc-name, …)`, so the
+  fallback always equals the contract default and a component renders the same
+  with or without `base.css`. Pass a CSS-wide keyword
+  (`rcToken('--rc-button-bg', 'revert')`) only to defer to native or inherited
+  styling. A component that needs a different value defines a component token
+  (`var(--rc-menu-radius, …)`) instead of changing the shared fallback. The
+  build inlines each call as literal `var()` text, so CSS templates still reach
+  the minifier without interpolation. `yarn audit:component-architecture`
+  rejects raw `var()` reads of shared tokens.
+- Never register a public token with `@property` or `CSS.registerProperty()`.
+  An unset token must stay guaranteed-invalid so `var()` fallback chains work,
+  relative units and system colors must resolve where they are used, themes are
+  scoped while registrations are document-global, and browsers ignore
+  `@property` inside shadow roots. Registration is only for private `--_rc-*`
+  animated state: prefer a unitless `<number>` with `inherits: false`, derive
+  lengths in an unregistered `calc()`, and ship the rule in document-level CSS.
 - Prefer tokens for bounded value substitution and CSS parts for selectors or
   declarations that must reach a shadow-owned element. Use contextual light-DOM
   selectors only when the consumer-authored structure is itself part of the

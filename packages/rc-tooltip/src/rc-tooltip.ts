@@ -7,6 +7,7 @@ import {
   cssText,
   PopoverController,
   defineLightDomBaseStyles,
+  rcToken,
 } from '@rcarls/rc-common';
 
 import tooltipStyles from './rc-tooltip.styles.js';
@@ -40,7 +41,7 @@ const LIGHT_DOM_CSS = cssText`
     padding-block: var(--rc-tooltip-padding-block, 0.25em);
     padding-inline: var(--rc-tooltip-padding-inline, 0.5em);
     border: var(--rc-tooltip-border, 1px solid CanvasText);
-    border-radius: var(--rc-tooltip-radius, var(--rc-radius-sm, 0.125em));
+    border-radius: var(--rc-tooltip-radius, ${rcToken('--rc-radius-sm')});
     background: var(--rc-tooltip-background, CanvasText);
     color: var(--rc-tooltip-color, Canvas);
     box-shadow: var(--rc-tooltip-shadow, none);

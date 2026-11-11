@@ -1,4 +1,4 @@
-import { cssText, defineLightDomBaseStyles } from '@rcarls/rc-common';
+import { cssText, defineLightDomBaseStyles, rcToken } from '@rcarls/rc-common';
 
 /**
  * Light-DOM base styles for the disclosure panel recipe.
@@ -70,7 +70,7 @@ export const DISCLOSURE_BASE_CSS = cssText`
   }
 
   :is(rc-disclosure, rc-accordion) > details > summary:focus-visible {
-    outline: var(--rc-disclosure-focus-ring, var(--rc-focus-ring, 2px solid Highlight));
+    outline: var(--rc-disclosure-focus-ring, ${rcToken('--rc-focus-ring')});
     outline-offset: var(--rc-disclosure-focus-ring-offset, 0);
   }
 

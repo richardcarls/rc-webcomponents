@@ -14,6 +14,7 @@ import {
   defineLightDomBaseStyles,
   includeDefaults,
   setCustomState,
+  rcToken,
 } from '@rcarls/rc-common';
 
 import adaptiveMenuStyles from './rc-adaptive-menu.styles.js';
@@ -62,12 +63,12 @@ const LIGHT_DOM_CSS = cssText`
   rc-adaptive-menu > :is(button, a[href])[data-rc-action-overflowed] {
     display: flex;
     align-items: center;
-    gap: var(--rc-adaptive-menu-item-gap, var(--rc-item-gap, 0.5em));
+    gap: var(--rc-adaptive-menu-item-gap, ${rcToken('--rc-item-gap')});
     box-sizing: border-box;
     inline-size: 100%;
     min-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
-    padding: var(--rc-adaptive-menu-item-padding-block, var(--rc-item-padding-block, 0.3em))
-      var(--rc-adaptive-menu-item-padding-inline, var(--rc-item-padding-inline, 0.75em));
+    padding: var(--rc-adaptive-menu-item-padding-block, ${rcToken('--rc-item-padding-block')})
+      var(--rc-adaptive-menu-item-padding-inline, ${rcToken('--rc-item-padding-inline')});
     border: none;
     border-radius: 0;
     background: transparent;
@@ -90,8 +91,8 @@ const LIGHT_DOM_CSS = cssText`
     --rc-button-icon-size: 100%;
     --rc-button-touch-target-inline-size: 100%;
     --rc-button-touch-target-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
-    --rc-button-padding-inline: var(--rc-adaptive-menu-item-padding-inline, var(--rc-item-padding-inline, 0.75em));
-    --rc-button-padding-block: var(--rc-adaptive-menu-item-padding-block, var(--rc-item-padding-block, 0.3em));
+    --rc-button-padding-inline: var(--rc-adaptive-menu-item-padding-inline, ${rcToken('--rc-item-padding-inline')});
+    --rc-button-padding-block: var(--rc-adaptive-menu-item-padding-block, ${rcToken('--rc-item-padding-block')});
     --rc-button-radius: 0;
     --rc-button-bg: transparent;
     --rc-button-color: currentColor;
@@ -108,9 +109,9 @@ const LIGHT_DOM_CSS = cssText`
     --rc-menu-button-icon-size: 100%;
     --rc-menu-button-touch-target-inline-size: 100%;
     --rc-menu-button-touch-target-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
-    --rc-menu-button-trigger-padding-block: var(--rc-adaptive-menu-item-padding-block, var(--rc-item-padding-block, 0.3em));
-    --rc-menu-button-trigger-padding-inline: var(--rc-adaptive-menu-item-padding-inline, var(--rc-item-padding-inline, 0.75em));
-    --rc-menu-button-trigger-gap: var(--rc-adaptive-menu-item-gap, var(--rc-item-gap, 0.5em));
+    --rc-menu-button-trigger-padding-block: var(--rc-adaptive-menu-item-padding-block, ${rcToken('--rc-item-padding-block')});
+    --rc-menu-button-trigger-padding-inline: var(--rc-adaptive-menu-item-padding-inline, ${rcToken('--rc-item-padding-inline')});
+    --rc-menu-button-trigger-gap: var(--rc-adaptive-menu-item-gap, ${rcToken('--rc-item-gap')});
     --rc-menu-button-trigger-radius: 0;
     --rc-menu-button-trigger-border: 0;
     --rc-menu-button-trigger-background: transparent;
@@ -134,8 +135,8 @@ const LIGHT_DOM_CSS = cssText`
   }
 
   rc-adaptive-menu > [data-rc-action-overflowed] [data-rc-icon] {
-    font-size: var(--rc-item-icon-size, inherit);
-    line-height: var(--rc-item-icon-size, inherit);
+    font-size: ${rcToken('--rc-item-icon-size', 'inherit')};
+    line-height: ${rcToken('--rc-item-icon-size', 'inherit')};
   }
 
   rc-adaptive-menu [data-rc-label] {
@@ -144,11 +145,11 @@ const LIGHT_DOM_CSS = cssText`
   }
 
   rc-adaptive-menu > [data-rc-action-overflowed] [data-rc-label] {
-    font-family: var(--rc-item-font-family, inherit);
-    font-size: var(--rc-item-font-size, inherit);
-    font-weight: var(--rc-item-font-weight, inherit);
-    line-height: var(--rc-item-line-height, inherit);
-    letter-spacing: var(--rc-item-letter-spacing, inherit);
+    font-family: ${rcToken('--rc-item-font-family')};
+    font-size: ${rcToken('--rc-item-font-size')};
+    font-weight: ${rcToken('--rc-item-font-weight', 'inherit')};
+    line-height: ${rcToken('--rc-item-line-height')};
+    letter-spacing: ${rcToken('--rc-item-letter-spacing', 'inherit')};
   }
 
   rc-adaptive-menu kbd {

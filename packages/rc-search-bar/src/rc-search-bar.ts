@@ -11,6 +11,7 @@ import {
   warnMissingDirectChild,
   includeDefaults,
   MorphRecoveryController,
+  rcToken,
 } from '@rcarls/rc-common';
 
 import searchBarStyles from './rc-search-bar.styles.js';
@@ -41,8 +42,8 @@ const LIGHT_DOM_CSS = cssText`
 
   /* :host(:has()) is not supported in Chromium or Firefox, so the light DOM draws the ring. */
   rc-search-bar:has(:focus-visible)::part(root) {
-    outline: var(--rc-focus-ring, auto);
-    outline-offset: var(--rc-focus-ring-offset, 0);
+    outline: ${rcToken('--rc-focus-ring')};
+    outline-offset: ${rcToken('--rc-focus-ring-offset')};
   }
 
   rc-search-bar:not([allow-native-clear])
@@ -163,10 +164,10 @@ declare module '@rcarls/rc-common' {
  * @cssprop [--rc-search-bar-icon-color=GrayText] - Leading icon color
  * @cssprop [--rc-search-bar-icon-size] - Leading slot font size, so `1em` icons size to it (inherits when unset)
  * @cssprop [--rc-search-bar-clear-color=GrayText] - Clear button glyph color
- * @cssprop [--rc-search-bar-radius=var(--rc-control-radius,0.125em)] - Wrapper border radius
- * @cssprop [--rc-search-bar-height=var(--rc-control-block-size,2.5rem)] - Wrapper block size
- * @cssprop [--rc-search-bar-padding-inline=var(--rc-control-padding-inline,0.75rem)] - Wrapper horizontal padding
- * @cssprop [--rc-search-bar-gap=var(--rc-control-gap,0.25em)] - Gap between icon, input, and clear button
+ * @cssprop [--rc-search-bar-radius=var(--rc-control-radius)] - Wrapper border radius
+ * @cssprop [--rc-search-bar-height=var(--rc-control-block-size)] - Wrapper block size
+ * @cssprop [--rc-search-bar-padding-inline=var(--rc-control-padding-inline)] - Wrapper horizontal padding
+ * @cssprop [--rc-search-bar-gap=var(--rc-control-gap)] - Gap between icon, input, and clear button
  * @cssprop [--rc-search-bar-input-font-size] - Input font size (inherits when unset)
  * @cssprop [--rc-search-bar-input-font-family] - Input font family (inherits when unset)
  * @cssprop [--rc-search-bar-input-color] - Input text color (inherits when unset)
@@ -796,11 +797,7 @@ export class RCSearchBar extends LitElement {
     const hasInput = this._hasInput && !this._hydration.serverView;
 
     return html`
-      <div
-        id="root"
-        part="root"
-        class=${classMap({ empty: !hasInput })}
-      >
+      <div id="root" part="root" class=${classMap({ empty: !hasInput })}>
         <span
           id="leading"
           part="leading"

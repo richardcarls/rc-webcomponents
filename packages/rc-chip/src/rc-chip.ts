@@ -204,8 +204,8 @@ export interface RCChipRemoveDetail {
  * @cssprop [--rc-chip-hover-state-layer-opacity=0.08] - Hover state-layer opacity.
  * @cssprop [--rc-chip-focus-state-layer-opacity=0.12] - Focus state-layer opacity.
  * @cssprop [--rc-chip-pressed-state-layer-opacity=0.12] - Pressed state-layer opacity.
- * @cssprop [--rc-chip-state-layer-transition-duration=var(--rc-motion-effects-duration-fast,80ms)] - State-layer effects duration.
- * @cssprop [--rc-chip-state-layer-transition-easing=var(--rc-motion-effects-easing-fast,ease-out)] - State-layer effects easing.
+ * @cssprop [--rc-chip-state-layer-transition-duration=var(--rc-motion-effects-duration-fast)] - State-layer effects duration.
+ * @cssprop [--rc-chip-state-layer-transition-easing=var(--rc-motion-effects-easing-fast)] - State-layer effects easing.
  * @cssprop [--rc-chip-remove-offset-inline=0.125rem] - Inline offset of the remove indicator
  *   from the chip edge.
  * @cssprop [--rc-chip-remove-target-size=1.5rem] - Minimum inline and block size of the remove

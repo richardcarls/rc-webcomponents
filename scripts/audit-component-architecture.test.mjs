@@ -15,7 +15,9 @@ import {
   extractTransitionAnalysis,
   findAllowlistErrors,
   findMarkerContractErrors,
+  findRawSharedTokenReads,
   inspectTheme,
+  readSharedTokens,
   readsDirection,
   runAudit,
 } from './audit-component-architecture.mjs';
@@ -240,4 +242,35 @@ test('the current component architecture satisfies hard guardrails', () => {
       .find((theme) => theme.name === 'rc-theme-material')
       .privateTokenOverrides.some((token) => token.startsWith('--_rc-button-ripple-')),
   );
+});
+
+test('counts rcToken() calls as token references', () => {
+  assert.deepEqual(
+    [
+      ...extractTokenReferences(
+        'gap: ${rcToken(\'--rc-control-gap\')}; color: ${rcToken("--rc-accent")};',
+      ),
+    ],
+    ['--rc-control-gap', '--rc-accent'],
+  );
+});
+
+test('reads shared tokens from the token contract, including unset ones', () => {
+  const tokens = readSharedTokens(process.cwd());
+
+  assert.ok(tokens.has('--rc-control-block-size'));
+  assert.ok(tokens.has('--rc-font-family'));
+  assert.ok(tokens.has('--rc-popup-background'));
+});
+
+test('reports hand-written var() reads of shared tokens outside comments', () => {
+  const shared = new Set(['--rc-control-gap', '--rc-border']);
+  const source = `
+    /** @cssprop [--rc-example-gap=var(--rc-control-gap)] - Documented default. */
+    // var(--rc-border) in a line comment
+    const styles = css\`a { gap: var(--rc-example-gap, var( --rc-control-gap, 4px)); }\`;
+    const ok = css\`a { border: var(--rc-example-border); }\`;
+  `;
+
+  assert.deepEqual(findRawSharedTokenReads(source, shared), ['--rc-control-gap']);
 });

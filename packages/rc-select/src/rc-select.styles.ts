@@ -1,5 +1,7 @@
 import { css } from 'lit';
 
+import { rcToken } from '@rcarls/rc-common';
+
 export const selectStyles = css`
   :host {
     display: inline-block;
@@ -9,40 +11,37 @@ export const selectStyles = css`
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: var(--rc-select-gap, var(--rc-control-gap, 0.25em));
+    gap: var(--rc-select-gap, ${rcToken('--rc-control-gap')});
   }
 
   #trigger {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: var(--rc-select-gap, var(--rc-control-gap, 0.25em));
-    min-block-size: var(--rc-select-control-block-size, var(--rc-control-block-size, auto));
-    padding: var(--rc-select-padding-block, var(--rc-control-padding-block, 1px))
-      var(--rc-select-padding-inline, var(--rc-control-padding-inline, 4px));
+    gap: var(--rc-select-gap, ${rcToken('--rc-control-gap')});
+    min-block-size: var(--rc-select-control-block-size, ${rcToken('--rc-control-block-size')});
+    padding: var(--rc-select-padding-block, ${rcToken('--rc-control-padding-block')})
+      var(--rc-select-padding-inline, ${rcToken('--rc-control-padding-inline')});
     min-width: 8em;
     cursor: default;
     user-select: none;
-    border: var(
-      --rc-select-border,
-      var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder))
-    );
-    border-radius: var(--rc-select-radius, var(--rc-control-radius, var(--rc-radius-sm, 0.125em)));
-    background: var(--rc-field, Field);
-    color: var(--rc-field-text, FieldText);
-    font-family: var(--rc-font-family, inherit);
-    font-size: var(--rc-font-size, inherit);
-    line-height: var(--rc-line-height, normal);
+    border: var(--rc-select-border, ${rcToken('--rc-border')});
+    border-radius: var(--rc-select-radius, ${rcToken('--rc-control-radius')});
+    background: ${rcToken('--rc-field')};
+    color: ${rcToken('--rc-field-text')};
+    font-family: ${rcToken('--rc-font-family', 'inherit')};
+    font-size: ${rcToken('--rc-font-size', 'inherit')};
+    line-height: ${rcToken('--rc-line-height')};
     transition:
-      background-color var(--rc-motion-duration, 120ms),
-      border-color var(--rc-motion-duration, 120ms),
-      box-shadow var(--rc-motion-duration, 120ms);
+      background-color ${rcToken('--rc-motion-duration')},
+      border-color ${rcToken('--rc-motion-duration')},
+      box-shadow ${rcToken('--rc-motion-duration')};
 
     /* Keyboard focus indicator */
     outline: none;
     &:focus-visible {
-      outline: var(--rc-focus-ring, auto);
-      outline-offset: var(--rc-focus-ring-offset, 0);
+      outline: ${rcToken('--rc-focus-ring')};
+      outline-offset: ${rcToken('--rc-focus-ring-offset')};
     }
   }
 
@@ -65,7 +64,7 @@ export const selectStyles = css`
     flex: 0 1 auto;
     max-inline-size: 100%;
     min-inline-size: 0;
-    --rc-chip-group-column-gap: var(--rc-select-gap, var(--rc-control-gap, 0.25em));
+    --rc-chip-group-column-gap: var(--rc-select-gap, ${rcToken('--rc-control-gap')});
     /*
      * Chip touch-target overlap tokens inherit to every chip, but they are
      * only meant to reach into the field's own block padding. Returning the
@@ -82,7 +81,7 @@ export const selectStyles = css`
   [part='chip'] {
     display: inline-flex;
     align-items: center;
-    gap: var(--rc-select-chip-gap, calc(var(--rc-control-gap, 0.25em) * 0.8));
+    gap: var(--rc-select-chip-gap, calc(${rcToken('--rc-control-gap')} * 0.8));
     padding-block: var(--rc-select-chip-padding-block, 0.1em);
     padding-inline-start: var(--rc-select-chip-padding-inline-start, 0.3em);
     padding-inline-end: var(
@@ -91,25 +90,22 @@ export const selectStyles = css`
         var(--rc-chip-remove-target-size, 1.5rem) + var(--rc-chip-remove-offset-inline, 0.125rem)
       )
     );
-    border: var(
-      --rc-select-chip-border,
-      var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder))
-    );
-    border-radius: var(--rc-select-chip-radius, var(--rc-radius-md, 0.25em));
-    background: var(--rc-button-bg, ButtonFace);
-    color: var(--rc-button-text, ButtonText);
+    border: var(--rc-select-chip-border, ${rcToken('--rc-border')});
+    border-radius: var(--rc-select-chip-radius, ${rcToken('--rc-radius-md')});
+    background: ${rcToken('--rc-button-bg')};
+    color: ${rcToken('--rc-button-text')};
     font: inherit;
     font-size: 0.875em;
     cursor: pointer;
 
     &:hover {
-      background: var(--rc-highlight, Highlight);
-      color: var(--rc-highlight-text, HighlightText);
+      background: ${rcToken('--rc-highlight')};
+      color: ${rcToken('--rc-highlight-text')};
     }
 
     &:focus-visible {
-      outline: var(--rc-focus-ring, auto);
-      outline-offset: var(--rc-focus-ring-offset, 0);
+      outline: ${rcToken('--rc-focus-ring')};
+      outline-offset: ${rcToken('--rc-focus-ring-offset')};
     }
   }
 
@@ -133,37 +129,22 @@ export const selectStyles = css`
     max-height: var(--rc-select-max-height, 20em);
     overflow-y: auto;
     overflow-block: auto;
-    background: var(
-      --rc-select-listbox-background,
-      var(--rc-popup-background, var(--rc-surface, Canvas))
-    );
-    border: var(
-      --rc-select-listbox-border,
-      var(--rc-popup-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)))
-    );
-    border-radius: var(--rc-select-listbox-radius, var(--rc-popup-radius, var(--rc-radius-sm, 0)));
-    box-shadow: var(
-      --rc-select-shadow,
-      var(
-        --rc-popup-shadow,
-        var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent))
-      )
-    );
-    color: var(--rc-select-listbox-color, var(--rc-popup-color, var(--rc-field-text, FieldText)));
-    padding-block: var(
-      --rc-select-listbox-padding-block,
-      var(--rc-popup-padding-block, var(--rc-control-padding-block, 0.25em))
-    );
-    --rc-listbox-option-gap: var(--rc-item-gap, 0.4em);
-    --rc-listbox-option-padding-block: var(--rc-item-padding-block, 0.3em);
-    --rc-listbox-option-padding-inline: var(--rc-item-padding-inline, 0.75em);
-    --rc-listbox-hover-bg: var(--rc-highlight, Highlight);
-    --rc-listbox-hover-color: var(--rc-highlight-text, HighlightText);
-    --rc-listbox-active-bg: var(--rc-highlight, Highlight);
-    --rc-listbox-active-color: var(--rc-highlight-text, HighlightText);
-    --rc-listbox-selected-bg: var(--rc-highlight, Highlight);
-    --rc-listbox-selected-color: var(--rc-highlight-text, HighlightText);
-    --rc-listbox-disabled-opacity: var(--rc-disabled-opacity, 0.5);
+    background: var(--rc-select-listbox-background, ${rcToken('--rc-popup-background')});
+    border: var(--rc-select-listbox-border, ${rcToken('--rc-popup-border')});
+    border-radius: var(--rc-select-listbox-radius, ${rcToken('--rc-popup-radius')});
+    box-shadow: var(--rc-select-shadow, ${rcToken('--rc-popup-shadow')});
+    color: var(--rc-select-listbox-color, ${rcToken('--rc-popup-color')});
+    padding-block: var(--rc-select-listbox-padding-block, ${rcToken('--rc-popup-padding-block')});
+    --rc-listbox-option-gap: ${rcToken('--rc-item-gap')};
+    --rc-listbox-option-padding-block: ${rcToken('--rc-item-padding-block')};
+    --rc-listbox-option-padding-inline: ${rcToken('--rc-item-padding-inline')};
+    --rc-listbox-hover-bg: ${rcToken('--rc-highlight')};
+    --rc-listbox-hover-color: ${rcToken('--rc-highlight-text')};
+    --rc-listbox-active-bg: ${rcToken('--rc-highlight')};
+    --rc-listbox-active-color: ${rcToken('--rc-highlight-text')};
+    --rc-listbox-selected-bg: ${rcToken('--rc-highlight')};
+    --rc-listbox-selected-color: ${rcToken('--rc-highlight-text')};
+    --rc-listbox-disabled-opacity: ${rcToken('--rc-disabled-opacity')};
   }
 
   /*
@@ -192,7 +173,7 @@ export const selectStyles = css`
       opacity: 1;
       transition:
         opacity var(--rc-select-listbox-duration, 150ms)
-          var(--rc-motion-effects-easing-enter, ease-out),
+          ${rcToken('--rc-motion-effects-easing-enter')},
         overlay var(--rc-select-listbox-duration, 150ms) allow-discrete,
         display var(--rc-select-listbox-duration, 150ms) allow-discrete;
     }
@@ -201,7 +182,7 @@ export const selectStyles = css`
       opacity: 0;
       transition:
         opacity var(--rc-select-listbox-duration, 150ms)
-          var(--rc-motion-effects-easing-exit, ease-in),
+          ${rcToken('--rc-motion-effects-easing-exit')},
         overlay var(--rc-select-listbox-duration, 150ms) allow-discrete,
         display var(--rc-select-listbox-duration, 150ms) allow-discrete;
     }
@@ -223,9 +204,9 @@ export const selectStyles = css`
 
   [part~='dialog'] {
     box-sizing: border-box;
-    background: var(--rc-surface, Canvas);
-    color: var(--rc-field-text, CanvasText);
-    font-family: var(--rc-font-family, inherit);
+    background: ${rcToken('--rc-surface')};
+    color: ${rcToken('--rc-field-text')};
+    font-family: ${rcToken('--rc-font-family', 'inherit')};
 
     &[open] {
       display: flex;
@@ -288,7 +269,7 @@ export const selectStyles = css`
   }
 
   rc-listbox [part~='option'][data-rc-active]:not([aria-disabled='true']) {
-    outline: var(--rc-focus-ring, 2px solid var(--rc-accent, Highlight));
+    outline: ${rcToken('--rc-focus-ring')};
     outline-offset: -2px;
   }
 
@@ -311,7 +292,7 @@ export const selectStyles = css`
 
   rc-listbox [part~='create-option'] {
     font-style: italic;
-    border-top: 1px solid var(--rc-border-color, ButtonBorder);
+    border-top: 1px solid ${rcToken('--rc-border-color')};
     margin-top: 0.25em;
     padding-top: 0.3em;
   }

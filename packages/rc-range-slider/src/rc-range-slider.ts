@@ -18,6 +18,7 @@ import {
   valueToPercent,
   warnMissingDirectChild,
   MorphRecoveryController,
+  rcToken,
 } from '@rcarls/rc-common';
 
 export interface RCRangeSliderValueEvent {
@@ -197,7 +198,7 @@ export class RCRangeSlider extends LitElement {
 
   static override styles = css`
     :host {
-      --rc-range-slider-accent: var(--rc-accent, Highlight);
+      --rc-range-slider-accent: ${rcToken('--rc-accent')};
       --rc-range-slider-track-background: color-mix(in srgb, CanvasText 25%, Canvas);
       --rc-range-slider-range-background: var(--rc-range-slider-accent);
       --rc-range-slider-thumb-background: ButtonFace;
@@ -208,9 +209,9 @@ export class RCRangeSlider extends LitElement {
       --rc-range-slider-thumb-active-border: var(--rc-range-slider-accent);
       --rc-range-slider-focus-outline: var(--rc-range-slider-accent);
       display: block;
-      font-family: var(--rc-font-family, inherit);
-      font-size: var(--rc-font-size, inherit);
-      line-height: var(--rc-line-height, normal);
+      font-family: ${rcToken('--rc-font-family', 'inherit')};
+      font-size: ${rcToken('--rc-font-size', 'inherit')};
+      line-height: ${rcToken('--rc-line-height')};
     }
 
     :host([disabled]) {
@@ -227,7 +228,7 @@ export class RCRangeSlider extends LitElement {
 
     .rc-range-slider-root {
       display: grid;
-      gap: var(--rc-range-slider-gap, var(--rc-control-gap, 0.5rem));
+      gap: var(--rc-range-slider-gap, ${rcToken('--rc-control-gap')});
       align-items: center;
     }
 
@@ -243,7 +244,7 @@ export class RCRangeSlider extends LitElement {
       position: relative;
       display: block;
       min-width: 0;
-      min-height: var(--rc-range-slider-control-size, var(--rc-control-block-size, 1.5rem));
+      min-height: var(--rc-range-slider-control-size, ${rcToken('--rc-control-block-size')});
       touch-action: none;
     }
 
@@ -258,7 +259,7 @@ export class RCRangeSlider extends LitElement {
       inset-block: calc(50% - var(--rc-range-slider-track-size, 0.1875rem) / 2);
       block-size: var(--rc-range-slider-track-size, 0.1875rem);
       background: var(--rc-range-slider-track-background);
-      border-radius: var(--rc-range-slider-track-radius, var(--rc-control-radius, 0));
+      border-radius: var(--rc-range-slider-track-radius, ${rcToken('--rc-control-radius')});
       overflow: hidden;
       z-index: 0;
     }
@@ -294,12 +295,12 @@ export class RCRangeSlider extends LitElement {
         background-color 120ms ease,
         border-color 120ms ease,
         box-shadow 120ms ease,
-        transform var(--rc-motion-duration, 120ms) ease;
+        transform ${rcToken('--rc-motion-duration')} ease;
     }
 
     .rc-range-slider-thumb:focus-visible {
-      outline: var(--rc-focus-ring, 2px solid var(--rc-range-slider-focus-outline));
-      outline-offset: var(--rc-focus-ring-offset, 2px);
+      outline: ${rcToken('--rc-focus-ring')};
+      outline-offset: ${rcToken('--rc-focus-ring-offset')};
     }
 
     :host(:not([disabled]):not([readonly])) .rc-range-slider-thumb:hover {
@@ -345,7 +346,7 @@ export class RCRangeSlider extends LitElement {
       pointer-events: none;
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
-      color: var(--rc-range-slider-value-color, var(--rc-text-disabled, GrayText));
+      color: var(--rc-range-slider-value-color, ${rcToken('--rc-text-disabled')});
     }
 
     .rc-range-slider-root[data-display='float'] .rc-range-slider-values {
@@ -379,7 +380,7 @@ export class RCRangeSlider extends LitElement {
     }
 
     :host([orientation='vertical']) .rc-range-slider-group {
-      inline-size: var(--rc-range-slider-control-size, var(--rc-control-block-size, 1.5rem));
+      inline-size: var(--rc-range-slider-control-size, ${rcToken('--rc-control-block-size')});
       block-size: var(--rc-range-slider-vertical-size, 12.5rem);
     }
 
@@ -589,11 +590,7 @@ export class RCRangeSlider extends LitElement {
     `;
 
     return html`
-      <div
-        part="root"
-        class="rc-range-slider-root"
-        data-display=${this.display ?? nothing}
-      >
+      <div part="root" class="rc-range-slider-root" data-display=${this.display ?? nothing}>
         ${this.display === 'inline-start' ? valuesContainer : nothing}
 
         <div

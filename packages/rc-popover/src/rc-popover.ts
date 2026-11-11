@@ -8,6 +8,7 @@ import {
   PopoverController,
   defineLightDomBaseStyles,
   MorphRecoveryController,
+  rcToken,
 } from '@rcarls/rc-common';
 
 import popoverStyles from './rc-popover.styles.js';
@@ -57,26 +58,23 @@ const LIGHT_DOM_CSS = cssText`
     padding-inline: var(--rc-popover-padding-inline, 0.75rem);
     border: var(
       --rc-popover-border,
-      var(--rc-popup-border, var(--rc-border, 1px solid ButtonBorder))
+      ${rcToken('--rc-popup-border')}
     );
     border-radius: var(
       --rc-popover-radius,
-      var(--rc-popup-radius, var(--rc-radius-sm, 0.25rem))
+      ${rcToken('--rc-popup-radius')}
     );
     background: var(
       --rc-popover-background,
-      var(--rc-popup-background, var(--rc-surface, Canvas))
+      ${rcToken('--rc-popup-background')}
     );
     color: var(
       --rc-popover-color,
-      var(--rc-popup-color, var(--rc-field-text, CanvasText))
+      ${rcToken('--rc-popup-color')}
     );
     box-shadow: var(
       --rc-popover-shadow,
-      var(
-        --rc-popup-shadow,
-        var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent))
-      )
+      ${rcToken('--rc-popup-shadow')}
     );
     font: inherit;
     overflow: auto;

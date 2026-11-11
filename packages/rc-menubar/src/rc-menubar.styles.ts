@@ -1,5 +1,7 @@
 import { css } from 'lit';
 
+import { rcToken } from '@rcarls/rc-common';
+
 export const menubarStyles = css`
   :host {
     display: inline-block;
@@ -9,16 +11,16 @@ export const menubarStyles = css`
     display: flex;
     flex-direction: row;
     align-items: stretch;
-    gap: var(--rc-menubar-gap, var(--rc-control-gap, 0.25em));
-    padding-inline: var(--rc-menubar-padding-inline, var(--rc-control-padding-inline, 0.25em));
-    padding-block: var(--rc-menubar-padding-block, var(--rc-control-padding-block, 0.25em));
-    border: var(--rc-menubar-border, var(--rc-border, 1px solid ButtonBorder));
-    border-radius: var(--rc-menubar-radius, var(--rc-control-radius, 0));
-    background: var(--rc-menubar-background, var(--rc-surface, Canvas));
-    color: var(--rc-menubar-color, var(--rc-field-text, CanvasText));
-    font-family: var(--rc-font-family, inherit);
-    font-size: var(--rc-font-size, inherit);
-    line-height: var(--rc-line-height, normal);
+    gap: var(--rc-menubar-gap, ${rcToken('--rc-control-gap')});
+    padding-inline: var(--rc-menubar-padding-inline, ${rcToken('--rc-control-padding-inline')});
+    padding-block: var(--rc-menubar-padding-block, ${rcToken('--rc-control-padding-block')});
+    border: var(--rc-menubar-border, ${rcToken('--rc-border')});
+    border-radius: var(--rc-menubar-radius, ${rcToken('--rc-control-radius')});
+    background: var(--rc-menubar-background, ${rcToken('--rc-surface')});
+    color: var(--rc-menubar-color, ${rcToken('--rc-field-text')});
+    font-family: ${rcToken('--rc-font-family', 'inherit')};
+    font-size: ${rcToken('--rc-font-size', 'inherit')};
+    line-height: ${rcToken('--rc-line-height')};
   }
 
   :host([orientation='vertical']) #root {
@@ -39,11 +41,11 @@ export const menubarStyles = css`
     --rc-menu-button-trigger-block-size: var(--rc-menubar-item-block-size, 2.25em);
     --rc-menu-button-trigger-padding-block: var(--rc-menubar-item-padding-block, 0.25em);
     --rc-menu-button-trigger-padding-inline: var(--rc-menubar-item-padding-inline, 0.75em);
-    --rc-menu-button-trigger-gap: var(--rc-menubar-item-gap, var(--rc-item-gap, 0.5em));
+    --rc-menu-button-trigger-gap: var(--rc-menubar-item-gap, ${rcToken('--rc-item-gap')});
     --rc-menu-button-trigger-border: var(--rc-menubar-item-border, 1px solid transparent);
     --rc-menu-button-trigger-radius: var(
       --rc-menubar-item-radius,
-      var(--rc-control-radius, 0.125em)
+      ${rcToken('--rc-control-radius')}
     );
     --rc-menu-button-trigger-background: var(--rc-menubar-item-background, transparent);
     --rc-menu-button-trigger-color: var(--rc-menubar-item-color, inherit);

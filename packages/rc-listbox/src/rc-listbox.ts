@@ -13,6 +13,7 @@ import {
   type ItemsCollectionSelectableOption,
   defineLightDomBaseStyles,
   MorphRecoveryController,
+  rcToken,
 } from '@rcarls/rc-common';
 
 declare global {
@@ -97,11 +98,11 @@ let _uid = 0;
 const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   rc-listbox {
-    font-family: var(--rc-item-font-family, inherit);
-    font-size: var(--rc-item-font-size, inherit);
-    font-weight: var(--rc-item-font-weight, inherit);
-    line-height: var(--rc-item-line-height, inherit);
-    letter-spacing: var(--rc-item-letter-spacing, inherit);
+    font-family: ${rcToken('--rc-item-font-family')};
+    font-size: ${rcToken('--rc-item-font-size')};
+    font-weight: ${rcToken('--rc-item-font-weight', 'inherit')};
+    line-height: ${rcToken('--rc-item-line-height')};
+    letter-spacing: ${rcToken('--rc-item-letter-spacing', 'inherit')};
   }
 
   rc-listbox ul {

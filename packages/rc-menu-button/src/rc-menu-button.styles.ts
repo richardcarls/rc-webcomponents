@@ -1,5 +1,7 @@
 import { css } from 'lit';
 
+import { rcToken } from '@rcarls/rc-common';
+
 export const menuButtonStyles = css`
   :host {
     display: inline-block;
@@ -80,11 +82,11 @@ export const menuButtonStyles = css`
   :host([icon-only]) slot[name='trigger']::slotted([role='button']) {
     inline-size: var(
       --rc-menu-button-icon-size,
-      var(--rc-menu-button-trigger-block-size, var(--rc-control-block-size, 2.25em))
+      var(--rc-menu-button-trigger-block-size, ${rcToken('--rc-control-block-size')})
     );
     min-inline-size: var(
       --rc-menu-button-icon-size,
-      var(--rc-menu-button-trigger-block-size, var(--rc-control-block-size, 2.25em))
+      var(--rc-menu-button-trigger-block-size, ${rcToken('--rc-control-block-size')})
     );
     padding-inline: 0;
   }
@@ -95,16 +97,16 @@ export const menuButtonStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--rc-menu-button-trigger-gap, var(--rc-item-gap, 0.5em));
-    min-block-size: var(--rc-menu-button-trigger-block-size, var(--rc-control-block-size, 2.25em));
-    padding: var(--rc-menu-button-trigger-padding-block, var(--rc-control-padding-block, 0.25em))
-      var(--rc-menu-button-trigger-padding-inline, var(--rc-control-padding-inline, 0.5em));
+    gap: var(--rc-menu-button-trigger-gap, ${rcToken('--rc-item-gap')});
+    min-block-size: var(--rc-menu-button-trigger-block-size, ${rcToken('--rc-control-block-size')});
+    padding: var(--rc-menu-button-trigger-padding-block, ${rcToken('--rc-control-padding-block')})
+      var(--rc-menu-button-trigger-padding-inline, ${rcToken('--rc-control-padding-inline')});
     appearance: none;
     box-sizing: border-box;
-    border: var(--rc-menu-button-trigger-border, var(--rc-border, 1px solid ButtonBorder));
-    border-radius: var(--rc-menu-button-trigger-radius, var(--rc-control-radius, 0.125em));
-    background: var(--rc-menu-button-trigger-background, var(--rc-button-bg, ButtonFace));
-    color: var(--rc-menu-button-trigger-color, var(--rc-button-text, ButtonText));
+    border: var(--rc-menu-button-trigger-border, ${rcToken('--rc-border')});
+    border-radius: var(--rc-menu-button-trigger-radius, ${rcToken('--rc-control-radius')});
+    background: var(--rc-menu-button-trigger-background, ${rcToken('--rc-button-bg')});
+    color: var(--rc-menu-button-trigger-color, ${rcToken('--rc-button-text')});
     font: inherit;
     text-decoration: none;
     cursor: pointer;
@@ -153,10 +155,10 @@ export const menuButtonStyles = css`
     padding-inline-end: calc(
       var(
           --rc-menu-button-indicator-inset,
-          var(--rc-menu-button-trigger-padding-inline, var(--rc-control-padding-inline, 0.5em))
+          var(--rc-menu-button-trigger-padding-inline, ${rcToken('--rc-control-padding-inline')})
         ) +
         var(--rc-menu-button-indicator-size, 1em) +
-        var(--rc-menu-button-trigger-gap, var(--rc-item-gap, 0.5em))
+        var(--rc-menu-button-trigger-gap, ${rcToken('--rc-item-gap')})
     );
   }
 
@@ -165,7 +167,7 @@ export const menuButtonStyles = css`
     inset-block-start: 50%;
     inset-inline-end: var(
       --rc-menu-button-indicator-inset,
-      var(--rc-menu-button-trigger-padding-inline, var(--rc-control-padding-inline, 0.5em))
+      var(--rc-menu-button-trigger-padding-inline, ${rcToken('--rc-control-padding-inline')})
     );
     display: inline-flex;
     align-items: center;
@@ -216,7 +218,7 @@ export const menuButtonStyles = css`
       opacity: 1;
       transition:
         opacity var(--rc-menu-button-popup-duration, 150ms)
-          var(--rc-motion-effects-easing-enter, ease-out),
+          ${rcToken('--rc-motion-effects-easing-enter')},
         overlay var(--rc-menu-button-popup-duration, 150ms) allow-discrete,
         display var(--rc-menu-button-popup-duration, 150ms) allow-discrete;
     }
@@ -225,7 +227,7 @@ export const menuButtonStyles = css`
       opacity: 0;
       transition:
         opacity var(--rc-menu-button-popup-duration, 150ms)
-          var(--rc-motion-effects-easing-exit, ease-in),
+          ${rcToken('--rc-motion-effects-easing-exit')},
         overlay var(--rc-menu-button-popup-duration, 150ms) allow-discrete,
         display var(--rc-menu-button-popup-duration, 150ms) allow-discrete;
     }

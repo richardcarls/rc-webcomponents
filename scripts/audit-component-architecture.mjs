@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -424,8 +425,40 @@ export function extractTokenReferences(text) {
   const fromStyleQueries = [...text.matchAll(/style\(\s*(--(?:_)?rc-[a-z0-9-]+)\s*:/g)].map(
     (match) => match[1],
   );
+  // rcToken() writes the var() at runtime, so the source only names the token.
+  const fromRcToken = [...text.matchAll(/rcToken\(\s*['"](--rc-[a-z0-9-]+)['"]/g)].map(
+    (match) => match[1],
+  );
 
-  return new Set([...fromVars, ...fromComputedStyles, ...fromStyleQueries]);
+  return new Set([...fromVars, ...fromComputedStyles, ...fromStyleQueries, ...fromRcToken]);
+}
+
+/** Shared token names from the token contract, the owner of their defaults. */
+export function readSharedTokens(root) {
+  const contractPath = join(root, 'packages/rc-webcomponents/themes/token-contract.mjs');
+
+  if (!existsSync(contractPath)) {
+    return extractTokenDefinitions(read(join(root, 'packages/rc-webcomponents/themes/base.css')));
+  }
+
+  return new Set(Object.keys(createRequire(import.meta.url)(contractPath).tokens));
+}
+
+/**
+ * Finds hand-written var() reads of shared tokens in component source. They
+ * must go through rcToken() so their fallback matches the contract default.
+ * Comments are ignored, since @cssprop text documents defaults as var().
+ */
+export function findRawSharedTokenReads(text, sharedTokens) {
+  const withoutComments = text.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, ' ');
+
+  return sorted(
+    new Set(
+      [...withoutComments.matchAll(/var\(\s*(--rc-[a-z0-9-]+)/g)]
+        .map((match) => match[1])
+        .filter((token) => sharedTokens.has(token)),
+    ),
+  );
 }
 
 /*
@@ -871,8 +904,7 @@ export function inspectTheme(root, themeName) {
 export function runAudit(root = DEFAULT_ROOT) {
   const errors = [];
   const warnings = [];
-  const baseCss = read(join(root, 'packages/rc-webcomponents/themes/base.css'));
-  const baseTokens = extractTokenDefinitions(baseCss);
+  const baseTokens = readSharedTokens(root);
   const stylingGuide = read(join(root, 'docs/docs/guide/styling.mdx'));
   const declarations = manifestDeclarations(root);
   const packages = componentPackages(root).map((directory) =>
@@ -930,6 +962,15 @@ export function runAudit(root = DEFAULT_ROOT) {
   for (const token of baseTokens) {
     if (!stylingGuide.includes(token)) {
       errors.push(`Shared token ${token} is missing from the styling guide.`);
+    }
+  }
+
+
+  for (const path of sourceFiles) {
+    for (const token of findRawSharedTokenReads(read(path), baseTokens)) {
+      errors.push(
+        `${relative(root, path)}: read shared token ${token} with rcToken() instead of var().`,
+      );
     }
   }
 

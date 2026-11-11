@@ -1,5 +1,7 @@
 import { css } from 'lit';
 
+import { rcToken } from '@rcarls/rc-common';
+
 export const fabMenuStyles = css`
   :host {
     position: var(--rc-fab-menu-position-css, fixed);
@@ -127,8 +129,8 @@ export const fabMenuStyles = css`
     opacity: 1;
     scale: 1;
     transition:
-      opacity var(--rc-fab-menu-popup-duration, 0ms) var(--rc-motion-effects-easing-enter, ease-out),
-      scale var(--rc-fab-menu-popup-duration, 0ms) var(--rc-motion-spatial-easing-enter, ease-out),
+      opacity var(--rc-fab-menu-popup-duration, 0ms) ${rcToken('--rc-motion-effects-easing-enter')},
+      scale var(--rc-fab-menu-popup-duration, 0ms) ${rcToken('--rc-motion-spatial-easing-enter')},
       overlay var(--rc-fab-menu-popup-duration, 0ms) allow-discrete,
       display var(--rc-fab-menu-popup-duration, 0ms) allow-discrete;
   }
@@ -137,8 +139,8 @@ export const fabMenuStyles = css`
     opacity: 0;
     scale: 0.92;
     transition:
-      opacity var(--rc-fab-menu-popup-duration, 0ms) var(--rc-motion-effects-easing-exit, ease-in),
-      scale var(--rc-fab-menu-popup-duration, 0ms) var(--rc-motion-spatial-easing-exit, ease-in),
+      opacity var(--rc-fab-menu-popup-duration, 0ms) ${rcToken('--rc-motion-effects-easing-exit')},
+      scale var(--rc-fab-menu-popup-duration, 0ms) ${rcToken('--rc-motion-spatial-easing-exit')},
       overlay var(--rc-fab-menu-popup-duration, 0ms) allow-discrete,
       display var(--rc-fab-menu-popup-duration, 0ms) allow-discrete;
   }
@@ -173,16 +175,16 @@ export const fabMenuStyles = css`
 
     :host([open]) #popup {
       transition:
-        opacity 50ms var(--rc-motion-effects-easing-enter, ease-out),
-        scale 0s var(--rc-motion-spatial-easing-enter, ease-out),
+        opacity 50ms ${rcToken('--rc-motion-effects-easing-enter')},
+        scale 0s ${rcToken('--rc-motion-spatial-easing-enter')},
         overlay 50ms allow-discrete,
         display 50ms allow-discrete;
     }
 
     :host(:not([open])) #popup {
       transition:
-        opacity 50ms var(--rc-motion-effects-easing-exit, ease-in),
-        scale 0s var(--rc-motion-spatial-easing-exit, ease-in),
+        opacity 50ms ${rcToken('--rc-motion-effects-easing-exit')},
+        scale 0s ${rcToken('--rc-motion-spatial-easing-exit')},
         overlay 50ms allow-discrete,
         display 50ms allow-discrete;
     }

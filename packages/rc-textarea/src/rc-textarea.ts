@@ -321,7 +321,7 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-textarea-border=1px solid ButtonBorder] - Border around the field
  * @cssprop [--rc-textarea-border-radius=2px] - Border radius of the field
  * @cssprop [--rc-textarea-background=Field] - Background color of the field
- * @cssprop [--rc-textarea-color=var(--rc-field-text, FieldText)] - Text color
+ * @cssprop [--rc-textarea-color=var(--rc-field-text)] - Text color
  * @cssprop [--rc-textarea-font-family=monospace] - Font family. While it is unset on the host, the
  *   editor copies the native `<textarea>`'s font, line height, and spacing as inline styles, so
  *   the enhanced editor matches the native control's typography.

@@ -12,6 +12,7 @@ import {
   type ResizeLifecycleDetail,
   type ResizeOrigin,
   defineLightDomBaseStyles,
+  rcToken,
 } from '@rcarls/rc-common';
 
 declare global {
@@ -151,19 +152,19 @@ const LIGHT_DOM_CSS = cssText`
     rc-bottom-sheet > dialog[open] {
       opacity: 1;
       transition:
-        opacity var(--rc-motion-effects-duration-default, 200ms)
-          var(--rc-motion-effects-easing-enter, ease-out),
-        overlay var(--rc-motion-effects-duration-default, 200ms) allow-discrete,
-        display var(--rc-motion-effects-duration-default, 200ms) allow-discrete;
+        opacity ${rcToken('--rc-motion-effects-duration-default')}
+          ${rcToken('--rc-motion-effects-easing-enter')},
+        overlay ${rcToken('--rc-motion-effects-duration-default')} allow-discrete,
+        display ${rcToken('--rc-motion-effects-duration-default')} allow-discrete;
     }
 
     rc-bottom-sheet > dialog:not([open]) {
       opacity: 0;
       transition:
-        opacity var(--rc-motion-effects-duration-default, 200ms)
-          var(--rc-motion-effects-easing-exit, ease-in),
-        overlay var(--rc-motion-effects-duration-default, 200ms) allow-discrete,
-        display var(--rc-motion-effects-duration-default, 200ms) allow-discrete;
+        opacity ${rcToken('--rc-motion-effects-duration-default')}
+          ${rcToken('--rc-motion-effects-easing-exit')},
+        overlay ${rcToken('--rc-motion-effects-duration-default')} allow-discrete,
+        display ${rcToken('--rc-motion-effects-duration-default')} allow-discrete;
     }
 
     @starting-style {
@@ -174,14 +175,14 @@ const LIGHT_DOM_CSS = cssText`
 
     rc-bottom-sheet > dialog[open]::backdrop {
       opacity: 1;
-      transition: opacity var(--rc-motion-effects-duration-default, 200ms)
-        var(--rc-motion-effects-easing-enter, ease-out);
+      transition: opacity ${rcToken('--rc-motion-effects-duration-default')}
+        ${rcToken('--rc-motion-effects-easing-enter')};
     }
 
     rc-bottom-sheet > dialog:not([open])::backdrop {
       opacity: 0;
-      transition: opacity var(--rc-motion-effects-duration-default, 200ms)
-        var(--rc-motion-effects-easing-exit, ease-in);
+      transition: opacity ${rcToken('--rc-motion-effects-duration-default')}
+        ${rcToken('--rc-motion-effects-easing-exit')};
     }
 
     @starting-style {

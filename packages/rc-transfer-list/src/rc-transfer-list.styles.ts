@@ -1,5 +1,7 @@
 import { css } from 'lit';
 
+import { rcToken } from '@rcarls/rc-common';
+
 export const transferListStyles = css`
   :host {
     display: block;
@@ -13,7 +15,7 @@ export const transferListStyles = css`
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: stretch;
-    gap: var(--rc-transfer-list-gap, var(--rc-control-gap, 0.75rem));
+    gap: var(--rc-transfer-list-gap, ${rcToken('--rc-control-gap')});
   }
 
   :host([compact]) #root {
@@ -24,51 +26,51 @@ export const transferListStyles = css`
     display: flex;
     min-inline-size: 0;
     flex-direction: column;
-    gap: var(--rc-transfer-list-panel-gap, var(--rc-control-gap, 0.35rem));
+    gap: var(--rc-transfer-list-panel-gap, ${rcToken('--rc-control-gap')});
   }
 
   .rc-transfer-list-panel > rc-listbox {
     flex: 1 1 auto;
     min-block-size: var(--rc-transfer-list-listbox-min-block-size, 10rem);
     overflow: auto;
-    border: var(--rc-transfer-list-listbox-border, var(--rc-border, 1px solid ButtonBorder));
-    border-radius: var(--rc-transfer-list-listbox-radius, var(--rc-control-radius, 0.125rem));
-    background: var(--rc-transfer-list-listbox-bg, var(--rc-surface, Canvas));
-    color: var(--rc-transfer-list-listbox-color, var(--rc-field-text, FieldText));
-    --rc-listbox-option-gap: var(--rc-transfer-list-option-gap, var(--rc-item-gap, 0.4em));
+    border: var(--rc-transfer-list-listbox-border, ${rcToken('--rc-border')});
+    border-radius: var(--rc-transfer-list-listbox-radius, ${rcToken('--rc-control-radius')});
+    background: var(--rc-transfer-list-listbox-bg, ${rcToken('--rc-surface')});
+    color: var(--rc-transfer-list-listbox-color, ${rcToken('--rc-field-text')});
+    --rc-listbox-option-gap: var(--rc-transfer-list-option-gap, ${rcToken('--rc-item-gap')});
     --rc-listbox-option-padding-block: var(
       --rc-transfer-list-option-padding-block,
-      var(--rc-item-padding-block, 0.3em)
+      ${rcToken('--rc-item-padding-block')}
     );
     --rc-listbox-option-padding-inline: var(
       --rc-transfer-list-option-padding-inline,
-      var(--rc-item-padding-inline, 0.75em)
+      ${rcToken('--rc-item-padding-inline')}
     );
     --rc-listbox-hover-bg: var(
       --rc-transfer-list-option-hover-bg,
-      var(--rc-transfer-list-option-selected-bg, var(--rc-highlight, Highlight))
+      var(--rc-transfer-list-option-selected-bg, ${rcToken('--rc-highlight')})
     );
     --rc-listbox-hover-color: var(
       --rc-transfer-list-option-hover-color,
-      var(--rc-transfer-list-option-selected-color, var(--rc-highlight-text, HighlightText))
+      var(--rc-transfer-list-option-selected-color, ${rcToken('--rc-highlight-text')})
     );
     --rc-listbox-active-bg: var(
       --rc-transfer-list-option-hover-bg,
-      var(--rc-transfer-list-option-selected-bg, var(--rc-highlight, Highlight))
+      var(--rc-transfer-list-option-selected-bg, ${rcToken('--rc-highlight')})
     );
     --rc-listbox-active-color: var(
       --rc-transfer-list-option-hover-color,
-      var(--rc-transfer-list-option-selected-color, var(--rc-highlight-text, HighlightText))
+      var(--rc-transfer-list-option-selected-color, ${rcToken('--rc-highlight-text')})
     );
     --rc-listbox-selected-bg: var(
       --rc-transfer-list-option-selected-bg,
-      var(--rc-highlight, Highlight)
+      ${rcToken('--rc-highlight')}
     );
     --rc-listbox-selected-color: var(
       --rc-transfer-list-option-selected-color,
-      var(--rc-highlight-text, HighlightText)
+      ${rcToken('--rc-highlight-text')}
     );
-    --rc-listbox-disabled-opacity: var(--rc-disabled-opacity, 0.5);
+    --rc-listbox-disabled-opacity: ${rcToken('--rc-disabled-opacity')};
   }
 
   rc-listbox [part~='option'][hidden] {
@@ -76,7 +78,7 @@ export const transferListStyles = css`
   }
 
   rc-listbox [part~='option'][data-rc-active]:not([aria-disabled='true']) {
-    outline: var(--rc-focus-ring, 2px solid var(--rc-accent, Highlight));
+    outline: ${rcToken('--rc-focus-ring')};
     outline-offset: -2px;
   }
 
@@ -87,7 +89,7 @@ export const transferListStyles = css`
   #actions {
     align-self: center;
     transform: translateY(
-      calc((1lh + var(--rc-transfer-list-panel-gap, var(--rc-control-gap, 0.35rem))) / 2)
+      calc((1lh + var(--rc-transfer-list-panel-gap, ${rcToken('--rc-control-gap')})) / 2)
     );
   }
 

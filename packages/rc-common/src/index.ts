@@ -31,6 +31,7 @@ export * from './RovingTabIndexMixin.js';
 export * from './sliderUtils.js';
 export * from './snapUtils.js';
 export * from './cssTime.js';
+export * from './rcToken.js';
 export * from './LiveAnnouncer.js';
 export * from './lightDomBaseStyles.js';
 export * from './HydrationController.js';
