@@ -57,30 +57,29 @@ The semantic layer is deliberately smaller than the sum of every component's
 styling API. Components consume these shared decisions and expose narrower
 component tokens where their structure needs an additional adaptation point.
 
-### Tooling metadata for shared tokens
+### Why the tokens are not registered
 
-The aggregate package exports a generated JSON map for build tools and editor
-integrations:
+RC tokens are plain custom properties. None of them is registered with
+`@property` or `CSS.registerProperty()`, and the library does not plan to
+register them, because registration would change how they behave:
 
-```js
-import mappings from '@rcarls/rc-webcomponents/themes/property-mappings.json' with { type: 'json' };
+- **An unset token falls through.** An unregistered custom property starts out
+  invalid, so `var(--rc-button-block-size, var(--rc-control-block-size, 2.25em))`
+  reaches the next fallback when a token is not set. A typed registration
+  requires an initial value, so the fallback would never be used.
+- **Values resolve where they are used.** `--rc-control-padding-inline: 0.5em`
+  follows the font size of each component that reads it, and `Canvas` follows
+  the local `color-scheme`. A typed registration computes the value on the
+  element that declares it, so every descendant would inherit that one result.
+- **Themes are scoped; registrations are not.** A theme can set tokens on a
+  class or a shadow host. A registration applies to the whole document with
+  one type and initial value, and browsers ignore `@property` rules inside
+  shadow roots.
 
-const accent = mappings.properties['--rc-accent'];
-// { fallback: 'Highlight', syntax: '<color>', ... }
-```
-
-Each of the shared tokens has its `base.css` fallback, an inferred CSS syntax
-when one is unambiguous, and `inherits: true`. A `registration` object appears
-only when the fallback is a valid, computationally independent typed initial
-value; otherwise it is `null` with an `ineligibleReason`. The conditional
-`AccentColor` override is recorded separately from `--rc-accent`'s base
-`Highlight` fallback. Packaged themes can supply different values.
-
-The map does not register properties or change rendering. Tools can use it for
-completion and validation, but registration in an app still requires reviewing
-the effect of typed computation on inherited values and `var()` aliases. No
-runtime interpolation or invalid-value fallback is gained just by importing
-the JSON.
+You can still register a token in your own application. Check the points above
+first: registering changes fallback behavior for every component that reads
+the token. The syntax each token accepts is listed in the component manifest
+(`custom-elements.json`) for editors and build tools.
 
 | Role                 | Tokens and defaults                                                                                                                                                                                                                                                                                                                                                                        |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
