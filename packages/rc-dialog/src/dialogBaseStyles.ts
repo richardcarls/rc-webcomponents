@@ -14,6 +14,15 @@ import { cssText, defineLightDomBaseStyles, rcToken } from '@rcarls/rc-common';
  */
 export const DIALOG_BASE_CSS = cssText`
 @layer rc-base {
+  /*
+   * The host renders nothing of its own: a closed dialog has no box and an
+   * open modal one sits in the top layer. Without a box, the host takes no
+   * flex or grid slot, so a dialog placed beside its trigger adds no gap.
+   */
+  rc-dialog {
+    display: contents;
+  }
+
   rc-dialog > dialog {
     box-sizing: border-box;
     inline-size: var(--rc-dialog-inline-size, fit-content);
