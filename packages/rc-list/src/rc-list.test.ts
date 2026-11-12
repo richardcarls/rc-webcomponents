@@ -616,6 +616,35 @@ test('a details toggle expands the supporting region and wires its state', async
   expect(toggled).toHaveBeenLastCalledWith(false);
 });
 
+test('a whole-row toggle expands from the row but not from its details', async () => {
+  const screen = render(html`
+    <rc-list data-testid="list" aria-label="Ingredients">
+      <rc-list-item data-testid="item" interactive action-target="toggle">
+        <span slot="leading" aria-hidden="true">!</span>
+        <button id="toggle" type="button" data-rc-list-item-toggle>2 garlic cloves</button>
+        <div slot="details" data-testid="details">"garlic" resembles "gallon".</div>
+      </rc-list-item>
+    </rc-list>
+  `);
+  const list = (await screen.getByTestId('list').element()) as RCList;
+  const item = (await screen.getByTestId('item').element()) as RCListItem;
+  const details = (await screen.getByTestId('details').element()) as HTMLElement;
+  const leading = item.querySelector<HTMLElement>('[slot="leading"]')!;
+
+  await settle(list);
+  await userEvent.click(leading);
+  await settle(list);
+
+  expect(item.expanded).toBe(true);
+  expect(details.hidden).toBe(false);
+
+  await userEvent.click(details);
+  await settle(list);
+
+  expect(item.expanded).toBe(true);
+  expect(details.hidden).toBe(false);
+});
+
 test('a controlled item reports requested state without changing until the host does', async () => {
   const screen = renderExpandable();
   const list = (await screen.getByTestId('list').element()) as RCList;

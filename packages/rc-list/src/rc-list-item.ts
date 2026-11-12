@@ -1,7 +1,12 @@
 import { LitElement, html, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { ClickDelegateController, MorphRecoveryController, setCustomState } from '@rcarls/rc-common';
+import {
+  ClickDelegateController,
+  DEFAULT_INTERACTIVE_SELECTOR,
+  MorphRecoveryController,
+  setCustomState,
+} from '@rcarls/rc-common';
 
 import listItemStyles from './rc-list-item.styles.js';
 
@@ -213,6 +218,9 @@ export class RCListItem extends LitElement {
     new ClickDelegateController(this, {
       target: () => this._resolveActionTarget() ?? this._nativeInput(),
       disabled: () => !this.interactive || this.disabled,
+      // The expanded details region is content, not part of the row action:
+      // a click on its text must not activate the row or collapse it.
+      interactiveSelector: `${DEFAULT_INTERACTIVE_SELECTOR}, [slot='details']`,
     });
   }
 
