@@ -219,8 +219,9 @@ export class RCListItem extends LitElement {
       target: () => this._resolveActionTarget() ?? this._nativeInput(),
       disabled: () => !this.interactive || this.disabled,
       // The expanded details region is content, not part of the row action:
-      // a click on its text must not activate the row or collapse it.
-      interactiveSelector: `${DEFAULT_INTERACTIVE_SELECTOR}, [slot='details']`,
+      // a click on its text, or on the padding of its shadow wrapper, must
+      // not activate the row or collapse it.
+      interactiveSelector: `${DEFAULT_INTERACTIVE_SELECTOR}, [slot='details'], [part~='details']`,
     });
   }
 

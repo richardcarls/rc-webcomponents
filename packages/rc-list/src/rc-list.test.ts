@@ -643,6 +643,18 @@ test('a whole-row toggle expands from the row but not from its details', async (
 
   expect(item.expanded).toBe(true);
   expect(details.hidden).toBe(false);
+
+  // The wrapper's own padding, below the slotted text, is details too.
+  item.style.setProperty('--rc-list-item-details-padding-block-end', '2rem');
+  await settle(list);
+
+  const wrapper = item.shadowRoot!.querySelector<HTMLElement>('[part~="details"]')!;
+  const { height } = wrapper.getBoundingClientRect();
+
+  await userEvent.click(wrapper, { position: { x: 4, y: height - 4 } });
+  await settle(list);
+
+  expect(item.expanded).toBe(true);
 });
 
 test('a controlled item reports requested state without changing until the host does', async () => {

@@ -95,17 +95,22 @@
    * and that also carries a trailing icon button has two separate actions.
    * As in Android settings rows, a short vertical divider before the icon
    * button marks where the row action ends and the supplemental one begins.
-   * It is drawn inside the button's 48px target, so it changes no layout and
-   * the 40px state layer never reaches it. A border, not a background, keeps
-   * it visible in forced colors.
+   * An icon button's container fills its box inline at every size (the
+   * touch target only extends it in the block direction), so the divider
+   * sits 4px outside the box, clear of the state layer, without changing
+   * layout. Its length is fixed and centered, not inset from the button's
+   * edges, so larger buttons keep the same short divider. A border, not a
+   * background, keeps it visible in forced colors.
    */
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-list-item[interactive]
     > rc-button[icon-only][slot='trailing']::before {
     content: '';
     position: absolute;
-    inset-block: 0.5rem;
-    inset-inline-start: 0;
+    inset-block: 0;
+    inset-inline-start: -0.25rem;
+    block-size: 2rem;
+    margin-block: auto;
     border-inline-start: 1px solid var(--md-sys-color-outline-variant, GrayText);
     pointer-events: none;
   }

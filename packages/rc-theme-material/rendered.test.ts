@@ -725,6 +725,14 @@ test('an interactive row divides its trailing icon action from the row action', 
           </button>
         </rc-button>
       </rc-list-item>
+      <rc-list-item interactive action-target="open-backup" data-testid="large">
+        <button id="open-backup" type="button">Backups</button>
+        <rc-button icon-only class="rc-icon-button--standard rc-button--large" slot="trailing">
+          <button type="button" aria-label="Back up now">
+            <span data-rc-icon aria-hidden="true">↥</span>
+          </button>
+        </rc-button>
+      </rc-list-item>
       <rc-list-item data-testid="plain">
         Static row
         <rc-button icon-only class="rc-icon-button--standard" slot="trailing">
@@ -747,7 +755,19 @@ test('an interactive row divides its trailing icon action from the row action', 
   expect(divider.content).toBe('""');
   expect(divider.position).toBe('absolute');
   expect(divider.borderInlineStartWidth).toBe('1px');
-  expect(parseFloat(divider.height)).toBe(host.height - 16);
+  expect(host.height).toBe(48);
+  expect(divider.height).toBe('32px');
+  // The 40px container fills the box inline, so the divider sits 4px outside it.
+  expect(host.width).toBe(40);
+  expect(divider.insetInlineStart).toBe('-4px');
+
+  // A larger icon button keeps the same short divider instead of one inset
+  // from its taller edges.
+  const large = scope.querySelector('[data-testid="large"] > rc-button') as HTMLElement;
+
+  expect(large.getBoundingClientRect().height).toBe(96);
+  expect(getComputedStyle(large, '::before').height).toBe('32px');
+  expect(getComputedStyle(large, '::before').insetInlineStart).toBe('-4px');
   expect(getComputedStyle(plain, '::before').content).toBe('none');
 });
 
