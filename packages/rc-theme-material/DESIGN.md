@@ -1097,7 +1097,13 @@ takes icon geometry), the default headline and supporting `<small>` text, `trail
   is `rc-segmented-button`; longer enums open a single-choice dialog from a
   row showing the current value as supporting text. Navigation and
   dialog-opening rows use `interactive` with `action-target`, so the whole row
-  forwards to one real link or button.
+  forwards to one real link or button. They carry no chevron.
+- A row can pair that whole-row action with one supplemental trailing icon
+  button, such as Sync now beside a sync account or Ignore beside an
+  ingredient. The theme draws a short vertical `outline-variant` divider
+  before an icon-only `rc-button` in an `interactive` row's trailing slot, as
+  in Android settings. Keep the row's action target on the headline, not on
+  the trailing button, and use at most one trailing action per row.
 - The theme does not restyle the action target itself, so reset a link used
   as a row headline:
 

@@ -710,6 +710,47 @@ test('segmented Material list rows render with 16px inline content padding', asy
   expect(getComputedStyle(leading).fontSize).toBe('24px');
 });
 
+test('an interactive row divides its trailing icon action from the row action', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+
+  scope.innerHTML = `
+    <rc-list>
+      <rc-list-item interactive action-target="open-sync" data-testid="split">
+        <button id="open-sync" type="button">Cloud storage</button>
+        <rc-button icon-only class="rc-icon-button--standard" slot="trailing">
+          <button type="button" aria-label="Sync now">
+            <span data-rc-icon aria-hidden="true">↻</span>
+          </button>
+        </rc-button>
+      </rc-list-item>
+      <rc-list-item data-testid="plain">
+        Static row
+        <rc-button icon-only class="rc-icon-button--standard" slot="trailing">
+          <button type="button" aria-label="More">
+            <span data-rc-icon aria-hidden="true">⋮</span>
+          </button>
+        </rc-button>
+      </rc-list-item>
+    </rc-list>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const split = scope.querySelector('[data-testid="split"] > rc-button') as HTMLElement;
+  const plain = scope.querySelector('[data-testid="plain"] > rc-button') as HTMLElement;
+  const divider = getComputedStyle(split, '::before');
+  const host = split.getBoundingClientRect();
+
+  expect(divider.content).toBe('""');
+  expect(divider.position).toBe('absolute');
+  expect(divider.borderInlineStartWidth).toBe('1px');
+  expect(parseFloat(divider.height)).toBe(host.height - 16);
+  expect(getComputedStyle(plain, '::before').content).toBe('none');
+});
+
 test('adaptive menu actions fit their container without unexpected overflow', async () => {
   const scope = document.createElement('div');
 
