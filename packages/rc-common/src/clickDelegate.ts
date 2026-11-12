@@ -6,7 +6,7 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit';
  * alone — the descendant already handles its own click (natively, or via
  * its own listener), so forwarding it too would double-handle it.
  */
-const DEFAULT_INTERACTIVE_SELECTOR =
+export const DEFAULT_INTERACTIVE_SELECTOR =
   'a[href], button, input, select, textarea, summary, [role="button"], [role="link"], ' +
   '[contenteditable]:not([contenteditable="false"]), [tabindex]:not([tabindex="-1"])';
 
