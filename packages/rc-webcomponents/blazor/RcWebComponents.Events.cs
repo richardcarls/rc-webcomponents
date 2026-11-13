@@ -20,6 +20,7 @@ namespace RcWebComponents;
 [EventHandler("onrc-bottom-sheet-snap", typeof(RcBottomSheetSnapEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("onrc-button-toggle", typeof(RcButtonToggleEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("onrc-carousel-change", typeof(RcCarouselChangeEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
+[EventHandler("onrc-carousel-static-change", typeof(RcCarouselStaticChangeEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("onrc-change", typeof(RcChangeEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("onrc-chip-change", typeof(RcChipChangeEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("onrc-chip-group-toggle", typeof(RcChipGroupToggleEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
@@ -108,6 +109,11 @@ public class RcCarouselChangeEventArgs : EventArgs
 {
     public double Index { get; set; }
     public string Trigger { get; set; } = "";
+}
+
+public class RcCarouselStaticChangeEventArgs : EventArgs
+{
+    public bool Static { get; set; }
 }
 
 public class RcChangeEventArgs : EventArgs

@@ -104,9 +104,27 @@ being removed from the tab sequence; see [Accessibility](#accessibility).
 
 ## Slide sizing
 
-The default `--rc-carousel-slide-size: calc(100% - 4rem)` shows one large
-slide with a peek of the next. Set the token directly for a multi-browse or
-full-width layout:
+Slides are sized by count by default. `--rc-carousel-slides-per-view` whole
+slides (default `1`) share the track after `--rc-carousel-peek` (default
+`4rem`), the room left for the next slide including its gap:
+
+```text
+slide size = (100% - (slides-per-view - 1) * gap - peek) / slides-per-view
+```
+
+The defaults show one large slide with a peek of the next. Two whole slides
+and a 48px peek of the third:
+
+```css
+.promo-carousel {
+  --rc-carousel-slides-per-view: 2;
+  --rc-carousel-peek: calc(48px + var(--rc-carousel-gap));
+}
+```
+
+Set `--rc-carousel-peek: 0px` to show whole slides only. For a layout led by
+card width rather than count, set `--rc-carousel-slide-size` instead; it
+replaces the derived size:
 
 ```css
 .recipe-carousel {
@@ -114,16 +132,19 @@ full-width layout:
 }
 ```
 
-The component measures the rendered token value against the track width. If
+The component measures the resolved slide size against the track width. If
 all real slides fit, it stretches them evenly across the track. One slide fills
 the width; two slides split it. This static layout has no navigation,
 pagination, loop clones, or slide advancement, even when those features are
-requested. Once another slide overflows, the configured slide size again
-controls the scrollable carousel and any partial next-slide peek. Slide
-content, surface, shape, and padding remain consumer-owned.
+requested. The host matches `:state(static)` and fires
+`rc-carousel-static-change` (`detail: { static }`) on each change, so a
+consumer can stop its own auto-rotation. Once another slide overflows, the
+configured size again controls the scrollable carousel and any partial
+next-slide peek. Slide content, surface, shape, and padding remain
+consumer-owned.
 
-A consumer container query can adapt the token; the carousel updates its
-layout and interaction mode when the resulting slide size changes:
+A consumer container query can adapt any of these tokens; the carousel updates
+its layout and interaction mode when the resulting slide size changes:
 
 ```css
 .carousel-region {
@@ -131,12 +152,13 @@ layout and interaction mode when the resulting slide size changes:
 }
 
 .carousel-region rc-carousel {
-  --rc-carousel-slide-size: 100%;
+  --rc-carousel-peek: 0px;
 }
 
 @container (min-width: 40rem) {
   .carousel-region rc-carousel {
-    --rc-carousel-slide-size: min(40%, 300px);
+    --rc-carousel-slides-per-view: 2;
+    --rc-carousel-peek: 4rem;
   }
 }
 ```

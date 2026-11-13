@@ -230,7 +230,7 @@ declare module 'react' {
           pagination?: RCCarousel['pagination'];
           role?: RCCarousel['role'];
         },
-        'rc-carousel-change'
+        'rc-carousel-change' | 'rc-carousel-static-change'
       >;
 
       'rc-carousel-item': RCElementProps<
@@ -1056,7 +1056,9 @@ declare module 'react' {
     '--rc-carousel-pagination-item-active-color'?: string | number;
     '--rc-carousel-pagination-item-color'?: string | number;
     '--rc-carousel-pagination-item-size'?: string | number;
+    '--rc-carousel-peek'?: string | number;
     '--rc-carousel-slide-size'?: string | number;
+    '--rc-carousel-slides-per-view'?: string | number;
     '--rc-chip-bg'?: string | number;
     '--rc-chip-block-size'?: string | number;
     '--rc-chip-border'?: string | number;

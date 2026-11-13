@@ -22,6 +22,9 @@ export const RCCarousel = createComponent({
     onRcCarouselChange: 'rc-carousel-change' as EventName<
       HTMLElementEventMap['rc-carousel-change']
     >,
+    onRcCarouselStaticChange: 'rc-carousel-static-change' as EventName<
+      HTMLElementEventMap['rc-carousel-static-change']
+    >,
   },
 });
 

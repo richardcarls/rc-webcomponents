@@ -18,6 +18,7 @@ import {
   numberFormat,
   physicalAxis,
   resolveFlow,
+  setCustomState,
   setScrollOffset,
   syncDefaultAttribute,
   warnMissingDirectChild,
@@ -79,6 +80,11 @@ export interface RCCarouselChangeDetail {
   trigger: RCCarouselChangeTrigger;
 }
 
+export interface RCCarouselStaticChangeDetail {
+  /** True while every slide fits and the carousel lays them out statically. */
+  static: boolean;
+}
+
 interface TrackMeasurement {
   track: HTMLDivElement;
   flow: Flow;
@@ -92,6 +98,7 @@ interface InitialPositionSample extends TrackMeasurement {
 declare global {
   interface HTMLElementEventMap {
     'rc-carousel-change': CustomEvent<RCCarouselChangeDetail>;
+    'rc-carousel-static-change': CustomEvent<RCCarouselStaticChangeDetail>;
   }
   interface HTMLElementTagNameMap {
     'rc-carousel': RCCarousel;
@@ -123,9 +130,13 @@ const SETTLE_DEBOUNCE_MS = 120;
  * carousels, has hit real accessibility-tooling failures across the
  * shadow boundary (including non-recognition by some screen readers
  * entirely). `loop` wraps seamlessly via cloned lead/trail slides rather
- * than a discontinuous jump back to the other end. When every real slide
- * fits at the consumer-configured slide size, the track lays them out as
- * equal, full-width shares and disables carousel interaction and chrome.
+ * than a discontinuous jump back to the other end.
+ *
+ * Slide size is count-led by default: `--rc-carousel-slides-per-view` whole
+ * slides share the track after `--rc-carousel-peek`, the room left for the
+ * next slide. When every real slide fits, the track lays them out as equal,
+ * full-width shares, disables carousel interaction and chrome, and matches
+ * `:state(static)`.
  *
  * @slot - One or more `rc-carousel-item` elements.
  * @slot previous-icon - Optional icon for the previous button, replacing
@@ -136,6 +147,11 @@ const SETTLE_DEBOUNCE_MS = 120;
  * @fires rc-carousel-change - Fires when the active slide changes, from a
  *   swipe settling, a keyboard action, or the imperative API.
  *   `detail: { index, trigger: 'swipe'|'button'|'keyboard'|'api' }`
+ * @fires rc-carousel-static-change - Fires when the slides start or stop
+ *   fitting the track, as `:state(static)` changes. `detail: { static }`
+ *
+ * @cssstate static - Every slide fits, so the slides share the track
+ *   statically, with no scrolling, controls, clones, or slide commands.
  *
  * @attr active-index - Controls the active slide. Host writes are silent —
  *   listen for `rc-carousel-change` to stay in sync.
@@ -155,12 +171,17 @@ const SETTLE_DEBOUNCE_MS = 120;
  * `@rcarls/rc-common` under `rc-carousel`.
  *
  * @cssprop [--rc-carousel-color=CanvasText] - Carousel foreground color.
- * @cssprop [--rc-carousel-gap=8px] - Space between slides.
- * @cssprop [--rc-carousel-slide-size=calc(100% - 4rem)] - Rendered size of
- *   each slide along the scroll axis. Set this directly or from a consumer
- *   container query to coordinate hero and multi-browse layouts. The
- *   component measures this value to decide how many whole slides fit;
- *   fitting slides stretch evenly to fill the track.
+ * @cssprop {<length-percentage>} [--rc-carousel-gap=8px] - Space between slides.
+ * @cssprop {<integer>} [--rc-carousel-slides-per-view=1] - Whole slides
+ *   visible at once. Set it directly or from a consumer container query.
+ * @cssprop {<length-percentage>} [--rc-carousel-peek=4rem] - Room after the
+ *   whole slides for the next one, including its gap; `0px` shows whole
+ *   slides only (a unitless `0` is invalid in the size calculation).
+ * @cssprop {<length-percentage>} [--rc-carousel-slide-size=calc((100% - (var(--rc-carousel-slides-per-view) - 1) * var(--rc-carousel-gap) - var(--rc-carousel-peek)) / var(--rc-carousel-slides-per-view))] -
+ *   Rendered size of each slide along the scroll axis, replacing the
+ *   count-led size, for layouts led by card width such as `min(40%, 300px)`.
+ *   The component measures the resolved size to decide how many whole
+ *   slides fit; fitting slides stretch evenly to fill the track.
  * @cssprop [--rc-carousel-navigation-button-size=40px] - Previous/next
  *   button diameter.
  * @cssprop [--rc-carousel-navigation-button-background=color-mix(in srgb, CanvasText 12%, transparent)] -
@@ -768,6 +789,7 @@ export class RCCarousel extends LitElement {
         }
 
         this._static = fits;
+        setCustomState(this._internals, 'static', fits);
         this._syncItems();
         this._syncActiveItemAccessibility(this.activeIndex);
         this._syncText();
@@ -779,6 +801,14 @@ export class RCCarousel extends LitElement {
 
         this._busy = false;
         this._queueInitialPosition();
+
+        this.dispatchEvent(
+          new CustomEvent<RCCarouselStaticChangeDetail>('rc-carousel-static-change', {
+            bubbles: true,
+            composed: true,
+            detail: { static: fits },
+          }),
+        );
       },
     );
   }

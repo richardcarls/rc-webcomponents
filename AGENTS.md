@@ -114,9 +114,11 @@ short and tell the tool to read `AGENTS.md` before project work.
   tracks, or placement while preserving regions, source order, semantics, and
   interaction. Keep modes declarative when they change ARIA, keyboard behavior,
   pointer math, focus, popup placement, rendered controls, or light-DOM
-  re-slotting. Do not read computed custom properties in component JavaScript
-  as hidden behavioral inputs; consumers should write the public property or
-  attribute from their own responsive state.
+  re-slotting, except a mode that follows measured layout fit, such as
+  overflow or static, which the component exposes as a custom state. Do not
+  parse a custom property's value as a mode switch; reading one as a numeric
+  or timing parameter is fine. Otherwise consumers write the public property
+  or attribute from their own responsive state.
 - Use Pointer Events for pointer interaction. Avoid mouse-only logic and
   hardcoded responsive breakpoints inside component behavior.
 - Support RTL and vertical writing modes. Use logical CSS properties

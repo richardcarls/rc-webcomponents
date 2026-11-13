@@ -677,6 +677,72 @@ test('inherits slide sizing from a consumer container query', async () => {
   expect(getComputedStyle(track).gridAutoColumns).toBe('100%');
 });
 
+test('derives the default slide size from one slide per view and a 4rem peek', async () => {
+  const screen = render(html`
+    <rc-carousel
+      data-testid="carousel"
+      aria-label="Test carousel"
+      style="inline-size: 20rem; block-size: 10rem"
+    >
+      <rc-carousel-item>One</rc-carousel-item>
+      <rc-carousel-item>Two</rc-carousel-item>
+    </rc-carousel>
+  `);
+  const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
+
+  await settle(carousel);
+
+  const first = carousel.querySelector<HTMLElement>('rc-carousel-item');
+
+  expect(first?.getBoundingClientRect().width).toBeCloseTo(320 - 64, 0);
+  expect(carousel.matches(':state(static)')).toBe(false);
+});
+
+test('sizes whole slides and the peek from a consumer container query', async () => {
+  const screen = render(html`
+    <style>
+      .carousel-region {
+        container-type: inline-size;
+        inline-size: 30rem;
+      }
+
+      @container (min-width: 28rem) {
+        .carousel-region rc-carousel {
+          --rc-carousel-slides-per-view: 3;
+          --rc-carousel-peek: 0px;
+        }
+      }
+    </style>
+    <div class="carousel-region">
+      <rc-carousel
+        data-testid="carousel"
+        aria-label="Test carousel"
+        style="block-size: 10rem; --rc-carousel-gap: 12px"
+      >
+        <rc-carousel-item>One</rc-carousel-item>
+        <rc-carousel-item>Two</rc-carousel-item>
+        <rc-carousel-item>Three</rc-carousel-item>
+        <rc-carousel-item>Four</rc-carousel-item>
+      </rc-carousel>
+    </div>
+  `);
+  const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
+
+  await settle(carousel);
+
+  const first = carousel.querySelector<HTMLElement>('rc-carousel-item');
+
+  // Three whole slides and two gaps fill the 480px track exactly.
+  expect(first?.getBoundingClientRect().width).toBeCloseTo((480 - 2 * 12) / 3, 0);
+  expect(carousel.matches(':state(static)')).toBe(false);
+
+  carousel.lastElementChild?.remove();
+
+  await vi.waitFor(() => {
+    expect(carousel.matches(':state(static)')).toBe(true);
+  });
+});
+
 test('fits one or two slides statically and enables the carousel on overflow', async () => {
   const screen = render(html`
     <rc-carousel
@@ -685,7 +751,7 @@ test('fits one or two slides statically and enables the carousel on overflow', a
       navigation
       pagination
       loop
-      style="inline-size: 20rem; block-size: 10rem; --rc-carousel-slide-size: calc((100% - 16px - 48px) / 2)"
+      style="inline-size: 20rem; block-size: 10rem; --rc-carousel-slides-per-view: 2; --rc-carousel-peek: calc(48px + 8px)"
     >
       <rc-carousel-item>One</rc-carousel-item>
     </rc-carousel>
@@ -698,12 +764,18 @@ test('fits one or two slides statically and enables the carousel on overflow', a
   }
 
   const changed = vi.fn<(event: CustomEvent<RCCarouselChangeDetail>) => void>();
+  const staticChanges: boolean[] = [];
 
   carousel.addEventListener('rc-carousel-change', changed);
+
+  carousel.addEventListener('rc-carousel-static-change', (event) => {
+    staticChanges.push(event.detail.static);
+  });
 
   await vi.waitFor(() => {
     expect(track.classList.contains('static')).toBe(true);
     expect(track.getAttribute('tabindex')).toBe('-1');
+    expect(carousel.matches(':state(static)')).toBe(true);
   });
 
   const first = carousel.querySelector<HTMLElement>('rc-carousel-item:not([data-rc-clone])');
@@ -753,6 +825,7 @@ test('fits one or two slides statically and enables the carousel on overflow', a
 
   await vi.waitFor(() => {
     expect(track.classList.contains('static')).toBe(false);
+    expect(carousel.matches(':state(static)')).toBe(false);
     expect(track.getAttribute('tabindex')).toBe('0');
     expect(carousel.renderRoot.querySelector('#navigation')).not.toBeNull();
     expect(carousel.renderRoot.querySelectorAll('[data-pagination-item]')).toHaveLength(3);
@@ -777,12 +850,17 @@ test('fits one or two slides statically and enables the carousel on overflow', a
     expect(carousel.shadowRoot?.activeElement).toBe(track);
   });
 
+  // An explicit slide size replaces the count-led size, and the fit follows it.
   carousel.style.setProperty('--rc-carousel-slide-size', '100%');
 
   await vi.waitFor(() => {
     expect(track.classList.contains('static')).toBe(false);
     expect(carousel.renderRoot.querySelectorAll('[data-pagination-item]')).toHaveLength(2);
   });
+
+  // The listener attaches after the first measurement, which may already
+  // have entered static mode; every later transition is reported in order.
+  expect(staticChanges.slice(-3)).toEqual([false, true, false]);
 });
 
 test('has no unexpected overflow at rest or with navigation/pagination interactive', async () => {
