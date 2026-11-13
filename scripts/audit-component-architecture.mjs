@@ -223,6 +223,11 @@ export function cssPropertySyntaxCoverage(declarations) {
 }
 
 export const ANIMATED_LAYOUT_PROPERTY_BUDGETS = {
+  // The hidden fit probe runs a 1ms width transition, not visible motion: a
+  // token change in a static row repaints nothing, and WebKit needs the
+  // running transition to schedule the rendering update that delivers the
+  // probe's ResizeObserver entry.
+  'rc-carousel': new Set(['inline-size']),
   // The `<details>` panel measures its open state as actual box height;
   // `calc-size()` isn't broadly supported enough yet to be the primary
   // mechanism. See the motion guide for the tradeoff.
