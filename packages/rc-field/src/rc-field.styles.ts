@@ -124,6 +124,17 @@ export const fieldStyles = css`
     -webkit-tap-highlight-color: transparent;
   }
 
+  /*
+   * Firefox for Android drops long-press word selection when the touch lands
+   * on anything that can pan vertically, which inside a scrolling page is every
+   * text field. Refusing vertical panning while the input is focused restores
+   * selection, at the cost of starting a page scroll from that one-line field.
+   * Textareas keep panning: a tall focused textarea would block page scrolling.
+   */
+  ::slotted(input:focus:not([type='checkbox'], [type='radio'], [type='range'])) {
+    touch-action: pan-x pinch-zoom;
+  }
+
   ::slotted(textarea) {
     min-block-size: 4lh;
     resize: block;
