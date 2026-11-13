@@ -12965,6 +12965,21 @@
           }
         },
         {
+          "name": "search-bar/icon-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-search-bar-icon-size)"
+          },
+          "cssVar": "--rc-search-bar-icon-size",
+          "description": "Applied where rc-search-bar is themed.",
+          "values": {
+            "Value": 24
+          }
+        },
+        {
           "name": "search-bar/input-font-size",
           "type": "FLOAT",
           "scopes": [
