@@ -677,6 +677,114 @@ test('inherits slide sizing from a consumer container query', async () => {
   expect(getComputedStyle(track).gridAutoColumns).toBe('100%');
 });
 
+test('fits one or two slides statically and enables the carousel on overflow', async () => {
+  const screen = render(html`
+    <rc-carousel
+      data-testid="carousel"
+      aria-label="Highlights"
+      navigation
+      pagination
+      loop
+      style="inline-size: 20rem; block-size: 10rem; --rc-carousel-slide-size: calc((100% - 16px - 48px) / 2)"
+    >
+      <rc-carousel-item>One</rc-carousel-item>
+    </rc-carousel>
+  `);
+  const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
+  const track = carousel.renderRoot.querySelector<HTMLElement>('#track');
+
+  if (!track) {
+    throw new Error('Expected the carousel track to render.');
+  }
+
+  const changed = vi.fn<(event: CustomEvent<RCCarouselChangeDetail>) => void>();
+
+  carousel.addEventListener('rc-carousel-change', changed);
+
+  await vi.waitFor(() => {
+    expect(track.classList.contains('static')).toBe(true);
+    expect(track.getAttribute('tabindex')).toBe('-1');
+  });
+
+  const first = carousel.querySelector<HTMLElement>('rc-carousel-item:not([data-rc-clone])');
+
+  if (!first) {
+    throw new Error('Expected the first real slide.');
+  }
+
+  expect(first.getBoundingClientRect().width).toBeCloseTo(track.getBoundingClientRect().width, 0);
+  expect(carousel.renderRoot.querySelector('#navigation')).toBeNull();
+  expect(carousel.renderRoot.querySelector('#pagination')).toBeNull();
+  expect(carousel.querySelector('[data-rc-clone]')).toBeNull();
+  expect(first.hasAttribute('inert')).toBe(false);
+
+  carousel.next();
+  carousel.goToIndex(1);
+  expect(changed).not.toHaveBeenCalled();
+
+  const second = document.createElement('rc-carousel-item');
+
+  second.textContent = 'Two';
+  carousel.append(second);
+
+  await vi.waitFor(() => {
+    expect(carousel.querySelectorAll('rc-carousel-item:not([data-rc-clone])')).toHaveLength(2);
+    expect(track.classList.contains('static')).toBe(true);
+
+    expect(second.getBoundingClientRect().width).toBeCloseTo(
+      first.getBoundingClientRect().width,
+      0,
+    );
+
+    expect(second.getBoundingClientRect().right).toBeCloseTo(
+      track.getBoundingClientRect().right,
+      0,
+    );
+  });
+
+  expect(first.hasAttribute('inert')).toBe(false);
+  expect(second.hasAttribute('inert')).toBe(false);
+  expect(carousel.querySelector('[data-rc-clone]')).toBeNull();
+
+  const third = document.createElement('rc-carousel-item');
+
+  third.textContent = 'Three';
+  carousel.append(third);
+
+  await vi.waitFor(() => {
+    expect(track.classList.contains('static')).toBe(false);
+    expect(track.getAttribute('tabindex')).toBe('0');
+    expect(carousel.renderRoot.querySelector('#navigation')).not.toBeNull();
+    expect(carousel.renderRoot.querySelectorAll('[data-pagination-item]')).toHaveLength(3);
+    expect(carousel.querySelectorAll('[data-rc-clone]')).toHaveLength(2);
+  });
+
+  expect(first.getBoundingClientRect().width).toBeCloseTo(128, 0);
+
+  const nextButton = carousel.renderRoot.querySelector<HTMLButtonElement>(
+    '[part~="navigation-button-next"]',
+  );
+
+  nextButton?.focus();
+  expect(carousel.shadowRoot?.activeElement).toBe(nextButton);
+
+  third.remove();
+
+  await vi.waitFor(() => {
+    expect(track.classList.contains('static')).toBe(true);
+    expect(carousel.querySelector('[data-rc-clone]')).toBeNull();
+    expect(carousel.renderRoot.querySelector('#pagination')).toBeNull();
+    expect(carousel.shadowRoot?.activeElement).toBe(track);
+  });
+
+  carousel.style.setProperty('--rc-carousel-slide-size', '100%');
+
+  await vi.waitFor(() => {
+    expect(track.classList.contains('static')).toBe(false);
+    expect(carousel.renderRoot.querySelectorAll('[data-pagination-item]')).toHaveLength(2);
+  });
+});
+
 test('has no unexpected overflow at rest or with navigation/pagination interactive', async () => {
   // Sized like every other fixture in this file (and like a real consumer
   // always sizes it, per the documented --rc-carousel-slide-size/

@@ -22,7 +22,13 @@ uncontrolled property convention; settling reports the new index via
 seamlessly past the first/last slide via cloned lead/trail slides, rather
 than a discontinuous index jump. Set `--rc-carousel-slide-size` directly or
 from a consumer container query to coordinate hero, multi-browse, and other
-layouts. `mouse-dragging` adds desktop click-and-drag scrolling, with
+layouts. When the real slide count fits at that size, the track instead
+stretches them evenly across its width: one fills the row, two split it.
+In this static mode there are no loop clones, navigation or pagination
+buttons, keyboard slide commands, or slide advancement. Adding another
+slide or changing the token to fit fewer slides restores the carousel.
+Slide content, colors, shape, and padding remain consumer-owned.
+`mouse-dragging` adds desktop click-and-drag scrolling, with
 drag-vs-click disambiguation so interactive slide content stays clickable.
 
 Navigation and pagination buttons use `aria-disabled`, never native
@@ -42,5 +48,6 @@ import `@rcarls/rc-carousel/define` to register `<rc-carousel>` and
 Built-in text follows the element's own `lang`, else `<html lang>`, and never an
 ancestor's `lang`, which usually marks content. Override it per element with the
 `messages` property, or for every instance with `registerMessages()` from
-`@rcarls/rc-common` under `rc-carousel`. Keys: `carousel`, `slide`, `position`, `previous`, `next`, `picker`, `goToSlide`. See the
+`@rcarls/rc-common` under `rc-carousel`. Keys: `carousel`, `slide`,
+`position`, `previous`, `next`, `picker`, `goToSlide`. See the
 [rc-common Localization section](https://github.com/richardcarls/rc-webcomponents/tree/develop/packages/rc-common#localization).

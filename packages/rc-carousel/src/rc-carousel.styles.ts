@@ -41,15 +41,30 @@ export const carouselStyles = css`
     scrollbar-width: none;
   }
 
-  #track::-webkit-scrollbar {
+  #track.static {
+    grid-auto-columns: minmax(0, 1fr);
+    overflow-x: hidden;
+    overflow-inline: hidden;
+    scroll-snap-type: none;
+  }
+
+  .slide-size-probe {
+    position: absolute;
+    inline-size: var(--rc-carousel-slide-size, calc(100% - 4rem));
+    block-size: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  [part='track']::-webkit-scrollbar {
     display: none;
   }
 
-  :host([mouse-dragging]) #track {
+  :host([mouse-dragging]) #track:not(.static) {
     cursor: grab;
   }
 
-  :host([mouse-dragging]) #track.dragging {
+  :host([mouse-dragging]) #track.dragging:not(.static) {
     cursor: grabbing;
     /*
      * scroll-snap-type itself is toggled imperatively in rc-carousel.ts,

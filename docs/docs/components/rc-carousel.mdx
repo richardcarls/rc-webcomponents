@@ -114,8 +114,16 @@ full-width layout:
 }
 ```
 
-Because the token is pure track geometry, a consumer container query can adapt
-it without changing carousel state, keyboard behavior, or accessibility:
+The component measures the rendered token value against the track width. If
+all real slides fit, it stretches them evenly across the track. One slide fills
+the width; two slides split it. This static layout has no navigation,
+pagination, loop clones, or slide advancement, even when those features are
+requested. Once another slide overflows, the configured slide size again
+controls the scrollable carousel and any partial next-slide peek. Slide
+content, surface, shape, and padding remain consumer-owned.
+
+A consumer container query can adapt the token; the carousel updates its
+layout and interaction mode when the resulting slide size changes:
 
 ```css
 .carousel-region {

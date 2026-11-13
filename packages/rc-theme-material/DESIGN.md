@@ -605,7 +605,8 @@ script gate of its own.
 
 From narrowest to broadest:
 
-1. One geometry token, such as `--rc-carousel-slide-size`.
+1. One geometry token, such as `--rc-carousel-slide-size`; `rc-carousel`
+   handles the static layout when all slides fit that size.
 1. A coordinated token set for tracks or placement, as with `rc-card` and
    `rc-list-item` region tokens, often inside a container query.
 1. An attribute or property written from app state when the mode changes
