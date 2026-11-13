@@ -6,13 +6,31 @@ export const carouselStyles = css`
     position: relative;
     color: var(--rc-carousel-color, CanvasText);
     color-scheme: inherit;
+    /*
+     * Count-led sizing: whole slides share the track after the peek and the
+     * gaps between them. Percentages resolve where the size is used, against
+     * the track (or the host-sized fit probe, which has the same inline size).
+     * An explicit --rc-carousel-slide-size replaces the derived size.
+     */
+    --_rc-carousel-gap: var(--rc-carousel-gap, 8px);
+    --_rc-carousel-slides: var(--rc-carousel-slides-per-view, 1);
+    --_rc-carousel-slide-size: var(
+      --rc-carousel-slide-size,
+      calc(
+        (
+            100% - (var(--_rc-carousel-slides) - 1) *
+              var(--_rc-carousel-gap) - var(--rc-carousel-peek, 4rem)
+          ) /
+          var(--_rc-carousel-slides)
+      )
+    );
   }
 
   #track {
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: var(--rc-carousel-slide-size, calc(100% - 4rem));
-    column-gap: var(--rc-carousel-gap, 8px);
+    grid-auto-columns: var(--_rc-carousel-slide-size);
+    column-gap: var(--_rc-carousel-gap);
     inline-size: 100%;
     block-size: 100%;
     /*
@@ -50,7 +68,7 @@ export const carouselStyles = css`
 
   .slide-size-probe {
     position: absolute;
-    inline-size: var(--rc-carousel-slide-size, calc(100% - 4rem));
+    inline-size: var(--_rc-carousel-slide-size);
     block-size: 0;
     visibility: hidden;
     pointer-events: none;
@@ -118,7 +136,7 @@ export const carouselStyles = css`
     inset-inline: 0;
     display: flex;
     justify-content: center;
-    gap: var(--rc-carousel-gap, 8px);
+    gap: var(--_rc-carousel-gap);
   }
 
   [part~='pagination-item'] {

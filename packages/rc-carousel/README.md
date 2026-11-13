@@ -20,14 +20,19 @@ Give the host a definite `inline-size`/`block-size` (`navigation` and
 uncontrolled property convention; settling reports the new index via
 `rc-carousel-change` (`detail: { index, trigger }`). `loop` wraps
 seamlessly past the first/last slide via cloned lead/trail slides, rather
-than a discontinuous index jump. Set `--rc-carousel-slide-size` directly or
-from a consumer container query to coordinate hero, multi-browse, and other
-layouts. When the real slide count fits at that size, the track instead
-stretches them evenly across its width: one fills the row, two split it.
-In this static mode there are no loop clones, navigation or pagination
-buttons, keyboard slide commands, or slide advancement. Adding another
-slide or changing the token to fit fewer slides restores the carousel.
-Slide content, colors, shape, and padding remain consumer-owned.
+than a discontinuous index jump. Slides are sized by count:
+`--rc-carousel-slides-per-view` whole slides (default `1`) share the track
+after `--rc-carousel-peek` (default `4rem`, the next slide's visible room
+including its gap). Set them directly or from a consumer container query;
+set `--rc-carousel-slide-size` instead for a layout led by card width. When
+the real slides fit at that size, the track stretches them evenly across
+its width: one fills the row, two split it. In this static mode there are
+no loop clones, navigation or pagination buttons, keyboard slide commands,
+or slide advancement; the host matches `:state(static)` and fires
+`rc-carousel-static-change` (`detail: { static }`) when the mode changes.
+Adding another slide or changing the tokens to fit fewer slides restores
+the carousel. Slide content, colors, shape, and padding remain
+consumer-owned.
 `mouse-dragging` adds desktop click-and-drag scrolling, with
 drag-vs-click disambiguation so interactive slide content stays clickable.
 

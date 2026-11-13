@@ -17,6 +17,7 @@ export const RC_EVENTS = [
   'rc-bottom-sheet-snap',
   'rc-button-toggle',
   'rc-carousel-change',
+  'rc-carousel-static-change',
   'rc-change',
   'rc-chip-change',
   'rc-chip-group-toggle',

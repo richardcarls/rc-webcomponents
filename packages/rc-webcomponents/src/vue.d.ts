@@ -201,7 +201,7 @@ declare module 'vue' {
         pagination?: RCCarousel['pagination'];
         role?: RCCarousel['role'];
       },
-      'rc-carousel-change'
+      'rc-carousel-change' | 'rc-carousel-static-change'
     >;
 
     'rc-carousel-item': RCVueElement<

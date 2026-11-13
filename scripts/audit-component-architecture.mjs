@@ -212,7 +212,7 @@ export const THEME_SELECTOR_BUDGETS = {
  * changed properties should state their syntax, and lowering this number
  * after a backfill keeps it from creeping back up.
  */
-export const CSS_PROPERTY_SYNTAX_BASELINE = 961;
+export const CSS_PROPERTY_SYNTAX_BASELINE = 959;
 
 /** Counts documented CSS properties with and without a manifest syntax. */
 export function cssPropertySyntaxCoverage(declarations) {
