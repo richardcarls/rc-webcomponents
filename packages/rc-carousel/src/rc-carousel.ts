@@ -123,7 +123,9 @@ const SETTLE_DEBOUNCE_MS = 120;
  * carousels, has hit real accessibility-tooling failures across the
  * shadow boundary (including non-recognition by some screen readers
  * entirely). `loop` wraps seamlessly via cloned lead/trail slides rather
- * than a discontinuous jump back to the other end.
+ * than a discontinuous jump back to the other end. When every real slide
+ * fits at the consumer-configured slide size, the track lays them out as
+ * equal, full-width shares and disables carousel interaction and chrome.
  *
  * @slot - One or more `rc-carousel-item` elements.
  * @slot previous-icon - Optional icon for the previous button, replacing
@@ -142,8 +144,8 @@ const SETTLE_DEBOUNCE_MS = 120;
  *   seamlessly (via cloned lead/trail slides), for swipe, buttons, and
  *   keyboard alike. Off by default: the ends are real boundaries, not a
  *   loop, unless a consumer opts in.
- * @attr navigation - Shows previous/next buttons.
- * @attr pagination - Shows a slide-picker button group.
+ * @attr navigation - Shows previous/next buttons when slides overflow.
+ * @attr pagination - Shows a slide-picker button group when slides overflow.
  * @attr mouse-dragging - Enables click-and-drag scrolling with a mouse.
  *   Touch/pen already get native scroll-snap physics; off by default.
  *
@@ -156,7 +158,9 @@ const SETTLE_DEBOUNCE_MS = 120;
  * @cssprop [--rc-carousel-gap=8px] - Space between slides.
  * @cssprop [--rc-carousel-slide-size=calc(100% - 4rem)] - Rendered size of
  *   each slide along the scroll axis. Set this directly or from a consumer
- *   container query to coordinate hero and multi-browse layouts.
+ *   container query to coordinate hero and multi-browse layouts. The
+ *   component measures this value to decide how many whole slides fit;
+ *   fitting slides stretch evenly to fill the track.
  * @cssprop [--rc-carousel-navigation-button-size=40px] - Previous/next
  *   button diameter.
  * @cssprop [--rc-carousel-navigation-button-background=color-mix(in srgb, CanvasText 12%, transparent)] -
@@ -199,11 +203,15 @@ export class RCCarousel extends LitElement {
 
   @query('#track') private _trackEl?: HTMLDivElement;
   @query('slot:not([name])') private _slotEl?: HTMLSlotElement;
+  @query('#slide-size-probe') private _slideSizeProbe?: HTMLDivElement;
 
   // Seeded from direct children during connection so the first render can
   // build pagination without changing reactive state from firstUpdated().
   private _items: RCCarouselItem[] = [];
   private _cloneItems: RCCarouselItem[] = [];
+  @state() private _static = false;
+  private _fitResizeObserver: ResizeObserver | null = null;
+  private readonly _fitMeasurement = new RafScheduler(this);
   private _mounted = false;
   private _suppressSync = false;
   private _pendingInstant = false;
@@ -270,7 +278,7 @@ export class RCCarousel extends LitElement {
     axis: 'x',
     activation: 'axis',
     canStart: (event) => {
-      if (!this.mouseDragging || event.pointerType !== 'mouse') {
+      if (this._static || !this.mouseDragging || event.pointerType !== 'mouse') {
         return false;
       }
 
@@ -360,13 +368,19 @@ export class RCCarousel extends LitElement {
 
     this._syncText();
 
-    if (this.hasUpdated && !this._mounted) {
-      this._queueInitialPosition();
+    if (this.hasUpdated) {
+      this._observeFit();
+
+      if (!this._mounted) {
+        this._queueInitialPosition();
+      }
     }
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    this._fitResizeObserver?.disconnect();
+    this._fitResizeObserver = null;
 
     if (this._settleTimer !== undefined) {
       clearTimeout(this._settleTimer);
@@ -388,6 +402,7 @@ export class RCCarousel extends LitElement {
     }
 
     this._syncActiveItemAccessibility(this.activeIndex);
+    this._observeFit();
     this._queueInitialPosition();
   }
 
@@ -430,16 +445,28 @@ export class RCCarousel extends LitElement {
 
   /** Moves to the next slide. */
   next(): void {
+    if (this._static) {
+      return;
+    }
+
     this._step(1, 'api');
   }
 
   /** Moves to the previous slide. */
   previous(): void {
+    if (this._static) {
+      return;
+    }
+
     this._step(-1, 'api');
   }
 
   /** Moves directly to a slide index. */
   goToIndex(index: number, instant = false): void {
+    if (this._static) {
+      return;
+    }
+
     this._pendingInstant = instant;
     this._setActiveIndex(index, 'api');
   }
@@ -454,7 +481,7 @@ export class RCCarousel extends LitElement {
   private _canStep(delta: 1 | -1): boolean {
     const count = this._items.length;
 
-    if (count <= 1) {
+    if (this._static || count <= 1) {
       return false;
     }
 
@@ -504,7 +531,7 @@ export class RCCarousel extends LitElement {
   ): { point: number; index: number; isClone: boolean }[] {
     const count = this._items.length;
 
-    if (!this.loop || count < 2) {
+    if (this._static || !this.loop || count < 2) {
       return this._items.map((_item, index) => ({ point: index * step, index, isClone: false }));
     }
 
@@ -590,7 +617,7 @@ export class RCCarousel extends LitElement {
   }
 
   private _scrollToIndex(index: number, instant: boolean): void {
-    if (!this._trackEl) {
+    if (this._static || !this._trackEl) {
       return;
     }
 
@@ -619,9 +646,11 @@ export class RCCarousel extends LitElement {
       return null;
     }
 
-    const slot = this._trackSlots(measurement.step).find(
-      (candidate) => !candidate.isClone && candidate.index === this.activeIndex,
-    );
+    const slot = this._static
+      ? undefined
+      : this._trackSlots(measurement.step).find(
+          (candidate) => !candidate.isClone && candidate.index === this.activeIndex,
+        );
 
     return {
       ...measurement,
@@ -648,7 +677,7 @@ export class RCCarousel extends LitElement {
    */
   private _syncActiveItemAccessibility(index: number): void {
     this._directItems().forEach((item, itemIndex) => {
-      const hidden = itemIndex !== index;
+      const hidden = !this._static && itemIndex !== index;
 
       // A slide in inserted markup may not have upgraded yet.
       if (typeof item.setHidden === 'function') {
@@ -676,6 +705,84 @@ export class RCCarousel extends LitElement {
     );
   }
 
+  /** Measure the authored slide-size token independently of static grid sizing. */
+  private _observeFit(): void {
+    const track = this._trackEl;
+    const probe = this._slideSizeProbe;
+
+    if (!track || !probe) {
+      return;
+    }
+
+    if (typeof ResizeObserver === 'function') {
+      this._fitResizeObserver ??= new ResizeObserver(() => this._queueFitMeasurement());
+      this._fitResizeObserver.observe(track);
+      this._fitResizeObserver.observe(probe);
+    }
+
+    this._queueFitMeasurement();
+  }
+
+  private _queueFitMeasurement(): void {
+    this._fitMeasurement.schedulePhased(
+      () => {
+        const track = this._trackEl;
+        const probe = this._slideSizeProbe;
+
+        if (!track || !probe) {
+          return null;
+        }
+
+        const flow = resolveFlow(track);
+        const viewport = clientSize(track, 'inline', flow);
+        const rect = probe.getBoundingClientRect();
+        const slide = flow.inline === 'x' ? rect.width : rect.height;
+        const gap = Number.parseFloat(getComputedStyle(track).columnGap) || 0;
+
+        if (viewport <= 0 || slide <= 0) {
+          return null;
+        }
+
+        // Absorb subpixel rounding when the last whole slide lands at the edge.
+        return Math.max(1, Math.floor((viewport + gap + 0.5) / (slide + gap)));
+      },
+      (visibleCount) => {
+        if (visibleCount === null || !this.isConnected) {
+          return;
+        }
+
+        const fits = this._items.length <= visibleCount;
+
+        if (fits === this._static) {
+          return;
+        }
+
+        const focused = this.shadowRoot?.activeElement;
+
+        if (
+          fits &&
+          focused instanceof HTMLElement &&
+          (focused.closest('#navigation') || focused.closest('#pagination'))
+        ) {
+          this._trackEl?.focus();
+        }
+
+        this._static = fits;
+        this._syncItems();
+        this._syncActiveItemAccessibility(this.activeIndex);
+        this._syncText();
+
+        if (this._settleTimer !== undefined) {
+          clearTimeout(this._settleTimer);
+          this._settleTimer = undefined;
+        }
+
+        this._busy = false;
+        this._queueInitialPosition();
+      },
+    );
+  }
+
   private _setItemPositions(): void {
     const messages = this._messages.value;
 
@@ -687,12 +794,23 @@ export class RCCarousel extends LitElement {
 
   /** Re-applies text written outside the template, for a new locale or `messages`. */
   private _syncText(): void {
-    this._writtenRoleDescription = syncDefaultAttribute(
-      this,
-      'aria-roledescription',
-      this._messages.value.carousel,
-      this._writtenRoleDescription,
-    );
+    if (this._static) {
+      if (
+        this._writtenRoleDescription !== null &&
+        this.getAttribute('aria-roledescription') === this._writtenRoleDescription
+      ) {
+        this.removeAttribute('aria-roledescription');
+      }
+
+      this._writtenRoleDescription = null;
+    } else {
+      this._writtenRoleDescription = syncDefaultAttribute(
+        this,
+        'aria-roledescription',
+        this._messages.value.carousel,
+        this._writtenRoleDescription,
+      );
+    }
 
     this._setItemPositions();
   }
@@ -717,7 +835,7 @@ export class RCCarousel extends LitElement {
     const itemsChanged =
       nextItems.length !== this._items.length ||
       nextItems.some((item, index) => item !== this._items[index]);
-    const wantsClones = this.loop && nextItems.length > 1;
+    const wantsClones = this.loop && !this._static && nextItems.length > 1;
     const hasClones = this._cloneItems.length > 0;
 
     this._items = nextItems;
@@ -725,6 +843,7 @@ export class RCCarousel extends LitElement {
 
     if (itemsChanged && this._mounted) {
       this.requestUpdate();
+      this._queueFitMeasurement();
     }
 
     if (!itemsChanged && wantsClones === hasClones) {
@@ -839,6 +958,10 @@ export class RCCarousel extends LitElement {
    * actually stop (swipe release or animation end) avoids that oscillation.
    */
   private _onScroll = (): void => {
+    if (this._static) {
+      return;
+    }
+
     if (this._settleTimer !== undefined) {
       clearTimeout(this._settleTimer);
     }
@@ -907,6 +1030,10 @@ export class RCCarousel extends LitElement {
   };
 
   private _onNavigate = (action: KeyboardNavigationAction): void => {
+    if (this._static) {
+      return;
+    }
+
     switch (action) {
       case 'next':
         this._step(1, 'keyboard');
@@ -1040,8 +1167,10 @@ export class RCCarousel extends LitElement {
       <div
         id="track"
         part="track"
-        tabindex="0"
-        class=${this._dragging ? 'dragging' : nothing}
+        tabindex=${this._static ? '-1' : '0'}
+        class=${[this._static && 'static', this._dragging && 'dragging']
+          .filter(Boolean)
+          .join(' ') || nothing}
         aria-busy=${this._busy ? 'true' : 'false'}
         aria-atomic="true"
         @scroll=${this._onScroll}
@@ -1050,8 +1179,9 @@ export class RCCarousel extends LitElement {
       >
         <slot @slotchange=${this._onSlotChange}></slot>
       </div>
+      <div id="slide-size-probe" class="slide-size-probe" aria-hidden="true"></div>
 
-      ${this.navigation
+      ${this.navigation && !this._static
         ? html`
             <div id="navigation" part="navigation">
               <button
@@ -1113,7 +1243,7 @@ export class RCCarousel extends LitElement {
             </div>
           `
         : nothing}
-      ${this.pagination
+      ${this.pagination && !this._static
         ? html`
             <div
               id="pagination"
