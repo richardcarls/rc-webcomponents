@@ -72,6 +72,12 @@ export const carouselStyles = css`
     block-size: 0;
     visibility: hidden;
     pointer-events: none;
+    /*
+     * In a static row nothing visible depends on the slide size, so a token
+     * change repaints nothing and WebKit schedules no rendering update to
+     * deliver the probe's resize. A running transition schedules one.
+     */
+    transition: inline-size 1ms;
   }
 
   [part='track']::-webkit-scrollbar {
