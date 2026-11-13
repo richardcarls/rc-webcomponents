@@ -479,7 +479,6 @@ test('resynchronizes after native form reset', async () => {
   $input.dispatchEvent(new Event('invalid'));
   await $field.updateComplete;
 
-
   $input.setCustomValidity('');
   $input.form!.reset();
   await tick();
@@ -690,4 +689,39 @@ test('a grouped field has no automated accessibility violations', async () => {
   const $field = await groupFixture('required');
 
   await expectNoA11yViolations($field.closest('form')!);
+});
+
+test('a focused text input refuses vertical panning so long press can select its text', async () => {
+  const $field = await fieldFixture(html`
+    <rc-field data-testid="field"><input aria-label="Name" value="Black bean tacos" /></rc-field>
+  `);
+  const $input = $field.querySelector('input')!;
+
+  expect(getComputedStyle($input).touchAction).toBe('auto');
+
+  $input.focus();
+
+  expect(getComputedStyle($input).touchAction).toBe('pan-x pinch-zoom');
+});
+
+test('focused textareas and checkboxes keep their default panning', async () => {
+  const $textField = await fieldFixture(html`
+    <rc-field data-testid="field"><textarea aria-label="Notes">Brown the beef</textarea></rc-field>
+  `);
+  const $textarea = $textField.querySelector('textarea')!;
+
+  $textarea.focus();
+
+  expect(getComputedStyle($textarea).touchAction).toBe('auto');
+
+  document.body.replaceChildren();
+
+  const $checkField = await fieldFixture(html`
+    <rc-field data-testid="field"><input type="checkbox" aria-label="Done" /></rc-field>
+  `);
+  const $checkbox = $checkField.querySelector('input')!;
+
+  $checkbox.focus();
+
+  expect(getComputedStyle($checkbox).touchAction).toBe('auto');
 });
