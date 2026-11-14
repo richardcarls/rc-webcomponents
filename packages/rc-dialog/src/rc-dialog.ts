@@ -18,6 +18,15 @@ import {
 import { ensureDialogBaseStyles } from './dialogBaseStyles.js';
 import type { DialogGeometry } from './geometry.js';
 
+/**
+ * Whether `:state()` selectors match custom states. Checked on each use, not
+ * cached, so it stays correct where `CSS` is missing at import (server
+ * rendering).
+ */
+function supportsStateSelector(): boolean {
+  return typeof CSS !== 'undefined' && CSS.supports('selector(:state(detached))');
+}
+
 export type RCDialogVariant = 'standard' | 'fullscreen' | 'side';
 
 // Shared by every dialog once loaded, so move and resize code ships only to
@@ -578,7 +587,7 @@ export class RCDialog extends ReactiveElement {
 
     if (this._detachedOpen) {
       this._detachedOpen = false;
-      this._setDetachedState(false);
+      this._setDetachedState(false, $dialog);
     }
 
     this._ignoreNextClose = false;
@@ -861,9 +870,30 @@ export class RCDialog extends ReactiveElement {
    * applies. The state changes synchronously, unlike the reflected `[open]`,
    * so focus can move in right away. Clearing it lets the closed state's exit
    * transition run.
+   *
+   * Without `:state()` support, inline styles show the dialog instead, and a
+   * consumer `display` no longer applies. Chromium before 125 has a
+   * `CustomStateSet` that rejects names without `--`, so it takes this path
+   * too.
    */
-  private _setDetachedState(shown: boolean): void {
-    setCustomState(this._internals, 'detached', shown);
+  private _setDetachedState(shown: boolean, $dialog = this._$dialog): void {
+    if (supportsStateSelector()) {
+      setCustomState(this._internals, 'detached', shown);
+
+      return;
+    }
+
+    if (!$dialog) {
+      return;
+    }
+
+    if (shown) {
+      $dialog.style.setProperty('display', 'block');
+      $dialog.style.setProperty('opacity', '1');
+    } else {
+      $dialog.style.removeProperty('display');
+      $dialog.style.removeProperty('opacity');
+    }
   }
 
   /**

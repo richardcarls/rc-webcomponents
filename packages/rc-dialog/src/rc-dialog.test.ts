@@ -945,6 +945,40 @@ test('a detached dialog keeps the display its consumer sets', async () => {
   await vi.waitFor(() => expect(getComputedStyle($dialog).opacity).toBe('1'));
 });
 
+test('a detached dialog falls back to inline styles without :state() support', async () => {
+  const supports = CSS.supports.bind(CSS);
+  const spy = vi
+    .spyOn(CSS, 'supports')
+    .mockImplementation((...args: [string, string?]) =>
+      args[0].includes(':state(') ? false : supports(...(args as [string])),
+    );
+
+  try {
+    const screen = render(html`
+      <rc-dialog data-testid="host" closed-by="none">
+        <dialog aria-label="Fallback sheet"><button>Inside</button></dialog>
+      </rc-dialog>
+    `);
+    const host = (await screen.getByTestId('host').element()) as RCDialog;
+    const $dialog = host.querySelector('dialog') as HTMLDialogElement;
+
+    host.modal = false;
+    host.show();
+
+    expect($dialog.open).toBe(false);
+    expect(host.matches(':state(detached)')).toBe(false);
+    expect($dialog.style.display).toBe('block');
+    expect(document.activeElement).toBe($dialog.querySelector('button'));
+
+    host.close();
+
+    expect($dialog.style.display).toBe('');
+    expect($dialog.style.opacity).toBe('');
+  } finally {
+    spy.mockRestore();
+  }
+});
+
 test('show() on a closed-by="none" dialog moves focus in, and requestClose() can be prevented', async () => {
   const screen = render(html`
     <button data-testid="opener">Open</button>
