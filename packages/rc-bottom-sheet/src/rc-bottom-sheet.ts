@@ -113,6 +113,16 @@ const LIGHT_DOM_CSS = cssText`
     overflow: auto;
   }
 
+  /*
+   * A sheet open without the native open state (closed-by="none", or a
+   * collapsed persistent sheet) shows here. The consumer's own display for
+   * the dialog still wins.
+   */
+  rc-bottom-sheet:state(detached) > dialog:not([open]) {
+    display: block;
+    opacity: 1;
+  }
+
   rc-bottom-sheet > dialog [data-rc-bottom-sheet-handle] {
     box-sizing: border-box;
     cursor: ns-resize;
@@ -335,6 +345,9 @@ function localHeight(target: HTMLElement): number {
  * @attr swipe-dismiss - Whether a decisive downward swipe of at least 96 pixels requests close.
  * @attr swipe-velocity - Minimum release velocity, in pixels per second, that counts as a
  *   decisive swipe rather than a slow deliberate drag.
+ *
+ * @cssstate detached - While open without the native `<dialog>` open state: a non-modal sheet
+ *   with `closed-by="none"`, or a `persistent` sheet at its lowest snap point.
  *
  * @cssprop [--rc-bottom-sheet-bg=Canvas] - Sheet surface background.
  * @cssprop [--rc-bottom-sheet-color=CanvasText] - Sheet text color.
@@ -735,7 +748,7 @@ export class RCBottomSheet extends RCDialog {
       return false;
     }
 
-    this._setDetachedOpen($dialog, true);
+    this._setDetachedOpen(true);
     this._snapToIndex(0, 'animated', 'close-request');
     this.requestUpdate('open');
 

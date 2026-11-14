@@ -13,6 +13,7 @@ import {
   includeDefaults,
   isFocusable,
   MorphRecoveryController,
+  setCustomState,
 } from '@rcarls/rc-common';
 import { ensureDialogBaseStyles } from './dialogBaseStyles.js';
 import type { DialogGeometry } from './geometry.js';
@@ -108,6 +109,9 @@ declare global {
  * @prop modal - Whether controlled open state uses `showModal()` instead of `show()`.
  *   JavaScript property only; no attribute is observed.
  *
+ * @cssstate detached - While open without the native `<dialog>` open state: a non-modal
+ *   dialog with `closed-by="none"`. The inner `<dialog>` has no `[open]` then.
+ *
  * @cssprop [--rc-dialog-inline-size=fit-content] - Standard surface preferred inline size. Set
  *   `100%` for a task dialog whose fluid content would otherwise shrink it to its minimum.
  * @cssprop [--rc-dialog-min-inline-size=auto] - Standard surface minimum inline size.
@@ -154,6 +158,8 @@ declare global {
  * candidates for private `--_rc-dialog-*` names in the next compatible API revision.
  */
 export class RCDialog extends ReactiveElement {
+  private _internals = this.attachInternals();
+
   /**
    * Defaults a subclass changes. Lit keeps a property's first value off the
    * host as its default, so a subclass sets these instead of initializing the
@@ -256,10 +262,11 @@ export class RCDialog extends ReactiveElement {
    * - `''`: Attribute absent; the browser default applies.
    *
    * A non-modal dialog with `'none'` opens without the native `<dialog>` open
-   * state: the component shows the closed `<dialog>` with inline styles, so it
-   * has no `[open]` attribute. Firefox for Android otherwise routes the system
+   * state: the component shows the closed `<dialog>` through its `detached`
+   * custom state, so the `<dialog>` has no `[open]` attribute. Firefox for Android otherwise routes the system
    * back button to any open dialog, even one that cannot close, and the page
-   * can no longer go back. Style the open sheet through the host's `[open]`.
+   * can no longer go back. Style the open dialog through the host's `[open]`
+   * or its `:state(detached)`.
    */
   @property({ type: String, attribute: 'closed-by', reflect: true, useDefault: true })
   closedBy: 'any' | 'closerequest' | 'none' | '' = (this.constructor as typeof RCDialog)._defaults
@@ -571,7 +578,7 @@ export class RCDialog extends ReactiveElement {
 
     if (this._detachedOpen) {
       this._detachedOpen = false;
-      this._setDetachedStyles($dialog, false);
+      this._setDetachedState(false);
     }
 
     this._ignoreNextClose = false;
@@ -772,7 +779,7 @@ export class RCDialog extends ReactiveElement {
         $dialog.showModal();
       } else if (this._opensDetached(modal)) {
         this._detachedOpen = true;
-        this._setDetachedStyles($dialog, true);
+        this._setDetachedState(true);
 
         if (moveFocus) {
           this._focusInto($dialog);
@@ -826,9 +833,9 @@ export class RCDialog extends ReactiveElement {
   }
 
   /** Marks the dialog open without the native open state, or clears that. */
-  protected _setDetachedOpen($dialog: HTMLDialogElement, shown: boolean): void {
+  protected _setDetachedOpen(shown: boolean): void {
     this._detachedOpen = shown;
-    this._setDetachedStyles($dialog, shown);
+    this._setDetachedState(shown);
   }
 
   /** Opens the dialog with `show()`, optionally keeping focus where it was. */
@@ -848,17 +855,15 @@ export class RCDialog extends ReactiveElement {
   }
 
   /**
-   * Shows or hides a closed `<dialog>` as an open one. Removing the styles
-   * lets the closed state's exit transition run.
+   * Shows or hides a closed `<dialog>` as an open one through the host's
+   * `detached` state, which the base styles key on. The rule sits in the
+   * `rc-base` layer, so the consumer's own `display` for the dialog still
+   * applies. The state changes synchronously, unlike the reflected `[open]`,
+   * so focus can move in right away. Clearing it lets the closed state's exit
+   * transition run.
    */
-  private _setDetachedStyles($dialog: HTMLDialogElement, shown: boolean): void {
-    if (shown) {
-      $dialog.style.setProperty('display', 'block');
-      $dialog.style.setProperty('opacity', '1');
-    } else {
-      $dialog.style.removeProperty('display');
-      $dialog.style.removeProperty('opacity');
-    }
+  private _setDetachedState(shown: boolean): void {
+    setCustomState(this._internals, 'detached', shown);
   }
 
   /**
@@ -880,9 +885,9 @@ export class RCDialog extends ReactiveElement {
 
     this._detachedOpen = false;
 
-    if ($dialog) {
-      this._setDetachedStyles($dialog, false);
+    this._setDetachedState(false);
 
+    if ($dialog) {
       if (returnValue !== undefined) {
         $dialog.returnValue = returnValue;
       }
@@ -911,7 +916,7 @@ export class RCDialog extends ReactiveElement {
         return;
       }
 
-      this._setDetachedOpen($dialog, false);
+      this._setDetachedOpen(false);
     } else {
       if (!$dialog.open || (!detached && $dialog.matches(':modal') === modal)) {
         return;
@@ -922,7 +927,7 @@ export class RCDialog extends ReactiveElement {
       $dialog.close();
 
       if (detached) {
-        this._setDetachedOpen($dialog, true);
+        this._setDetachedOpen(true);
 
         return;
       }

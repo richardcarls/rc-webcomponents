@@ -53,6 +53,16 @@ export const DIALOG_BASE_CSS = cssText`
   }
 
   /*
+   * A non-modal closed-by="none" dialog opens without the native open state
+   * (see the closedBy property), so it shows here instead of through
+   * [open]. The consumer's own display for the dialog still wins.
+   */
+  rc-dialog:state(detached) > dialog:not([open]) {
+    display: block;
+    opacity: 1;
+  }
+
+  /*
    * A native <dialog> can animate its own open/close entirely through CSS:
    * @starting-style plus transition-behavior: allow-discrete lets it fade in
    * and out without any JavaScript coordinating the timing.

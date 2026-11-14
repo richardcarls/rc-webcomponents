@@ -905,6 +905,7 @@ test('a non-modal closed-by="none" dialog opens without the native open state', 
   expect(host.open).toBe(true);
   expect(host.hasAttribute('open')).toBe(true);
   expect($dialog.open).toBe(false);
+  expect(host.matches(':state(detached)')).toBe(true);
   expect(getComputedStyle($dialog).display).toBe('block');
   expect($dialog.getBoundingClientRect().height).toBeGreaterThan(0);
   await expect.element(screen.getByRole('dialog', { name: 'Peek sheet' })).toBeVisible();
@@ -915,9 +916,33 @@ test('a non-modal closed-by="none" dialog opens without the native open state', 
   expect(host.open).toBe(false);
   expect(host.hasAttribute('open')).toBe(false);
   expect(host.returnValue).toBe('done');
-  expect($dialog.style.display).toBe('');
+  // The closed state's exit transition then hides it.
+  expect(host.matches(':state(detached)')).toBe(false);
   expect(closeSpy).toHaveBeenCalledTimes(1);
   expect(toggleSpy.mock.calls.at(-1)?.[0].detail).toMatchObject({ open: false });
+});
+
+test('a detached dialog keeps the display its consumer sets', async () => {
+  const screen = render(html`
+    <style>
+      .grid-dialog {
+        display: grid;
+      }
+    </style>
+    <rc-dialog data-testid="host" closed-by="none">
+      <dialog class="grid-dialog" aria-label="Grid sheet"><p>Row</p></dialog>
+    </rc-dialog>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+  const $dialog = host.querySelector('dialog') as HTMLDialogElement;
+
+  host.modal = false;
+  host.show();
+
+  expect($dialog.open).toBe(false);
+  expect(getComputedStyle($dialog).display).toBe('grid');
+  // The consumer's display renders the closed dialog too, so it fades in.
+  await vi.waitFor(() => expect(getComputedStyle($dialog).opacity).toBe('1'));
 });
 
 test('show() on a closed-by="none" dialog moves focus in, and requestClose() can be prevented', async () => {
@@ -978,7 +1003,7 @@ test('changing closed-by on an open non-modal dialog switches open modes without
   await host.updateComplete;
   expect(host.open).toBe(true);
   expect($dialog.open).toBe(true);
-  expect($dialog.style.display).toBe('');
+  expect(host.matches(':state(detached)')).toBe(false);
 
   // Let a queued native close event run; it must not report a close.
   await nextFrame();
