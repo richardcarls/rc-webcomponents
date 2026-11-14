@@ -79,6 +79,11 @@ interface FoldBounds {
   reveal: () => void;
 }
 
+/** Converts CRLF and lone CR to LF, as a native textarea's value does. */
+function normalizeLineEndings(text: string): string {
+  return text.replace(/\r\n?/g, '\n');
+}
+
 function getFoldBounds(value: string, folds: readonly FoldDecoration[]): FoldBounds[] {
   const lines = value.split('\n');
   const starts: number[] = [];
@@ -584,14 +589,18 @@ export class RCTextarea extends LitElement {
    * Setting this property puts the component into
    * controlled mode (host owns the value, changes are reflected
    * immediately, no change events dispatched)
+   *
+   * Line endings normalize to LF, as in a native textarea, so a value set
+   * with CRLF or CR line breaks reads back with LF.
    */
   @property({ type: String })
   get value(): string {
     return this._value;
   }
 
-  set value(val: string) {
+  set value(raw: string) {
     const oldValue = this._value;
+    const val = normalizeLineEndings(raw);
 
     if (val === this._value) {
       return;
@@ -618,7 +627,7 @@ export class RCTextarea extends LitElement {
     this._defaultValue = val;
 
     if (!this._valueSetByHost && !this._initialValueResolved && val !== undefined) {
-      this._value = val;
+      this._value = normalizeLineEndings(val);
       this._initialValueResolved = true;
 
       this._syncTextareaValue();
@@ -1329,10 +1338,12 @@ export class RCTextarea extends LitElement {
       .some(($node) => $node instanceof HTMLElement && $node.classList.contains('widget'));
   }
 
-  protected _insertText(text: string): void {
+  protected _insertText(raw: string): void {
     if (!this._$editor) {
       return;
     }
+
+    const text = normalizeLineEndings(raw);
 
     // Native multiline insertion and empty replacement can leave browser-owned
     // blocks or placeholder breaks. Apply these edits directly to the text model.
@@ -1396,10 +1407,13 @@ export class RCTextarea extends LitElement {
    * clears the DOM selection. `_savedSelection` retains the last model-level
    * anchor/focus offsets.
    */
-  wrapSelection(prefix: string, suffix: string): void {
+  wrapSelection(rawPrefix: string, rawSuffix: string): void {
     if (!this._$editor) {
       return;
     }
+
+    const prefix = normalizeLineEndings(rawPrefix);
+    const suffix = normalizeLineEndings(rawSuffix);
 
     const selection = saveSelection(this._$editor) ?? this._savedSelection;
 
@@ -1490,10 +1504,7 @@ export class RCTextarea extends LitElement {
       return;
     }
 
-    // Normalize line endings
-    const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-
-    this._insertText(normalized);
+    this._insertText(text);
   };
 
   /** Reset the undo/redo history. Call when the field receives entirely new content. */

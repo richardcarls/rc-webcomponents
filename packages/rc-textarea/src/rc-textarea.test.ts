@@ -535,6 +535,39 @@ describe('RCTextarea — value', () => {
     expect(multiline[2].textContent).toBe('line three');
   });
 
+  test('normalizes CRLF and CR line endings to LF like a native textarea', async () => {
+    const host = await renderTextarea();
+
+    host.lineNumbers = true;
+    host.value = 'one\r\n\r\ntwo\rthree';
+
+    await waitRender();
+
+    expect(host.value).toBe('one\n\ntwo\nthree');
+    expect(getEditor(host).querySelectorAll('.line')).toHaveLength(4);
+    expect(getGutterCells(host).children).toHaveLength(4);
+
+    // The empty line keeps a row, so the gutter stays aligned with the text.
+    const blank = getEditor(host).querySelectorAll<HTMLElement>('.line')[1];
+
+    expect(blank.getBoundingClientRect().height).toBeGreaterThan(0);
+
+    host.replaceSelection('\r\n');
+
+    expect(host.value).not.toContain('\r');
+
+    const screen = render(html`
+      <rc-textarea data-testid="seeded" .defaultValue=${'a\r\nb'}>
+        <textarea aria-label="Seeded"></textarea>
+      </rc-textarea>
+    `);
+    const seeded = screen.getByTestId('seeded').element() as RCTextarea;
+
+    await seeded.updateComplete;
+
+    expect(seeded.value).toBe('a\nb');
+  });
+
   test('Tab inserts a tab, while Escape then Tab and Shift+Tab move focus', async () => {
     const screen = render(html`
       <button type="button">Before</button>

@@ -58,7 +58,8 @@ only for form wiring.
 ```
 
 Use the `value` property for controlled updates, `defaultValue` for an initial uncontrolled
-value, and `rc-textarea-change` for user-originated changes.
+value, and `rc-textarea-change` for user-originated changes. As in a native textarea, CRLF
+and CR line endings normalize to LF.
 
 ```ts
 const editor = document.querySelector('rc-textarea');
