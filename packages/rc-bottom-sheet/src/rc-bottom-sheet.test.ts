@@ -742,6 +742,39 @@ test('snapTo() before the inner dialog is attached applies when the sheet opens'
   }
 });
 
+test('a non-modal closed-by="none" sheet stays visible and snaps without the native open state', async () => {
+  const $host = document.createElement('rc-bottom-sheet') as RCBottomSheet;
+
+  $host.setAttribute('snap-points', '120px 320px');
+  $host.setAttribute('closed-by', 'none');
+
+  const $dialog = document.createElement('dialog');
+
+  $dialog.setAttribute('aria-label', 'Nutrition');
+  $dialog.innerHTML = '<button>Details</button><p style="block-size: 480px">Long content</p>';
+  $host.append($dialog);
+  $host.modal = false;
+  $host.open = true;
+  document.body.append($host);
+
+  try {
+    await $host.updateComplete;
+    expect($host.open).toBe(true);
+    expect($dialog.open).toBe(false);
+
+    $host.snapTo(0, 'instant');
+    await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(120));
+
+    $host.snapTo(1, 'instant');
+    await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(320));
+
+    $host.open = false;
+    expect($host.open).toBe(false);
+  } finally {
+    $host.remove();
+  }
+});
+
 test('snapTo() settles to a specific index and fires rc-bottom-sheet-snap with an api trigger', async () => {
   const snapSpy = vi.fn();
   const screen = render(html`

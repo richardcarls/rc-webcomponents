@@ -878,6 +878,115 @@ test('modal = false with controlled open = true opens as non-modal', async () =>
   host.close();
 });
 
+test('a non-modal closed-by="none" dialog opens without the native open state', async () => {
+  const toggleSpy = vi.fn();
+  const closeSpy = vi.fn();
+  const screen = render(html`
+    <rc-dialog
+      data-testid="host"
+      closed-by="none"
+      @rc-dialog-toggle=${toggleSpy}
+      @rc-dialog-close=${closeSpy}
+    >
+      <dialog aria-label="Peek sheet"><button>Inside</button></dialog>
+    </rc-dialog>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+
+  const $dialog = host.querySelector('dialog') as HTMLDialogElement;
+
+  host.modal = false;
+  host.open = true;
+  await host.updateComplete;
+
+  // An open native <dialog> would take the Android back button in Firefox.
+  expect(host.open).toBe(true);
+  expect(host.hasAttribute('open')).toBe(true);
+  expect($dialog.open).toBe(false);
+  expect(getComputedStyle($dialog).display).toBe('block');
+  expect($dialog.getBoundingClientRect().height).toBeGreaterThan(0);
+  await expect.element(screen.getByRole('dialog', { name: 'Peek sheet' })).toBeVisible();
+
+  host.close('done');
+  await host.updateComplete;
+
+  expect(host.open).toBe(false);
+  expect(host.hasAttribute('open')).toBe(false);
+  expect(host.returnValue).toBe('done');
+  expect($dialog.style.display).toBe('');
+  expect(closeSpy).toHaveBeenCalledTimes(1);
+  expect(toggleSpy.mock.calls.at(-1)?.[0].detail).toMatchObject({ open: false });
+});
+
+test('show() on a closed-by="none" dialog moves focus in, and requestClose() can be prevented', async () => {
+  const screen = render(html`
+    <button data-testid="opener">Open</button>
+    <rc-dialog data-testid="host" closed-by="none">
+      <dialog aria-label="Sheet"><button data-testid="inside">Inside</button></dialog>
+    </rc-dialog>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+  const opener = (await screen.getByTestId('opener').element()) as HTMLButtonElement;
+  const inside = await screen.getByTestId('inside').element();
+
+  await host.updateComplete;
+  opener.focus();
+  host.show();
+
+  expect(host.open).toBe(true);
+  expect(host.querySelector('dialog')?.open).toBe(false);
+  expect(document.activeElement).toBe(inside);
+
+  const keepOpen = (event: Event) => event.preventDefault();
+
+  host.addEventListener('rc-dialog-request-close', keepOpen);
+  host.requestClose();
+  expect(host.open).toBe(true);
+
+  host.removeEventListener('rc-dialog-request-close', keepOpen);
+  host.requestClose();
+  expect(host.open).toBe(false);
+  expect(document.activeElement).toBe(opener);
+});
+
+test('changing closed-by on an open non-modal dialog switches open modes without events', async () => {
+  const toggleSpy = vi.fn();
+  const screen = render(html`
+    <rc-dialog data-testid="host" closed-by="any" @rc-dialog-toggle=${toggleSpy}>
+      <dialog aria-label="Sheet"><button>Inside</button></dialog>
+    </rc-dialog>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+
+  const $dialog = host.querySelector('dialog') as HTMLDialogElement;
+
+  host.modal = false;
+  host.open = true;
+  expect($dialog.open).toBe(true);
+
+  host.closedBy = 'none';
+  await host.updateComplete;
+  expect(host.open).toBe(true);
+  expect($dialog.open).toBe(false);
+  expect(getComputedStyle($dialog).display).toBe('block');
+
+  host.closedBy = 'closerequest';
+  await host.updateComplete;
+  expect(host.open).toBe(true);
+  expect($dialog.open).toBe(true);
+  expect($dialog.style.display).toBe('');
+
+  // Let a queued native close event run; it must not report a close.
+  await nextFrame();
+  expect(toggleSpy).not.toHaveBeenCalled();
+
+  host.open = false;
+});
+
 test('default-open attribute opens dialog on connect as modal', async () => {
   const screen = render(html`
     <rc-dialog data-testid="host" default-open>

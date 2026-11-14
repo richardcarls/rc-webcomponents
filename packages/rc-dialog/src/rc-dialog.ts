@@ -11,6 +11,7 @@ import {
   SoftKeyboardViewport,
   warnMissingDirectChild,
   includeDefaults,
+  isFocusable,
   MorphRecoveryController,
 } from '@rcarls/rc-common';
 import { ensureDialogBaseStyles } from './dialogBaseStyles.js';
@@ -248,11 +249,17 @@ export class RCDialog extends ReactiveElement {
   /**
    * Proxied to the inner `<dialog closedby="...">` attribute.
    *
-   * - `'any'`          — Escape OR backdrop click closes the dialog. Where the
-   *   browser lacks native `closedby`, a backdrop click calls `requestClose()`.
-   * - `'closerequest'` — Escape only (browser default for modal dialogs).
-   * - `'none'`         — Only programmatic `close()` / `requestClose()`.
-   * - `''`             — Attribute absent; the browser default applies.
+   * - `'any'`: Escape OR backdrop click closes the dialog. Where the browser
+   *   lacks native `closedby`, a backdrop click calls `requestClose()`.
+   * - `'closerequest'`: Escape only (browser default for modal dialogs).
+   * - `'none'`: Only programmatic `close()` / `requestClose()`.
+   * - `''`: Attribute absent; the browser default applies.
+   *
+   * A non-modal dialog with `'none'` opens without the native `<dialog>` open
+   * state: the component shows the closed `<dialog>` with inline styles, so it
+   * has no `[open]` attribute. Firefox for Android otherwise routes the system
+   * back button to any open dialog, even one that cannot close, and the page
+   * can no longer go back. Style the open sheet through the host's `[open]`.
    */
   @property({ type: String, attribute: 'closed-by', reflect: true, useDefault: true })
   closedBy: 'any' | 'closerequest' | 'none' | '' = (this.constructor as typeof RCDialog)._defaults
@@ -298,6 +305,15 @@ export class RCDialog extends ReactiveElement {
   protected _$wired: WeakRef<HTMLDialogElement> | null = null;
   protected _suppressNextCloseToggle = false;
 
+  /**
+   * Whether the dialog is open without the native open state, as a non-modal
+   * `closed-by="none"` dialog opens. See `closedBy`.
+   */
+  private _detachedOpen = false;
+
+  /** Skips the `close` event of a native close that only switches open modes. */
+  private _ignoreNextClose = false;
+
   private _trackingVisualViewport = false;
 
   // Keeps a closing software keyboard's transitional sizes off the fullscreen surface.
@@ -320,7 +336,7 @@ export class RCDialog extends ReactiveElement {
   /** Whether the inner `<dialog>` is currently open. Host writes update silently. */
   @property({ type: Boolean, attribute: 'open', reflect: true })
   get open(): boolean {
-    return this._$dialog?.open ?? false;
+    return this._detachedOpen || (this._$dialog?.open ?? false);
   }
 
   set open(value: boolean | undefined) {
@@ -378,6 +394,12 @@ export class RCDialog extends ReactiveElement {
 
   /** Closes the inner `<dialog>`, optionally setting a return value. */
   close(returnValue?: string): void {
+    if (this._detachedOpen) {
+      this._closeDetached(returnValue);
+
+      return;
+    }
+
     this._$dialog?.close(returnValue);
   }
 
@@ -392,7 +414,15 @@ export class RCDialog extends ReactiveElement {
       return;
     }
 
-    if ('requestClose' in $dialog && typeof $dialog.requestClose === 'function') {
+    if (this._detachedOpen) {
+      // No native close request runs on a closed <dialog>; _onCancel still
+      // fires rc-dialog-request-close for the synthesized cancel.
+      const ev = new Event('cancel', { cancelable: true, bubbles: false });
+
+      if ($dialog.dispatchEvent(ev)) {
+        this._closeDetached(returnValue);
+      }
+    } else if ('requestClose' in $dialog && typeof $dialog.requestClose === 'function') {
       $dialog.requestClose(returnValue);
     } else {
       // Synthesize a cancelable cancel event; _onCancel fires rc-dialog-request-close.
@@ -496,6 +526,10 @@ export class RCDialog extends ReactiveElement {
       if (changed.has('closedBy')) {
         this._syncClosedBy($dialog);
       }
+
+      if (changed.has('closedBy') || changed.has('modal')) {
+        this._syncOpenMode($dialog);
+      }
     }
   }
 
@@ -524,11 +558,24 @@ export class RCDialog extends ReactiveElement {
     $dialog.removeEventListener('click', this._onBackdropClick);
     this._syncGeometry(null, true);
 
+    if (this._detachedOpen) {
+      this._detachedOpen = false;
+      this._setDetachedStyles($dialog, false);
+    }
+
+    this._ignoreNextClose = false;
+
     this._$wired = null;
     this._$opener = null;
   }
 
   protected _onClose = () => {
+    if (this._ignoreNextClose) {
+      this._ignoreNextClose = false;
+
+      return;
+    }
+
     this._stopVisualViewportTracking();
 
     // Restore focus to the element that triggered the open, per APG focus management.
@@ -692,7 +739,7 @@ export class RCDialog extends ReactiveElement {
     }
 
     if (open) {
-      if ($dialog.open) {
+      if (this.open) {
         return false;
       }
 
@@ -701,19 +748,15 @@ export class RCDialog extends ReactiveElement {
 
       if (modal) {
         $dialog.showModal();
-      } else {
-        $dialog.show();
+      } else if (this._opensDetached(modal)) {
+        this._detachedOpen = true;
+        this._setDetachedStyles($dialog, true);
 
-        // show() always moves focus in; hand it back to where it was.
-        if (!moveFocus && $dialog.contains(document.activeElement)) {
-          const $opener = this._$opener;
-
-          if ($opener instanceof HTMLElement && $opener !== document.body && $opener.isConnected) {
-            $opener.focus({ preventScroll: true });
-          } else if (document.activeElement instanceof HTMLElement) {
-            document.activeElement.blur();
-          }
+        if (moveFocus) {
+          this._focusInto($dialog);
         }
+      } else {
+        this._showNonModal($dialog, moveFocus);
       }
 
       this._syncVisualViewportTracking();
@@ -722,15 +765,114 @@ export class RCDialog extends ReactiveElement {
       return true;
     }
 
-    if (!$dialog.open) {
+    if (!this.open) {
       return false;
     }
 
     this._suppressNextCloseToggle = silent;
-    $dialog.close();
+
+    if (this._detachedOpen) {
+      this._closeDetached();
+    } else {
+      $dialog.close();
+    }
+
     this.requestUpdate('open');
 
     return true;
+  }
+
+  /** Whether a non-modal open skips the native open state. See `closedBy`. */
+  private _opensDetached(modal: boolean): boolean {
+    return !modal && this.closedBy === 'none';
+  }
+
+  /** Opens the dialog with `show()`, optionally keeping focus where it was. */
+  private _showNonModal($dialog: HTMLDialogElement, moveFocus: boolean): void {
+    $dialog.show();
+
+    // show() always moves focus in; hand it back to where it was.
+    if (!moveFocus && $dialog.contains(document.activeElement)) {
+      const $opener = this._$opener;
+
+      if ($opener instanceof HTMLElement && $opener !== document.body && $opener.isConnected) {
+        $opener.focus({ preventScroll: true });
+      } else if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    }
+  }
+
+  /**
+   * Shows or hides a closed `<dialog>` as an open one. Removing the styles
+   * lets the closed state's exit transition run.
+   */
+  private _setDetachedStyles($dialog: HTMLDialogElement, shown: boolean): void {
+    if (shown) {
+      $dialog.style.setProperty('display', 'block');
+      $dialog.style.setProperty('opacity', '1');
+    } else {
+      $dialog.style.removeProperty('display');
+      $dialog.style.removeProperty('opacity');
+    }
+  }
+
+  /**
+   * Moves focus into a detached dialog as `show()` would: its `autofocus`
+   * descendant, else its first focusable one.
+   */
+  private _focusInto($dialog: HTMLDialogElement): void {
+    const $autofocus = $dialog.querySelector<HTMLElement>('[autofocus]');
+    const $target =
+      $autofocus ??
+      [...$dialog.querySelectorAll('*')].find((el): el is HTMLElement => isFocusable(el));
+
+    $target?.focus();
+  }
+
+  /** Closes a detached dialog, running the same steps as a native close. */
+  private _closeDetached(returnValue?: string): void {
+    const $dialog = this._$dialog;
+
+    this._detachedOpen = false;
+
+    if ($dialog) {
+      this._setDetachedStyles($dialog, false);
+
+      if (returnValue !== undefined) {
+        $dialog.returnValue = returnValue;
+      }
+    }
+
+    this._onClose();
+  }
+
+  /**
+   * Moves an open dialog between the native and detached open modes when
+   * `closed-by` or `modal` changes, without firing close or toggle events.
+   */
+  private _syncOpenMode($dialog: HTMLDialogElement): void {
+    if (!this.open) {
+      return;
+    }
+
+    const detached = this._opensDetached(this.modal);
+
+    if (this._detachedOpen && !detached) {
+      this._detachedOpen = false;
+      this._setDetachedStyles($dialog, false);
+
+      if (this.modal) {
+        $dialog.showModal();
+      } else {
+        this._showNonModal($dialog, false);
+      }
+    } else if (!this._detachedOpen && detached && $dialog.open && !$dialog.matches(':modal')) {
+      this._ignoreNextClose = true;
+      $dialog.close();
+      this._detachedOpen = true;
+      this._setDetachedStyles($dialog, true);
+    }
   }
 
   /** Dispatches `rc-dialog-toggle` with the current open state and return value. */

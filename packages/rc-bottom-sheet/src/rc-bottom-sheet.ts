@@ -370,7 +370,9 @@ export class RCBottomSheet extends RCDialog {
    * Bottom sheets close on Escape or a backdrop click by default.
    *
    * Set `closed-by="closerequest"` when a backdrop click must not close the
-   * sheet, or `closed-by="none"` when only explicit actions may close it.
+   * sheet, or `closed-by="none"` when only explicit actions may close it. A
+   * non-modal `none` sheet opens without the inner `<dialog>`'s `[open]`, as
+   * `rc-dialog` documents, so it never captures the system back button.
    *
    * @default 'any'
    */
@@ -550,7 +552,8 @@ export class RCBottomSheet extends RCDialog {
   private _measureNaturalHeight(): number | undefined {
     const $dialog = this._$dialog;
 
-    if (!$dialog?.open) {
+    // A non-modal closed-by="none" sheet is open without the native state.
+    if (!$dialog || !this.open) {
       return undefined;
     }
 
