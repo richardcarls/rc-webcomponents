@@ -775,6 +775,109 @@ test('a non-modal closed-by="none" sheet stays visible and snaps without the nat
   }
 });
 
+function createPersistentSheet(closedBy = 'closerequest') {
+  const $host = document.createElement('rc-bottom-sheet') as RCBottomSheet;
+
+  $host.setAttribute('snap-points', '120px 320px');
+  $host.setAttribute('closed-by', closedBy);
+  $host.persistent = true;
+
+  const $dialog = document.createElement('dialog');
+
+  $dialog.setAttribute('aria-label', 'Nutrition');
+  $dialog.innerHTML = '<button>Details</button><p style="block-size: 480px">Long content</p>';
+  $host.append($dialog);
+  $host.open = true;
+  document.body.append($host);
+
+  return { $host, $dialog };
+}
+
+test('a persistent sheet is an open <dialog> only while expanded, and a close request collapses it', async () => {
+  const { $host, $dialog } = createPersistentSheet();
+  const snapSpy = vi.fn();
+  const toggleSpy = vi.fn();
+  const closeSpy = vi.fn();
+
+  $host.addEventListener('rc-bottom-sheet-snap', snapSpy);
+  $host.addEventListener('rc-dialog-toggle', toggleSpy);
+  $host.addEventListener('rc-dialog-close', closeSpy);
+
+  try {
+    await $host.updateComplete;
+    $host.snapTo(0, 'instant');
+    await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(120));
+
+    // Collapsed: on screen, but no open <dialog> to capture back or Escape.
+    expect($host.open).toBe(true);
+    expect($dialog.open).toBe(false);
+
+    $host.snapTo(1, 'instant');
+    await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(320));
+    expect($dialog.open).toBe(true);
+    expect($dialog.matches(':modal')).toBe(false);
+
+    // A native close request, as from the back button, collapses the sheet.
+    $dialog.close();
+    await vi.waitFor(() => expect(snapSpy.mock.calls.at(-1)?.[0].detail.trigger).toBe('close-request'));
+    await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(120));
+
+    expect($host.open).toBe(true);
+    expect($dialog.open).toBe(false);
+    expect(getComputedStyle($dialog).display).toBe('block');
+    expect(toggleSpy).not.toHaveBeenCalled();
+    expect(closeSpy).not.toHaveBeenCalled();
+  } finally {
+    $host.remove();
+  }
+});
+
+test('requestClose() collapses a persistent sheet, while close() hides it', async () => {
+  const { $host, $dialog } = createPersistentSheet();
+  const snapSpy = vi.fn();
+  const closeSpy = vi.fn();
+
+  $host.addEventListener('rc-bottom-sheet-snap', snapSpy);
+  $host.addEventListener('rc-dialog-close', closeSpy);
+
+  try {
+    await $host.updateComplete;
+    $host.snapTo(1, 'instant');
+    await vi.waitFor(() => expect($dialog.open).toBe(true));
+
+    $host.requestClose();
+    await vi.waitFor(() => expect(snapSpy.mock.calls.at(-1)?.[0].detail).toMatchObject({
+      index: 0,
+      trigger: 'close-request',
+    }));
+    expect($host.open).toBe(true);
+    expect($dialog.open).toBe(false);
+
+    $host.close();
+    await $host.updateComplete;
+    expect($host.open).toBe(false);
+    expect(closeSpy).toHaveBeenCalledTimes(1);
+    expect($dialog.style.display).toBe('');
+  } finally {
+    $host.remove();
+  }
+});
+
+test('an expanded persistent sheet with closed-by="none" keeps its <dialog> closed', async () => {
+  const { $host, $dialog } = createPersistentSheet('none');
+
+  try {
+    await $host.updateComplete;
+    $host.snapTo(1, 'instant');
+    await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(320));
+
+    expect($host.open).toBe(true);
+    expect($dialog.open).toBe(false);
+  } finally {
+    $host.remove();
+  }
+});
+
 test('snapTo() settles to a specific index and fires rc-bottom-sheet-snap with an api trigger', async () => {
   const snapSpy = vi.fn();
   const screen = render(html`

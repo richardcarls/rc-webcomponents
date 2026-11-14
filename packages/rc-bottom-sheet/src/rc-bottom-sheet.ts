@@ -1,3 +1,4 @@
+import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
 import { RCDialog } from '@rcarls/rc-dialog';
@@ -45,9 +46,11 @@ export interface RCBottomSheetSnapDetail {
 
   /**
    * What moved the sheet: a drag release, activating the resize handle (a
-   * click, tap, Enter, or Space that didn't drag), or a `snapTo()` call.
+   * click, tap, Enter, or Space that didn't drag), a `snapTo()` call, or a
+   * close request (Escape, the back button, a light dismiss, a swipe dismiss,
+   * or `requestClose()`) that collapsed a `persistent` sheet.
    */
-  trigger: 'drag' | 'activate' | 'api';
+  trigger: 'drag' | 'activate' | 'api' | 'close-request';
 }
 
 const DEFAULT_SNAP_DURATION_MS = 300;
@@ -327,6 +330,8 @@ function localHeight(target: HTMLElement): number {
  *   `snapTo()` and settled to on drag release. Accepts `calc()`, `var()`, and container query
  *   units, resolved in the sheet's context when each snap applies; percentages are of the
  *   viewport height.
+ * @attr persistent - Keeps the open sheet on screen at its lowest snap point instead of closing
+ *   it. Close requests collapse the sheet, and only an expanded sheet is an open `<dialog>`.
  * @attr swipe-dismiss - Whether a decisive downward swipe of at least 96 pixels requests close.
  * @attr swipe-velocity - Minimum release velocity, in pixels per second, that counts as a
  *   decisive swipe rather than a slow deliberate drag.
@@ -436,6 +441,25 @@ export class RCBottomSheet extends RCDialog {
    */
   @property({ type: Number, attribute: 'swipe-velocity' })
   swipeVelocity = 500;
+
+  /**
+   * Keeps the open sheet on screen as a standard (non-modal) bottom sheet
+   * that collapses instead of closing.
+   *
+   * At its lowest snap point the sheet is collapsed: it shows through
+   * inline styles while the inner `<dialog>` stays closed, so the dialog
+   * does not capture Escape or the system back button. Above that point the
+   * sheet is expanded and its `<dialog>` is open, always non-modal, and a
+   * close request allowed by `closed-by` (Escape, the back button, or a light
+   * dismiss) collapses it with an `rc-bottom-sheet-snap` event whose trigger
+   * is `close-request`. `requestClose()` and a swipe dismiss collapse it the
+   * same way. `close()` or `open = false` still hides the sheet.
+   *
+   * With `closed-by="none"`, an expanded sheet's `<dialog>` stays closed
+   * too, so only the app collapses it.
+   */
+  @property({ type: Boolean, reflect: true })
+  persistent = false;
 
   private readonly _reducedMotion =
     typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
@@ -639,6 +663,55 @@ export class RCBottomSheet extends RCDialog {
     this._snapToIndex(Math.trunc(index), behavior, 'api');
   }
 
+  override requestClose(returnValue?: string): void {
+    if (!this.persistent) {
+      super.requestClose(returnValue);
+
+      return;
+    }
+
+    if (this.open) {
+      this._snapToIndex(0, 'animated', 'close-request');
+    }
+  }
+
+  override updated(changed: PropertyValues<this>): void {
+    super.updated(changed);
+
+    const $dialog = this._$dialog;
+
+    if ($dialog && changed.has('persistent')) {
+      this._syncOpenMode($dialog);
+    }
+  }
+
+  protected override _resolveModal(modal: boolean): boolean {
+    return this.persistent ? false : modal;
+  }
+
+  protected override _opensDetached(modal: boolean): boolean {
+    if (!this.persistent) {
+      return super._opensDetached(modal);
+    }
+
+    return this.closedBy === 'none' || (this._lastSnapIndex ?? 0) === 0;
+  }
+
+  /** A close request collapses an expanded persistent sheet instead. */
+  protected override _interceptNativeClose(): boolean {
+    const $dialog = this._$dialog;
+
+    if (!this.persistent || !$dialog) {
+      return false;
+    }
+
+    this._setDetachedOpen($dialog, true);
+    this._snapToIndex(0, 'animated', 'close-request');
+    this.requestUpdate('open');
+
+    return true;
+  }
+
   protected override _applyOpen(
     open: boolean,
     silent: boolean,
@@ -762,6 +835,11 @@ export class RCBottomSheet extends RCDialog {
     }
 
     this._lastSnapIndex = clampedIndex;
+
+    // A persistent sheet's <dialog> is open only while it is expanded.
+    if (this.persistent) {
+      this._syncOpenMode($dialog);
+    }
 
     // An in-flight animation wins over inline geometry in the cascade. Pin
     // its current visual box before cancelling so the constrained target can

@@ -314,6 +314,12 @@ export class RCDialog extends ReactiveElement {
   /** Skips the `close` event of a native close that only switches open modes. */
   private _ignoreNextClose = false;
 
+  /**
+   * Whether the pending native `close` event comes from `close()` or a
+   * controlled close, rather than a close request such as Escape or back.
+   */
+  private _closingExplicitly = false;
+
   private _trackingVisualViewport = false;
 
   // Keeps a closing software keyboard's transitional sizes off the fullscreen surface.
@@ -400,7 +406,12 @@ export class RCDialog extends ReactiveElement {
       return;
     }
 
-    this._$dialog?.close(returnValue);
+    const $dialog = this._$dialog;
+
+    if ($dialog?.open) {
+      this._closingExplicitly = true;
+      $dialog.close(returnValue);
+    }
   }
 
   /**
@@ -564,6 +575,7 @@ export class RCDialog extends ReactiveElement {
     }
 
     this._ignoreNextClose = false;
+    this._closingExplicitly = false;
 
     this._$wired = null;
     this._$opener = null;
@@ -573,6 +585,14 @@ export class RCDialog extends ReactiveElement {
     if (this._ignoreNextClose) {
       this._ignoreNextClose = false;
 
+      return;
+    }
+
+    const explicit = this._closingExplicitly;
+
+    this._closingExplicitly = false;
+
+    if (!explicit && this._interceptNativeClose()) {
       return;
     }
 
@@ -738,6 +758,8 @@ export class RCDialog extends ReactiveElement {
       return false;
     }
 
+    modal = this._resolveModal(modal);
+
     if (open) {
       if (this.open) {
         return false;
@@ -774,6 +796,7 @@ export class RCDialog extends ReactiveElement {
     if (this._detachedOpen) {
       this._closeDetached();
     } else {
+      this._closingExplicitly = true;
       $dialog.close();
     }
 
@@ -783,8 +806,29 @@ export class RCDialog extends ReactiveElement {
   }
 
   /** Whether a non-modal open skips the native open state. See `closedBy`. */
-  private _opensDetached(modal: boolean): boolean {
+  protected _opensDetached(modal: boolean): boolean {
     return !modal && this.closedBy === 'none';
+  }
+
+  /** Resolves whether an open is modal; a subclass can force one mode. */
+  protected _resolveModal(modal: boolean): boolean {
+    return modal;
+  }
+
+  /**
+   * Runs when the native `<dialog>` closes from a close request (Escape, the
+   * back button, or light dismiss) rather than `close()`. Return `true` to
+   * keep the dialog open, as by calling `_setDetachedOpen()`; no close or
+   * toggle event fires then.
+   */
+  protected _interceptNativeClose(): boolean {
+    return false;
+  }
+
+  /** Marks the dialog open without the native open state, or clears that. */
+  protected _setDetachedOpen($dialog: HTMLDialogElement, shown: boolean): void {
+    this._detachedOpen = shown;
+    this._setDetachedStyles($dialog, shown);
   }
 
   /** Opens the dialog with `show()`, optionally keeping focus where it was. */
@@ -844,25 +888,29 @@ export class RCDialog extends ReactiveElement {
       }
     }
 
+    // Detached closes come from close() or a controlled close, never a
+    // native close request, so no subclass may intercept them.
+    this._closingExplicitly = true;
     this._onClose();
   }
 
   /**
    * Moves an open dialog between the native and detached open modes when
-   * `closed-by` or `modal` changes, without firing close or toggle events.
+   * what decides the mode changes, without firing close or toggle events.
    */
-  private _syncOpenMode($dialog: HTMLDialogElement): void {
+  protected _syncOpenMode($dialog: HTMLDialogElement): void {
     if (!this.open) {
       return;
     }
 
-    const detached = this._opensDetached(this.modal);
+    const modal = this._resolveModal(this.modal);
+    const detached = this._opensDetached(modal);
 
     if (this._detachedOpen && !detached) {
       this._detachedOpen = false;
       this._setDetachedStyles($dialog, false);
 
-      if (this.modal) {
+      if (modal) {
         $dialog.showModal();
       } else {
         this._showNonModal($dialog, false);

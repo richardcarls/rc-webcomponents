@@ -61,6 +61,30 @@ For an embedded non-modal sheet, place the component in a positioned container,
 set `--rc-bottom-sheet-position: absolute`, and open it with `show()`. The sheet
 then docks to that container's block-end edge instead of the viewport.
 
+Add `persistent` for a standard bottom sheet that stays on screen, such as a
+peek that expands into details. Its lowest snap point is the collapsed state:
+the sheet shows there while its inner `<dialog>` stays closed, so it never
+captures Escape or the system back button. Above that point the sheet is
+expanded, its `<dialog>` is open (always non-modal), and a close request that
+`closed-by` allows collapses it instead of closing it, firing
+`rc-bottom-sheet-snap` with the `close-request` trigger. `requestClose()` and a
+swipe dismiss collapse it too, while `close()` or `open = false` hides it.
+
+```html
+<rc-bottom-sheet persistent closed-by="closerequest" snap-points="144px 62dvh">
+  <dialog aria-label="Nutrition">
+    <button type="button" data-rc-bottom-sheet-handle aria-label="Resize sheet"></button>
+  </dialog>
+</rc-bottom-sheet>
+
+<script type="module">
+  const sheet = document.querySelector('rc-bottom-sheet');
+
+  sheet.open = true;
+  sheet.snapTo(0, 'instant');
+</script>
+```
+
 Set `resize="none"` to hold the sheet at its current snap point, for example
 while it has nothing more to reveal. The option is reactive, so restoring
 `resize="vertical"` re-enables dragging between snap points.

@@ -144,6 +144,7 @@ declare module 'react' {
           moveHandle?: RCBottomSheet['moveHandle'];
           moveStep?: RCBottomSheet['moveStep'];
           open?: RCBottomSheet['open'];
+          persistent?: RCBottomSheet['persistent'];
           resize?: RCBottomSheet['resize'];
           resizeHandle?: RCBottomSheet['resizeHandle'];
           resizeOrigin?: RCBottomSheet['resizeOrigin'];
