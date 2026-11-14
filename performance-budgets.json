@@ -13,13 +13,13 @@
       "lazyChunks": 0
     },
     "dialog": {
-      "initialRaw": 43169,
-      "initialGzip": 12359,
-      "initialBrotli": 11096,
-      "totalRaw": 82858,
-      "totalGzip": 21907,
-      "totalBrotli": 19519,
-      "largestLazyGzip": 9548,
+      "initialRaw": 46922,
+      "initialGzip": 13341,
+      "initialBrotli": 11978,
+      "totalRaw": 86611,
+      "totalGzip": 22894,
+      "totalBrotli": 20393,
+      "largestLazyGzip": 9553,
       "initialChunks": 2,
       "lazyChunks": 1
     },
@@ -57,23 +57,23 @@
       "lazyChunks": 0
     },
     "aggregateClasses": {
-      "initialRaw": 934322,
-      "initialGzip": 216648,
-      "initialBrotli": 166697,
-      "totalRaw": 934945,
-      "totalGzip": 217021,
-      "totalBrotli": 166989,
-      "largestLazyGzip": 192,
+      "initialRaw": 976583,
+      "initialGzip": 228005,
+      "initialBrotli": 175154,
+      "totalRaw": 977206,
+      "totalGzip": 228379,
+      "totalBrotli": 175449,
+      "largestLazyGzip": 193,
       "initialChunks": 1,
       "lazyChunks": 2
     },
     "aggregateDefine": {
-      "initialRaw": 938160,
-      "initialGzip": 216667,
-      "initialBrotli": 167044,
-      "totalRaw": 938160,
-      "totalGzip": 216667,
-      "totalBrotli": 167044,
+      "initialRaw": 980675,
+      "initialGzip": 228066,
+      "initialBrotli": 175461,
+      "totalRaw": 980675,
+      "totalGzip": 228066,
+      "totalBrotli": 175461,
       "largestLazyGzip": 0,
       "initialChunks": 1,
       "lazyChunks": 0
@@ -211,11 +211,11 @@
       "lazyChunks": 0
     },
     "dialog": {
-      "initialGzip": 13383,
-      "initialBrotli": 12120,
-      "totalGzip": 23003,
-      "totalBrotli": 20543,
-      "largestLazyGzip": 10572,
+      "initialGzip": 14365,
+      "initialBrotli": 13002,
+      "totalGzip": 24039,
+      "totalBrotli": 21417,
+      "largestLazyGzip": 10577,
       "initialChunks": 2,
       "lazyChunks": 1
     },
@@ -247,19 +247,19 @@
       "lazyChunks": 0
     },
     "aggregateClasses": {
-      "initialGzip": 227481,
-      "initialBrotli": 175032,
-      "totalGzip": 227873,
-      "totalBrotli": 175339,
-      "largestLazyGzip": 1216,
+      "initialGzip": 239406,
+      "initialBrotli": 183912,
+      "totalGzip": 239798,
+      "totalBrotli": 184222,
+      "largestLazyGzip": 1217,
       "initialChunks": 1,
       "lazyChunks": 2
     },
     "aggregateDefine": {
-      "initialGzip": 227501,
-      "initialBrotli": 175397,
-      "totalGzip": 227501,
-      "totalBrotli": 175397,
+      "initialGzip": 239470,
+      "initialBrotli": 184235,
+      "totalGzip": 239470,
+      "totalBrotli": 184235,
       "largestLazyGzip": 1024,
       "initialChunks": 1,
       "lazyChunks": 0
