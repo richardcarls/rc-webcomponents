@@ -895,8 +895,8 @@ export class RCDialog extends ReactiveElement {
   }
 
   /**
-   * Moves an open dialog between the native and detached open modes when
-   * what decides the mode changes, without firing close or toggle events.
+   * Moves an open dialog to the open mode its settings now call for (modal,
+   * non-modal, or detached) without firing close or toggle events.
    */
   protected _syncOpenMode($dialog: HTMLDialogElement): void {
     if (!this.open) {
@@ -906,20 +906,32 @@ export class RCDialog extends ReactiveElement {
     const modal = this._resolveModal(this.modal);
     const detached = this._opensDetached(modal);
 
-    if (this._detachedOpen && !detached) {
-      this._detachedOpen = false;
-      this._setDetachedStyles($dialog, false);
-
-      if (modal) {
-        $dialog.showModal();
-      } else {
-        this._showNonModal($dialog, false);
+    if (this._detachedOpen) {
+      if (detached) {
+        return;
       }
-    } else if (!this._detachedOpen && detached && $dialog.open && !$dialog.matches(':modal')) {
+
+      this._setDetachedOpen($dialog, false);
+    } else {
+      if (!$dialog.open || (!detached && $dialog.matches(':modal') === modal)) {
+        return;
+      }
+
+      // Leave the current native mode; its queued close event is not a close.
       this._ignoreNextClose = true;
       $dialog.close();
-      this._detachedOpen = true;
-      this._setDetachedStyles($dialog, true);
+
+      if (detached) {
+        this._setDetachedOpen($dialog, true);
+
+        return;
+      }
+    }
+
+    if (modal) {
+      $dialog.showModal();
+    } else {
+      this._showNonModal($dialog, false);
     }
   }
 

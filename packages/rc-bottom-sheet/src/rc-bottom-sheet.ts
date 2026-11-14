@@ -453,7 +453,10 @@ export class RCBottomSheet extends RCDialog {
    * close request allowed by `closed-by` (Escape, the back button, or a light
    * dismiss) collapses it with an `rc-bottom-sheet-snap` event whose trigger
    * is `close-request`. `requestClose()` and a swipe dismiss collapse it the
-   * same way. `close()` or `open = false` still hides the sheet.
+   * same way. Each fires the cancelable `rc-dialog-request-close` first; a
+   * canceled swipe returns the sheet to its snap point. `close()` or
+   * `open = false` still hides the sheet, and so does a close request on a
+   * sheet without `snap-points`, which has nothing to collapse to.
    *
    * With `closed-by="none"`, an expanded sheet's `<dialog>` stays closed
    * too, so only the app collapses it.
@@ -664,15 +667,41 @@ export class RCBottomSheet extends RCDialog {
   }
 
   override requestClose(returnValue?: string): void {
-    if (!this.persistent) {
+    if (!this._collapses()) {
       super.requestClose(returnValue);
 
       return;
     }
 
-    if (this.open) {
-      this._snapToIndex(0, 'animated', 'close-request');
+    this._requestCollapse();
+  }
+
+  /** Whether close requests collapse the sheet: persistent, with snap points. */
+  private _collapses(): boolean {
+    return this.persistent && this._resolvedSnapPoints().length > 0;
+  }
+
+  /**
+   * Collapses an open persistent sheet unless a listener cancels the
+   * `rc-dialog-request-close` it fires first, as a native close request
+   * would. Returns whether the sheet collapses.
+   */
+  private _requestCollapse(): boolean {
+    if (!this.open) {
+      return false;
     }
+
+    const request = new Event('cancel', { cancelable: true });
+
+    this._onCancel(request);
+
+    if (request.defaultPrevented) {
+      return false;
+    }
+
+    this._snapToIndex(0, 'animated', 'close-request');
+
+    return true;
   }
 
   override updated(changed: PropertyValues<this>): void {
@@ -701,7 +730,8 @@ export class RCBottomSheet extends RCDialog {
   protected override _interceptNativeClose(): boolean {
     const $dialog = this._$dialog;
 
-    if (!this.persistent || !$dialog) {
+    // Without snap points there is nothing to collapse to, so it closes.
+    if (!$dialog || !this._collapses()) {
       return false;
     }
 
@@ -760,7 +790,12 @@ export class RCBottomSheet extends RCDialog {
     }
 
     if (detail.inputType === 'pointer' && this.swipeDismiss && this._shouldSwipeDismiss(detail)) {
-      this.requestClose();
+      if (!this._collapses()) {
+        this.requestClose();
+      } else if (!this._requestCollapse()) {
+        // A canceled collapse returns the dragged sheet to where it was.
+        this._snapToIndex(this._lastSnapIndex ?? 0, 'animated', 'drag');
+      }
 
       return;
     }

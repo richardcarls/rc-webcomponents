@@ -68,7 +68,10 @@ captures Escape or the system back button. Above that point the sheet is
 expanded, its `<dialog>` is open (always non-modal), and a close request that
 `closed-by` allows collapses it instead of closing it, firing
 `rc-bottom-sheet-snap` with the `close-request` trigger. `requestClose()` and a
-swipe dismiss collapse it too, while `close()` or `open = false` hides it.
+swipe dismiss collapse it too. Each fires the cancelable
+`rc-dialog-request-close` first, and a canceled swipe returns the sheet to its
+snap point. `close()` or `open = false` hides the sheet; without `snap-points`
+there is nothing to collapse to, so close requests close it as usual.
 
 ```html
 <rc-bottom-sheet persistent closed-by="closerequest" snap-points="144px 62dvh">
