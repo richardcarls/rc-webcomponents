@@ -598,9 +598,11 @@ export class RCTextarea extends LitElement {
     return this._value;
   }
 
-  set value(raw: string) {
+  // Lit passes null when the value attribute is removed; read it as empty,
+  // as a native textarea does.
+  set value(raw: string | null | undefined) {
     const oldValue = this._value;
-    const val = normalizeLineEndings(raw);
+    const val = normalizeLineEndings(raw ?? '');
 
     if (val === this._value) {
       return;
@@ -621,13 +623,15 @@ export class RCTextarea extends LitElement {
     return this._defaultValue;
   }
 
-  set defaultValue(val: string | undefined) {
+  // Lit passes null when default-value is removed, which clears the default.
+  set defaultValue(raw: string | null | undefined) {
     const oldValue = this._defaultValue;
+    const val = raw == null ? undefined : normalizeLineEndings(raw);
 
     this._defaultValue = val;
 
     if (!this._valueSetByHost && !this._initialValueResolved && val !== undefined) {
-      this._value = normalizeLineEndings(val);
+      this._value = val;
       this._initialValueResolved = true;
 
       this._syncTextareaValue();
