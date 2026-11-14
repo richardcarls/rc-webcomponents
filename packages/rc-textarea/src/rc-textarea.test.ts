@@ -566,6 +566,33 @@ describe('RCTextarea — value', () => {
     await seeded.updateComplete;
 
     expect(seeded.value).toBe('a\nb');
+    expect(seeded.defaultValue).toBe('a\nb');
+  });
+
+  test('reads a removed value or default-value attribute as empty', async () => {
+    const screen = render(html`
+      <rc-textarea data-testid="valued" value="kept">
+        <textarea aria-label="Valued"></textarea>
+      </rc-textarea>
+      <rc-textarea data-testid="defaulted" default-value="seed">
+        <textarea aria-label="Defaulted"></textarea>
+      </rc-textarea>
+    `);
+    const valued = screen.getByTestId('valued').element() as RCTextarea;
+    const defaulted = screen.getByTestId('defaulted').element() as RCTextarea;
+
+    await valued.updateComplete;
+    await defaulted.updateComplete;
+
+    valued.removeAttribute('value');
+    defaulted.removeAttribute('default-value');
+
+    await valued.updateComplete;
+    await defaulted.updateComplete;
+
+    expect(valued.value).toBe('');
+    expect(defaulted.defaultValue).toBeUndefined();
+    expect(defaulted.value).toBe('seed');
   });
 
   test('Tab inserts a tab, while Escape then Tab and Shift+Tab move focus', async () => {
