@@ -861,12 +861,13 @@ test('requestClose() collapses a persistent sheet, while close() hides it', asyn
 
     expect($host.open).toBe(true);
     expect($dialog.open).toBe(false);
+    expect($host.matches(':state(detached)')).toBe(true);
 
     $host.close();
     await $host.updateComplete;
     expect($host.open).toBe(false);
     expect(closeSpy).toHaveBeenCalledTimes(1);
-    expect($dialog.style.display).toBe('');
+    expect($host.matches(':state(detached)')).toBe(false);
   } finally {
     $host.remove();
   }
