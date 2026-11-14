@@ -140,6 +140,7 @@ declare module 'solid-js' {
           'move-handle'?: RCAttribute<RCBottomSheet['moveHandle']>;
           'move-step'?: RCAttribute<RCBottomSheet['moveStep']>;
           open?: RCAttribute<RCBottomSheet['open']>;
+          persistent?: RCAttribute<RCBottomSheet['persistent']>;
           resize?: RCAttribute<RCBottomSheet['resize']>;
           'resize-handle'?: RCAttribute<RCBottomSheet['resizeHandle']>;
           'resize-origin'?: RCAttribute<RCBottomSheet['resizeOrigin']>;
@@ -157,6 +158,7 @@ declare module 'solid-js' {
           'prop:moveHandle'?: RCBottomSheet['moveHandle'];
           'prop:moveStep'?: RCBottomSheet['moveStep'];
           'prop:open'?: RCBottomSheet['open'];
+          'prop:persistent'?: RCBottomSheet['persistent'];
           'prop:resize'?: RCBottomSheet['resize'];
           'prop:resizeHandle'?: RCBottomSheet['resizeHandle'];
           'prop:resizeOrigin'?: RCBottomSheet['resizeOrigin'];
