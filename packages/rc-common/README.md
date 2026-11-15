@@ -432,8 +432,11 @@ if (label) {
 
 ## Browser support
 
-| Feature                     | Requirement                                            |
-| --------------------------- | ------------------------------------------------------ |
-| Controllers and directives  | Any browser supporting Web Components + Pointer Events |
-| `AnchorController` (native) | Chrome 125+, Safari 18+, Firefox (in development)      |
-| `AnchorController` (script) | Any browser supporting Web Components                  |
+The shared runtime follows the [core compatibility tiers](https://richardcarls.github.io/rc-webcomponents/guide/compatibility).
+The feature notes below describe optional native paths within those tiers.
+
+| Feature                     | Requirement                                       |
+| --------------------------- | ------------------------------------------------- |
+| Controllers and directives  | Core minimum tier                                 |
+| `AnchorController` (native) | Chrome 125+, Safari 18+, Firefox (in development) |
+| `AnchorController` (script) | Any browser supporting Web Components             |

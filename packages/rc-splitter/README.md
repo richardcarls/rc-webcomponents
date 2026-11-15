@@ -207,5 +207,4 @@ The separator handle implements the WAI-ARIA slider role pattern:
 
 ## Browser support
 
-All modern browsers. It requires Web Components support (Chrome 67+, Firefox 63+, Safari 12.1+)
-and `ResizeObserver` (Chrome 64+, Firefox 69+, Safari 13.1+).
+Core browser support follows the [compatibility guide](https://richardcarls.github.io/rc-webcomponents/guide/compatibility).

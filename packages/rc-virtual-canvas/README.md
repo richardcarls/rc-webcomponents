@@ -189,7 +189,7 @@ vc.addEventListener('pointerdown', (event) => {
 
 ## Browser support
 
-| Feature                      | Requirement                                                                        |
-| ---------------------------- | ---------------------------------------------------------------------------------- |
-| Core                         | Chrome 67+, Firefox 63+, Safari 12.1+ (Web Components)                             |
-| Device-pixel-accurate sizing | Chrome 84+, Firefox 93+, Safari 15.4+ (ResizeObserver `devicePixelContentBoxSize`) |
+| Feature                      | Requirement                                                                                        |
+| ---------------------------- | -------------------------------------------------------------------------------------------------- |
+| Core                         | See the [compatibility guide](https://richardcarls.github.io/rc-webcomponents/guide/compatibility) |
+| Device-pixel-accurate sizing | Chrome 84+, Firefox 93+, Safari 15.4+ (ResizeObserver `devicePixelContentBoxSize`)                 |

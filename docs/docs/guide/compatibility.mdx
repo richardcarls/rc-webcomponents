@@ -7,10 +7,28 @@ description: 'Supported browsers, server rendering support, import choices, and 
 
 ## Browser support
 
-The supported desktop policy is the current and previous stable releases of
-Chromium, Firefox, and Safari. The mobile policy covers current Chrome on
-Android and Safari on iOS, with targeted Firefox for Android validation for
-select and combobox behavior.
+Core component packages, `rc-common`, and the aggregate component entry points share two
+support tiers:
+
+| Tier                      | Browser versions                                                                                               | Contract                                                                                                                                      |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Minimum validation target | Chrome 100+, Firefox 100+, Safari and iPadOS 15.4+                                                             | Components upgrade without errors and support their core form, keyboard, pointer, focus, and popup tasks. Newer visual effects may be absent. |
+| Target support            | Current and previous stable desktop Chromium, Firefox, and Safari; current Chrome on Android and Safari on iOS | Full documented component behavior and base appearance.                                                                                       |
+
+The minimum tier is a validation target until tests on those historical engines are recorded.
+Current CI engines alone do not establish that guarantee. The minimum applies to the unthemed
+components and their base styles. Theme, plugin, adapter, and framework integration packages
+may specify their own opt-in requirements. A theme may need newer CSS for its intended visual
+fidelity, smaller stylesheet, or performance without changing the core component tier.
+
+The remaining validation work includes keyboard focus containment in carousel and page-turner
+on engines without native `inert`, and visual checks for layouts that use custom states or
+newer CSS. Use the target tier for applications that need these behaviors today.
+
+Samsung Internet, embedded WebViews, other tablet browsers, and TV browsers receive feature-based
+best-effort behavior. Their engine version, not the device name, determines which enhancements
+are available. No particular model or remote-control interaction is guaranteed without a
+recorded device test.
 
 CI runs the complete component suite in Chromium, Firefox, and WebKit. WebKit is
 the available cross-platform Safari engine check; release-critical mobile and
@@ -18,13 +36,14 @@ assistive-technology behaviors still require the manual matrix in
 [Accessibility testing](./accessibility-testing).
 
 Components feature-detect optional platform APIs and preserve a usable native
-path when an enhancement is unavailable. “Supported” therefore has two levels:
+path when an enhancement is unavailable:
 
 - **Progressive baseline:** meaningful native markup, form submission, label
   association, and ordinary links or controls remain available before upgrade
   or without JavaScript.
-- **Full enhancement:** the custom element has upgraded and its richer popup,
-  keyboard, focus, styling, or layout behavior is active in a supported browser.
+- **Upgrade:** the custom element adds the interaction promised by the applicable
+  support tier. Below the minimum tier, only consumer-authored native markup is
+  covered; successful upgrade is not guaranteed.
 
 Component pages document narrower platform caveats. In particular, read the
 mobile notes for [`rc-select`](../components/rc-select) and

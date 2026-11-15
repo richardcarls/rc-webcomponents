@@ -177,11 +177,7 @@ semantics. A small keyboard-accessible resize button is injected at the bottom-r
 ```html
 <rc-dialog id="sheet-like" resize="vertical" resize-origin="top" resize-handle=".resize-handle">
   <dialog aria-labelledby="sheet-title">
-    <button
-      type="button"
-      class="resize-handle"
-      aria-label="Resize"
-    ></button>
+    <button type="button" class="resize-handle" aria-label="Resize"></button>
     <h2 id="sheet-title">Filters</h2>
   </dialog>
 </rc-dialog>
@@ -367,9 +363,12 @@ dialog[open] {
 
 ## Browser support
 
+Core behavior follows the [compatibility guide](https://richardcarls.github.io/rc-webcomponents/guide/compatibility).
+The table below identifies native APIs with component fallbacks.
+
 | Feature                              | Requirement                                                                 |
 | ------------------------------------ | --------------------------------------------------------------------------- |
-| Core (`<dialog>` delegation, events) | Chrome 37+, Firefox 98+, Safari 15.4+                                       |
+| Core (`<dialog>` delegation, events) | See the minimum tier in the compatibility guide                             |
 | Drag / resize                        | Any browser supporting Pointer Events                                       |
 | `closed-by` attribute proxy          | Chrome 134+, Safari 18.4+, Firefox 139+                                     |
 | `requestClose()` native method       | Chrome 134+, Safari 18.4+, Firefox 139+ (fallback active on older browsers) |
