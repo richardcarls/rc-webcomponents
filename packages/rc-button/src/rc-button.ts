@@ -77,6 +77,50 @@ export interface RCButtonToggleDetail {
 }
 
 /**
+ * Text-backed icons (an icon-font ligature or glyph, an emoji) read as a
+ * label, so the button gets label padding and no icon sizing. Warns when a
+ * button named by `aria-label` or `aria-labelledby` shows an icon-font
+ * ligature in a known icon-font wrapper or a short symbol glyph. Ordinary
+ * short words and abbreviations are labels too. Lives outside the class so
+ * production builds drop it with its `import.meta.env.DEV` call.
+ *
+ * @returns Whether it warned.
+ */
+function warnUnmarkedTextIcon($host: HTMLElement, $button: HTMLButtonElement): boolean {
+  if (
+    !($button.hasAttribute('aria-label') || $button.hasAttribute('aria-labelledby')) ||
+    $button.querySelector(':scope > [data-rc-label]')
+  ) {
+    return false;
+  }
+
+  const text = $button.textContent?.trim() ?? '';
+  const $content = $button.firstElementChild;
+  const hasIconFontClass =
+    $button.childElementCount === 1 &&
+    $content !== null &&
+    [...$content.classList].some((name) =>
+      /^(?:material-icons(?:-outlined|-round|-sharp|-two-tone)?|material-symbols-(?:outlined|rounded|sharp))$/.test(
+        name,
+      ),
+    );
+  const looksLikeIcon =
+    (hasIconFontClass && text !== '') ||
+    ([...text].length <= 2 && /[\u2190-\u2bff\u{1f300}-\u{1faff}]/u.test(text));
+
+  if (!looksLikeIcon || text === $button.getAttribute('aria-label')?.trim()) {
+    return false;
+  }
+
+  console.warn(
+    `[rc-button] "${text}" looks like a text-backed icon (an icon font or emoji). Mark its element with data-rc-icon so the button sizes it as an icon instead of a label.`,
+    $host,
+  );
+
+  return true;
+}
+
+/**
  * Structural action wrapper that preserves a direct native `<button>` or
  * `<a href>` child for progressive enhancement and native interaction.
  *
@@ -434,48 +478,14 @@ export class RCButton extends LitElement {
       this.iconOnly = false;
     }
 
-    if (import.meta.env.DEV && $button && hasLabel && !hasMarkedIcon) {
-      this._warnUnmarkedTextIcon($button);
-    }
-  }
-
-  /**
-   * Text-backed icons (an icon-font ligature or glyph, an emoji) read as a
-   * label, so the button gets label padding and no icon sizing. Warn once
-   * when a button named by `aria-label` or `aria-labelledby` shows an icon-font
-   * ligature in a known icon-font wrapper or a short symbol glyph. Ordinary
-   * short words and abbreviations are labels too.
-   */
-  private _warnUnmarkedTextIcon($button: HTMLButtonElement): void {
     if (
-      this._warnedUnmarkedTextIcon ||
-      !($button.hasAttribute('aria-label') || $button.hasAttribute('aria-labelledby')) ||
-      $button.querySelector(':scope > [data-rc-label]')
+      import.meta.env.DEV &&
+      $button &&
+      hasLabel &&
+      !hasMarkedIcon &&
+      !this._warnedUnmarkedTextIcon
     ) {
-      return;
-    }
-
-    const text = $button.textContent?.trim() ?? '';
-    const $content = $button.firstElementChild;
-    const hasIconFontClass =
-      $button.childElementCount === 1 &&
-      $content !== null &&
-      [...$content.classList].some((name) =>
-        /^(?:material-icons(?:-outlined|-round|-sharp|-two-tone)?|material-symbols-(?:outlined|rounded|sharp))$/.test(
-          name,
-        ),
-      );
-    const looksLikeIcon =
-      (hasIconFontClass && text !== '') ||
-      ([...text].length <= 2 && /[\u2190-\u2bff\u{1f300}-\u{1faff}]/u.test(text));
-
-    if (looksLikeIcon && text !== $button.getAttribute('aria-label')?.trim()) {
-      this._warnedUnmarkedTextIcon = true;
-
-      console.warn(
-        `[rc-button] "${text}" looks like a text-backed icon (an icon font or emoji). Mark its element with data-rc-icon so the button sizes it as an icon instead of a label.`,
-        this,
-      );
+      this._warnedUnmarkedTextIcon = warnUnmarkedTextIcon(this, $button);
     }
   }
 
