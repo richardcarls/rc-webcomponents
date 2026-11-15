@@ -197,6 +197,33 @@ Prefer native or ARIA state selectors such as `[open]`, `:checked`,
 theme. Theme CSS may style that state, but it must not use CSS to create a
 second behavioral source of truth.
 
+## Icons
+
+Every component-owned icon area, such as the select and combobox toggles, the
+carousel and page-turner navigation buttons, the adaptive-menu overflow
+trigger, the chip remove icon, the search-bar clear icon, and the menu-button
+indicator, is a square **icon box** sized by one custom property named for its
+slot (for example `--rc-chip-remove-icon-size`). The box behaves the same
+whatever you put in it:
+
+- It sets its font size to the box size, so an icon-font glyph or a `1em`
+  SVG fills it. The built-in icons are SVGs drawn to fill it, so they scale
+  with the property and with the surrounding text.
+- A slotted `svg` or `img` is centered and kept inside the box. An SVG
+  without `width` and `height` attributes fills it.
+- Its size never depends on its content, so an icon element that renders a
+  frame late, such as `<iconify-icon>`, causes no layout shift. Anything
+  larger, such as an icon-font ligature whose font has not loaded yet, is
+  clipped to the box.
+
+Inside a component's light DOM (a button, chip, list item, or navigation
+item), mark icon elements with `data-rc-icon`. Every theme then gives the
+marked icon its icon size (`--rc-icon-font-size`, or the compact and
+icon-button sizes), reserves its `1em` square before it renders, and sizes a
+marked `svg` or `img` to `1em` whatever its own attributes say. A text-backed
+icon (an icon-font ligature, a glyph, an emoji) needs the marker: without it,
+the text reads as a label.
+
 Public tokens, parts, and documented markers are versioned API. The repository
 architecture audit tracks their usage along with private theme overrides and
 ID-selector complexity. Net growth requires a documented consumer need and an
