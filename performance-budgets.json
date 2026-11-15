@@ -46,12 +46,12 @@
       "lazyChunks": 0
     },
     "markdownEditor": {
-      "initialRaw": 301966,
-      "initialGzip": 76946,
-      "initialBrotli": 65165,
-      "totalRaw": 301966,
-      "totalGzip": 76946,
-      "totalBrotli": 65165,
+      "initialRaw": 315604,
+      "initialGzip": 81270,
+      "initialBrotli": 68582,
+      "totalRaw": 315604,
+      "totalGzip": 81270,
+      "totalBrotli": 68582,
       "largestLazyGzip": 0,
       "initialChunks": 1,
       "lazyChunks": 0
@@ -238,10 +238,10 @@
       "lazyChunks": 0
     },
     "markdownEditor": {
-      "initialGzip": 80794,
-      "initialBrotli": 68424,
-      "totalGzip": 80794,
-      "totalBrotli": 68424,
+      "initialGzip": 85334,
+      "initialBrotli": 72012,
+      "totalGzip": 85334,
+      "totalBrotli": 72012,
       "largestLazyGzip": 1024,
       "initialChunks": 1,
       "lazyChunks": 0
