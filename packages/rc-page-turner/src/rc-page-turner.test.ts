@@ -634,6 +634,38 @@ describe('dragging', () => {
     expect(turner.matches(':state(turning)')).toBe(false);
   });
 
+  test('without :state() support, classes show the back layer', async () => {
+    const supports = CSS.supports.bind(CSS);
+
+    vi.spyOn(CSS, 'supports').mockImplementation((...args: [string, string?]) =>
+      args[0].includes(':state(') ? false : supports(...(args as [string])),
+    );
+
+    try {
+      const { turner, pages } = await setup();
+      const pageBack = turner.shadowRoot!.querySelector<HTMLElement>('[part~="page-back"]')!;
+
+      turner.next();
+      await turner.updateComplete;
+
+      const [back] = pageBack.getAnimations();
+
+      expect(turner.matches(':state(turning)')).toBe(false);
+      expect(pageBack.classList.contains('turning')).toBe(true);
+      expect(getComputedStyle(pageBack).visibility).toBe('visible');
+      expect(pages.map((page) => getComputedStyle(page).zIndex)).toContain('1');
+
+      await back.finished;
+      await settled(pages);
+
+      expect(pages.map((page) => getComputedStyle(page).zIndex)).not.toContain('1');
+      expect(pageBack.classList.contains('turning')).toBe(false);
+      expect(getComputedStyle(pageBack).visibility).toBe('hidden');
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
   test('the viewport clips only across the inline axis, so a falling page can show', async () => {
     const { turner } = await setup();
 

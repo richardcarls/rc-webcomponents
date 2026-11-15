@@ -1,7 +1,11 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { syncDefaultAttribute, MorphRecoveryController } from '@rcarls/rc-common';
+import {
+  optionalInternals,
+  syncDefaultAttribute,
+  MorphRecoveryController,
+} from '@rcarls/rc-common';
 import type { RCCarousel } from './rc-carousel.js';
 
 import carouselItemStyles from './rc-carousel-item.styles.js';
@@ -58,8 +62,6 @@ export class RCCarouselItem extends LitElement {
 
   static override styles = carouselItemStyles;
 
-  private readonly _internals: ElementInternals;
-
   private _intersectionObserver: IntersectionObserver | null = null;
   private _hidden: boolean | undefined;
 
@@ -82,8 +84,7 @@ export class RCCarouselItem extends LitElement {
 
   constructor() {
     super();
-    this._internals = this.attachInternals();
-    this._internals.role = 'group';
+    optionalInternals(this, 'group');
   }
 
   override connectedCallback(): void {

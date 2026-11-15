@@ -189,6 +189,17 @@ export const fieldStyles = css`
     outline-offset: var(--rc-field-focus-outline-offset, ${rcToken('--rc-focus-ring-offset')});
   }
 
+  /*
+   * Without :state(), the focused state never matches. Focus inside the host
+   * is the closest native signal; it misses only a provider outside the host.
+   */
+  @supports not selector(:state(x)) {
+    :host(:focus-within) :where(#field) {
+      outline: var(--rc-field-focus-outline, ${rcToken('--rc-focus-ring')});
+      outline-offset: var(--rc-field-focus-outline-offset, ${rcToken('--rc-focus-ring-offset')});
+    }
+  }
+
   @media (forced-colors: active) {
     :host(:state(invalid)) #field {
       border-color: Mark;
@@ -196,6 +207,14 @@ export const fieldStyles = css`
 
     :host(:state(focused)) #field {
       outline-color: Highlight;
+    }
+  }
+
+  @supports not selector(:state(x)) {
+    @media (forced-colors: active) {
+      :host(:focus-within) :where(#field) {
+        outline-color: Highlight;
+      }
     }
   }
 `;

@@ -1,5 +1,6 @@
 import { ReactiveElement } from 'lit';
 
+import { randomId } from '@rcarls/rc-common';
 import { ensureDisclosureBaseStyles } from './disclosureBaseStyles.js';
 
 export interface RCDisclosureToggleEvent {
@@ -187,7 +188,7 @@ export class RCDisclosure extends ReactiveElement {
     }
 
     if (!$details.id) {
-      $details.id = crypto.randomUUID();
+      $details.id = randomId();
     }
 
     const $summary = $details.querySelector<HTMLElement>(SUMMARY_SELECTOR);

@@ -10,6 +10,11 @@ while changing code.
 3.x and TypeScript in a Yarn 4.x Berry monorepo. Packages live in `packages/`;
 the Docusaurus docs workspace lives in `docs/`.
 
+Core components, `rc-common`, and aggregate component entries share the browser
+tiers in `docs/docs/guide/compatibility.mdx`. Their build target is ES2021 to
+match Lit 3. Theme, plugin, adapter, and framework packages may document a
+different opt-in floor; do not make core behavior depend on one of them.
+
 ## Agent Context
 
 Keep shared AI-agent instructions in `AGENTS.md`. Tool-specific files are shallow

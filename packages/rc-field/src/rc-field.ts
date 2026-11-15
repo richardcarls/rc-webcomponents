@@ -11,6 +11,7 @@ import {
   MorphRecoveryController,
   setCustomState,
   rcToken,
+  optionalInternals,
 } from '@rcarls/rc-common';
 
 import fieldStyles from './rc-field.styles.js';
@@ -205,7 +206,7 @@ export class RCField extends LitElement {
   /** Writes the element's attributes again after a DOM morph removes them. */
   protected readonly _morphRecovery = new MorphRecoveryController(this);
 
-  private readonly _internals = this.attachInternals();
+  private readonly _internals = optionalInternals(this);
 
   static styles = [fieldStyles];
 

@@ -162,10 +162,7 @@ export const adaptiveMenuStyles = css`
     border: var(--rc-adaptive-menu-popup-border, ${rcToken('--rc-popup-border')});
     border-radius: var(--rc-adaptive-menu-popup-radius, ${rcToken('--rc-popup-radius')});
     background: var(--rc-adaptive-menu-popup-background, ${rcToken('--rc-popup-background')});
-    box-shadow: var(
-      --rc-adaptive-menu-popup-shadow,
-      ${rcToken('--rc-popup-shadow')}
-    );
+    box-shadow: var(--rc-adaptive-menu-popup-shadow, ${rcToken('--rc-popup-shadow')});
     color: var(--rc-adaptive-menu-popup-color, ${rcToken('--rc-popup-color')});
     overflow: auto;
     overscroll-behavior: contain;
@@ -174,6 +171,14 @@ export const adaptiveMenuStyles = css`
 
   #popup:is(:popover-open, [data-rc-popover-fallback-open]) {
     display: flex;
+  }
+
+  @supports not (height: 100dvh) {
+    #popup {
+      /* No logical viewport units either: assume horizontal writing. */
+      max-inline-size: var(--rc-adaptive-menu-popup-max-inline-size, calc(100vw - 0.5rem));
+      max-block-size: var(--rc-adaptive-menu-popup-max-block-size, calc(100vh - 0.5rem));
+    }
   }
 `;
 

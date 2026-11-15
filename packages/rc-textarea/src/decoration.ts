@@ -1,3 +1,4 @@
+import { randomId } from '@rcarls/rc-common';
 import type { Decoration, MarkDecoration, LineDecoration, DecorationInput } from './types.js';
 
 export { generateId } from './types.js';
@@ -217,7 +218,7 @@ export function remapDecorations(
  * @returns the assigned `id`, used to remove or look up the decoration later
  */
 export function addDecoration(map: Map<string, Decoration>, input: DecorationInput): string {
-  const id = crypto.randomUUID();
+  const id = randomId();
 
   map.set(id, { ...input, id } as Decoration);
 
@@ -232,7 +233,7 @@ export function setDecorations(map: Map<string, Decoration>, inputs: DecorationI
   map.clear();
 
   for (const input of inputs) {
-    const id = crypto.randomUUID();
+    const id = randomId();
 
     map.set(id, { ...input, id } as Decoration);
   }

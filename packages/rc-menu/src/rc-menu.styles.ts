@@ -28,6 +28,14 @@ export const menuStyles = css`
     overscroll-behavior: contain;
   }
 
+  @supports not (height: 100dvh) {
+    :host {
+      /* No logical viewport units either: assume horizontal writing. */
+      max-inline-size: var(--rc-menu-max-inline-size, calc(100vw - 0.5rem));
+      max-block-size: var(--rc-menu-max-block-size, calc(100vh - 0.5rem));
+    }
+  }
+
   :host(:focus-visible) {
     outline: ${rcToken('--rc-focus-ring')};
     outline-offset: ${rcToken('--rc-focus-ring-offset')};

@@ -14,18 +14,10 @@ import {
   isFocusable,
   MorphRecoveryController,
   setCustomState,
+  optionalInternals,
 } from '@rcarls/rc-common';
 import { ensureDialogBaseStyles } from './dialogBaseStyles.js';
 import type { DialogGeometry } from './geometry.js';
-
-/**
- * Whether `:state()` selectors match custom states. Checked on each use, not
- * cached, so it stays correct where `CSS` is missing at import (server
- * rendering).
- */
-function supportsStateSelector(): boolean {
-  return typeof CSS !== 'undefined' && CSS.supports('selector(:state(detached))');
-}
 
 export type RCDialogVariant = 'standard' | 'fullscreen' | 'side';
 
@@ -167,7 +159,7 @@ declare global {
  * candidates for private `--_rc-dialog-*` names in the next compatible API revision.
  */
 export class RCDialog extends ReactiveElement {
-  private _internals = this.attachInternals();
+  private _internals = optionalInternals(this);
 
   /**
    * Defaults a subclass changes. Lit keeps a property's first value off the
@@ -877,9 +869,7 @@ export class RCDialog extends ReactiveElement {
    * too.
    */
   private _setDetachedState(shown: boolean, $dialog = this._$dialog): void {
-    if (supportsStateSelector()) {
-      setCustomState(this._internals, 'detached', shown);
-
+    if (setCustomState(this._internals, 'detached', shown)) {
       return;
     }
 

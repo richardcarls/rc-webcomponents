@@ -1,3 +1,5 @@
+import { randomId } from '@rcarls/rc-common';
+
 /**
  * A styled inline range over characters [from, to).
  *
@@ -611,5 +613,5 @@ export interface LineDecoratorPlugin {
 
 /** Generate a unique decoration ID (UUID v4). */
 export function generateId(): string {
-  return crypto.randomUUID();
+  return randomId();
 }

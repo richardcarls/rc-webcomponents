@@ -26,6 +26,7 @@ import {
   type Flow,
   type KeyboardNavigationAction,
   MorphRecoveryController,
+  optionalInternals,
 } from '@rcarls/rc-common';
 import type { RCCarouselItem } from './rc-carousel-item.js';
 
@@ -220,7 +221,7 @@ export class RCCarousel extends LitElement {
 
   static override styles = carouselStyles;
 
-  private readonly _internals: ElementInternals;
+  private readonly _internals: ElementInternals | undefined;
 
   @query('#track') private _trackEl?: HTMLDivElement;
   @query('slot:not([name])') private _slotEl?: HTMLSlotElement;
@@ -377,8 +378,7 @@ export class RCCarousel extends LitElement {
 
   constructor() {
     super();
-    this._internals = this.attachInternals();
-    this._internals.role = 'group';
+    this._internals = optionalInternals(this, 'group');
   }
 
   override connectedCallback(): void {

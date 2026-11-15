@@ -15,6 +15,7 @@ import {
   includeDefaults,
   setCustomState,
   rcToken,
+  optionalInternals,
 } from '@rcarls/rc-common';
 
 import adaptiveMenuStyles from './rc-adaptive-menu.styles.js';
@@ -285,7 +286,7 @@ declare module '@rcarls/rc-common' {
 export class RCAdaptiveMenu extends LitElement {
   static override styles = adaptiveMenuStyles;
 
-  private readonly _internals = this.attachInternals();
+  private readonly _internals = optionalInternals(this);
 
   /** Whether at least one action is in the overflow menu; mirrored as `:state(overflow)`. */
   private _hasOverflow = false;

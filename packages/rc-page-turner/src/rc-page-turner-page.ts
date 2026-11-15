@@ -1,6 +1,11 @@
 import { LitElement, html } from 'lit';
 
-import { syncDefaultAttribute, MorphRecoveryController } from '@rcarls/rc-common';
+import {
+  optionalInternals,
+  supportsCustomStates,
+  syncDefaultAttribute,
+  MorphRecoveryController,
+} from '@rcarls/rc-common';
 
 import pageTurnerPageStyles from './rc-page-turner-page.styles.js';
 
@@ -59,7 +64,7 @@ export class RCPageTurnerPage extends LitElement {
 
   static override styles = pageTurnerPageStyles;
 
-  private readonly _internals: ElementInternals;
+  private readonly _internals: ElementInternals | undefined;
   private _presentation: RCPageTurnerPagePresentation = 'hidden';
   private _current = false;
   private _writtenLabel: string | null = null;
@@ -68,8 +73,7 @@ export class RCPageTurnerPage extends LitElement {
 
   constructor() {
     super();
-    this._internals = this.attachInternals();
-    this._internals.role = 'group';
+    this._internals = optionalInternals(this, 'group');
   }
 
   override connectedCallback(): void {
@@ -111,13 +115,15 @@ export class RCPageTurnerPage extends LitElement {
       this.setAttribute('aria-hidden', 'true');
     }
 
-    const states = this._internals.states;
+    const states = supportsCustomStates() ? this._internals?.states : undefined;
 
     if (!states) {
-      // Without CustomStateSet, keep the page usable: shown pages stay
+      // Without working custom states, keep the page usable: shown pages stay
       // visible through an inline override of the hidden default.
       this.style.visibility = shown ? 'visible' : '';
       this.style.contentVisibility = shown || presentation === 'adjacent' ? 'visible' : '';
+      // The turning page lifts above the page it uncovers, as :state(turning) does.
+      this.style.zIndex = presentation === 'turning' ? '1' : '';
 
       return;
     }

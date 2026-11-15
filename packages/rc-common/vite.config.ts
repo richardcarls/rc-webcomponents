@@ -16,6 +16,7 @@ export default defineConfig({
   ],
   publicDir: process.env.NODE_ENV === 'production' ? false : resolve(__dirname, 'public'),
   build: {
+    target: 'es2021',
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'rc-common',

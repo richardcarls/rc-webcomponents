@@ -57,6 +57,32 @@ test('shared semantic tokens flow into the field and component tokens remain the
   expect(styles.backgroundColor).toBe('rgb(30, 40, 50)');
 });
 
+test('keeps a focus outline for engines without :state()', async () => {
+  // A browser can't be made to drop :state() here, so check the fallback rule
+  // that @supports applies there.
+  const { fieldStyles } = await import('./rc-field.styles.js');
+  const sheet = new CSSStyleSheet();
+
+  sheet.replaceSync(fieldStyles.cssText);
+
+  const fallbacks = [...sheet.cssRules].filter(
+    (rule): rule is CSSSupportsRule =>
+      rule instanceof CSSSupportsRule && rule.conditionText === 'not selector(:state(x))',
+  );
+  const selectors = fallbacks.flatMap((rule) =>
+    [...rule.cssRules].flatMap((inner) =>
+      inner instanceof CSSStyleRule
+        ? [inner.selectorText]
+        : [...(inner as CSSGroupingRule).cssRules].map((r) => (r as CSSStyleRule).selectorText),
+    ),
+  );
+
+  expect(selectors).toEqual([
+    ':host(:focus-within) :where(#field)',
+    ':host(:focus-within) :where(#field)',
+  ]);
+});
+
 test('keeps the native control connected with author form attributes intact', async () => {
   const $field = await fieldFixture(html`
     <form>

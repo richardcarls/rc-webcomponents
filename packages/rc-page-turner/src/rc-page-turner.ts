@@ -19,6 +19,8 @@ import {
   type DragGestureDetail,
   type Flow,
   MorphRecoveryController,
+  optionalInternals,
+  setCustomState,
 } from '@rcarls/rc-common';
 import type { RCPageTurnerPage } from './rc-page-turner-page.js';
 
@@ -219,7 +221,7 @@ export class RCPageTurner extends LitElement {
 
   static override styles = pageTurnerStyles;
 
-  private readonly _internals: ElementInternals;
+  private readonly _internals: ElementInternals | undefined;
 
   @query('#viewport') private _viewportEl?: HTMLDivElement;
   @query('[part~="page-back"]') private _pageBackEl?: HTMLDivElement;
@@ -315,8 +317,7 @@ export class RCPageTurner extends LitElement {
 
   constructor() {
     super();
-    this._internals = this.attachInternals();
-    this._internals.role = 'group';
+    this._internals = optionalInternals(this, 'group');
   }
 
   override connectedCallback(): void {
@@ -604,7 +605,8 @@ export class RCPageTurner extends LitElement {
     }
 
     pageBack.style.setProperty('--_rc-page-turner-origin', origin);
-    this._internals.states?.add('turning');
+    // Without custom states, a class on the part carries the same styles.
+    pageBack.classList.toggle('turning', !setCustomState(this._internals, 'turning', true));
 
     const back = pageBack.animate(
       transforms.map((transform) => ({ transform: `${transform} ${flip}` })),
@@ -616,7 +618,8 @@ export class RCPageTurner extends LitElement {
 
   private _hidePageBack(back: Animation | undefined): void {
     back?.cancel();
-    this._internals.states?.delete('turning');
+    setCustomState(this._internals, 'turning', false);
+    this._pageBackEl?.classList.remove('turning');
   }
 
   /**
@@ -698,7 +701,7 @@ export class RCPageTurner extends LitElement {
 
     this._drag = { flow, size, from, to, forward, progress: 0, fold: forward ? 0 : 0.5 };
     this._suppressNextClick = true;
-    this._internals.states?.add('dragging');
+    viewport?.classList.toggle('dragging', !setCustomState(this._internals, 'dragging', true));
 
     if (to === undefined || this._preferredMotion() !== 'turn') {
       return;
@@ -769,7 +772,8 @@ export class RCPageTurner extends LitElement {
     const drag = this._drag;
 
     this._drag = undefined;
-    this._internals.states?.delete('dragging');
+    setCustomState(this._internals, 'dragging', false);
+    this._viewportEl?.classList.remove('dragging');
 
     // The click that ends this pointer sequence, if any, dispatches first.
     setTimeout(() => {

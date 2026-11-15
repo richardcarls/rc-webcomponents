@@ -13,8 +13,10 @@ Components are fully typed and developed primarily with [Lit](https://lit.dev).
 > `npm install @rcarls/rc-webcomponents@next` and use the preview documentation, which may cover
 > APIs that are not available in the latest stable release.
 
-Runtime support covers the current and previous stable Chromium, Firefox, and Safari releases,
-plus current Chrome on Android and Safari on iOS. Packages are browser modules: render native
+Target runtime support covers the current and previous stable Chromium, Firefox, and Safari releases,
+plus current Chrome on Android and Safari on iOS. The core packages are being validated for a
+minimum of Chrome 100, Firefox 100, and Safari/iPadOS 15.4; optional themes and plugins can
+declare higher requirements. Packages are browser modules: render native
 fallback markup on the server and register components from a client-only entry point. See the
 [compatibility](https://richardcarls.github.io/rc-webcomponents/guide/compatibility),
 [accessibility testing](https://richardcarls.github.io/rc-webcomponents/guide/accessibility-testing),

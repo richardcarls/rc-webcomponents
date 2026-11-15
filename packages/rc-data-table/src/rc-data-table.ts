@@ -5,6 +5,7 @@ import {
   LiveAnnouncer,
   MessagesController,
   MorphRecoveryController,
+  randomId,
   syncDefaultAttribute,
 } from '@rcarls/rc-common';
 import { ensureDataTableBaseStyles } from './dataTableBaseStyles.js';
@@ -318,7 +319,7 @@ export class RCDataTable extends ReactiveElement {
 
       if ($caption && (!this.hasAttribute('aria-labelledby') || this._writtenLabelledBy)) {
         if (!$caption.id) {
-          $caption.id = `rc-data-table-caption-${crypto.randomUUID()}`;
+          $caption.id = `rc-data-table-caption-${randomId()}`;
           this._writtenCaptionId = $caption.id;
         }
 

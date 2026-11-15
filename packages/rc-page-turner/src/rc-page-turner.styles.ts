@@ -38,13 +38,28 @@ export const pageTurnerStyles = css`
     transform-origin: var(--_rc-page-turner-origin, center);
   }
 
+  /*
+   * The class rules repeat the state rules for engines without :state(). They
+   * stay separate: an unknown pseudo-class drops a whole selector list.
+   */
   :host(:state(turning)) [part~='page-back'] {
+    visibility: visible;
+    will-change: transform;
+  }
+
+  [part~='page-back'].turning {
     visibility: visible;
     will-change: transform;
   }
 
   /* A drag owns the pointer: no text selection or callout while it turns. */
   :host(:state(dragging)) [part~='viewport'] {
+    -webkit-touch-callout: none;
+    user-select: none;
+    cursor: grabbing;
+  }
+
+  [part~='viewport'].dragging {
     -webkit-touch-callout: none;
     user-select: none;
     cursor: grabbing;

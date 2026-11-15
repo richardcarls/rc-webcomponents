@@ -1104,6 +1104,35 @@ describe('RCTextarea — plugin API', () => {
     expect(host.shadowRoot!.adoptedStyleSheets).not.toContain(sheet);
   });
 
+  test('string plugin styles work without constructable stylesheets', async () => {
+    const host = await renderTextarea();
+    const replaceSync = CSSStyleSheet.prototype.replaceSync;
+
+    Object.defineProperty(CSSStyleSheet.prototype, 'replaceSync', {
+      configurable: true,
+      value: undefined,
+    });
+
+    try {
+      host.usePlugin({
+        mount(api) {
+          api.adoptStyleSheet('.legacy-style { color: red; }');
+        },
+      });
+
+      expect(host.shadowRoot?.querySelector('style')?.textContent).toContain('.legacy-style');
+
+      host.removePlugin();
+
+      expect(host.shadowRoot?.querySelector('style')).toBeNull();
+    } finally {
+      Object.defineProperty(CSSStyleSheet.prototype, 'replaceSync', {
+        configurable: true,
+        value: replaceSync,
+      });
+    }
+  });
+
   test('replacing a plugin calls destroy() on the old one', async () => {
     const host = await renderTextarea();
 

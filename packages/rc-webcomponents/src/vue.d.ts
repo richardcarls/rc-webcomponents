@@ -200,7 +200,6 @@ declare module 'vue' {
         mouseDragging?: RCCarousel['mouseDragging'];
         navigation?: RCCarousel['navigation'];
         pagination?: RCCarousel['pagination'];
-        role?: RCCarousel['role'];
       },
       'rc-carousel-change' | 'rc-carousel-static-change'
     >;
@@ -209,7 +208,6 @@ declare module 'vue' {
       RCCarouselItem,
       {
         position?: RCCarouselItem['position'];
-        role?: RCCarouselItem['role'];
         roleDescription?: RCCarouselItem['roleDescription'];
       },
       never
@@ -373,7 +371,6 @@ declare module 'vue' {
         ordered?: RCList['ordered'];
         reorderMessages?: RCList['reorderMessages'];
         reorderable?: RCList['reorderable'];
-        role?: RCList['role'];
         selection?: RCList['selection'];
         variant?: RCList['variant'];
       },
@@ -390,7 +387,6 @@ declare module 'vue' {
         disabled?: RCListItem['disabled'];
         expanded?: RCListItem['expanded'];
         interactive?: RCListItem['interactive'];
-        role?: RCListItem['role'];
         selected?: RCListItem['selected'];
       },
       'rc-list-item-toggle'
@@ -482,18 +478,11 @@ declare module 'vue' {
         messages?: RCPageTurner['messages'];
         mouseDragging?: RCPageTurner['mouseDragging'];
         navigation?: RCPageTurner['navigation'];
-        role?: RCPageTurner['role'];
       },
       'rc-page-turner-change'
     >;
 
-    'rc-page-turner-page': RCVueElement<
-      RCPageTurnerPage,
-      {
-        role?: RCPageTurnerPage['role'];
-      },
-      never
-    >;
+    'rc-page-turner-page': RCVueElement<RCPageTurnerPage, Record<never, never>, never>;
 
     'rc-pagination': RCVueElement<
       RCPagination,

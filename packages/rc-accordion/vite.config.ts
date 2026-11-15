@@ -16,6 +16,7 @@ export default defineConfig(({ command }) => ({
   ],
   publicDir: command === 'serve' ? resolve(__dirname, 'public') : false,
   build: {
+    target: 'es2021',
     sourcemap: true,
     lib: {
       entry: {

@@ -174,4 +174,4 @@ boundary (checked via `composedPath()`).
 
 ## Browser support
 
-All modern browsers. Requires Web Components support (Chrome 67+, Firefox 63+, Safari 12.1+).
+Core browser support follows the [compatibility guide](https://richardcarls.github.io/rc-webcomponents/guide/compatibility).
