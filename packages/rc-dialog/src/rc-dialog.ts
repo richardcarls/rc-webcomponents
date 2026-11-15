@@ -841,14 +841,26 @@ export class RCDialog extends ReactiveElement {
 
   /** Opens the dialog with `show()`, optionally keeping focus where it was. */
   private _showNonModal($dialog: HTMLDialogElement, moveFocus: boolean): void {
+    const $previous = document.activeElement;
+
     $dialog.show();
 
-    // show() always moves focus in; hand it back to where it was.
-    if (!moveFocus && $dialog.contains(document.activeElement)) {
+    // show() always moves focus in; hand it back to where it was. Focus
+    // that was already inside, as on a sheet's handle while an open mode
+    // switch reopens the dialog, stays put.
+    if (
+      !moveFocus &&
+      document.activeElement !== $previous &&
+      $dialog.contains(document.activeElement)
+    ) {
       const $opener = this._$opener;
+      const $restore =
+        $previous instanceof HTMLElement && $previous !== document.body && $previous.isConnected
+          ? $previous
+          : $opener;
 
-      if ($opener instanceof HTMLElement && $opener !== document.body && $opener.isConnected) {
-        $opener.focus({ preventScroll: true });
+      if ($restore instanceof HTMLElement && $restore !== document.body && $restore.isConnected) {
+        $restore.focus({ preventScroll: true });
       } else if (document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
       }

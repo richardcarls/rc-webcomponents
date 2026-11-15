@@ -839,6 +839,35 @@ test('a persistent sheet is an open <dialog> only while expanded, and a close re
   }
 });
 
+test('expanding a persistent sheet keeps focus on its handle so it keeps stepping', async () => {
+  const { $host, $dialog } = createPersistentSheet('closerequest', '120px 320px 460px');
+  const snapSpy = vi.fn();
+
+  $host.addEventListener('rc-bottom-sheet-snap', snapSpy);
+
+  try {
+    await $host.updateComplete;
+    $host.snapTo(0, 'instant');
+    await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(120));
+
+    const $handle = $dialog.querySelector<HTMLButtonElement>('[data-rc-bottom-sheet-handle]')!;
+
+    $handle.focus();
+
+    // The first step opens the <dialog> natively; show() must not take focus.
+    await userEvent.keyboard('{Enter}');
+    await vi.waitFor(() => expect(snapSpy.mock.calls.at(-1)?.[0].detail.index).toBe(1));
+    expect($dialog.open).toBe(true);
+    expect(document.activeElement).toBe($handle);
+
+    await userEvent.keyboard('{Enter}');
+    await vi.waitFor(() => expect(snapSpy.mock.calls.at(-1)?.[0].detail.index).toBe(2));
+    expect(document.activeElement).toBe($handle);
+  } finally {
+    $host.remove();
+  }
+});
+
 test('requestClose() collapses a persistent sheet, while close() hides it', async () => {
   const { $host, $dialog } = createPersistentSheet();
   const snapSpy = vi.fn();
