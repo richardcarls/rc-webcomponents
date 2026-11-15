@@ -1080,7 +1080,9 @@ test('warns once when an unmarked icon-font ligature reads as a label', async ()
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   const screen = render(html`
     <rc-button data-testid="ligature">
-      <button type="button" aria-label="Back"><span>arrow_back</span></button>
+      <button type="button" aria-label="Back">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </button>
     </rc-button>
     <rc-button data-testid="emoji">
       <button type="button" aria-label="Back"><span>⬅️</span></button>
@@ -1091,6 +1093,13 @@ test('warns once when an unmarked icon-font ligature reads as a label', async ()
     <rc-button data-testid="text">
       <button type="button" aria-label="Save the draft">Save</button>
     </rc-button>
+    <rc-button data-testid="lowercase-text">
+      <button type="button" aria-label="Save the draft"><span>save</span></button>
+    </rc-button>
+    <span id="confirmation-label">Confirm</span>
+    <rc-button data-testid="short-text">
+      <button type="button" aria-labelledby="confirmation-label"><span>OK</span></button>
+    </rc-button>
   `);
   const ligature = (await screen.getByTestId('ligature').element()) as RCButton;
   const emoji = (await screen.getByTestId('emoji').element()) as RCButton;
@@ -1099,6 +1108,8 @@ test('warns once when an unmarked icon-font ligature reads as a label', async ()
   await flushButton(emoji);
   await flushButton((await screen.getByTestId('marked').element()) as RCButton);
   await flushButton((await screen.getByTestId('text').element()) as RCButton);
+  await flushButton((await screen.getByTestId('lowercase-text').element()) as RCButton);
+  await flushButton((await screen.getByTestId('short-text').element()) as RCButton);
 
   const message = (text: string) =>
     `[rc-button] "${text}" looks like a text-backed icon (an icon font or emoji). Mark its element with data-rc-icon so the button sizes it as an icon instead of a label.`;
