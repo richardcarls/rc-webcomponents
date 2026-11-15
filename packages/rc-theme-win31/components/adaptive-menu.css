@@ -9,7 +9,7 @@
     --rc-adaptive-menu-item-min-block-size: var(--win31-control-height);
     --rc-adaptive-menu-item-padding-block: var(--win31-padding-block);
     --rc-adaptive-menu-item-padding-inline: calc(8 * var(--win31-unit));
-    --rc-adaptive-menu-icon-size: var(--win31-check-size);
+    --rc-adaptive-menu-overflow-icon-size: var(--win31-check-size);
     --rc-adaptive-menu-trigger-background: var(--win31-color-surface);
     --rc-adaptive-menu-trigger-color: var(--win31-color-frame);
     --rc-adaptive-menu-trigger-border: var(--win31-border);

@@ -6,6 +6,7 @@ import { registerMessages } from '@rcarls/rc-common';
 import './define.js';
 import type { RCCombobox, RCComboboxPopupMode } from './rc-combobox.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { expectIconBoxContract } from '../../../test-helpers/icon-slot.js';
 
 function makeCombobox(opts?: {
   multiple?: boolean;
@@ -307,9 +308,11 @@ test('the toggle icon keeps its own size inside the toggle button', async () => 
   const screen = render(makeCombobox());
   const $host = await getHost(screen);
   const $icon = $host.renderRoot.querySelector('#toggle svg')!;
+  const box = $icon.getBoundingClientRect();
 
-  expect($icon.getBoundingClientRect().width).toBe(10);
-  expect($icon.getBoundingClientRect().height).toBe(6);
+  // The 1.1em box at the default 16px font, drawn so the chevron is 10 by 6.
+  expect(box.width).toBeCloseTo(17.6, 1);
+  expect(box.height).toBeCloseTo(17.6, 1);
 });
 
 test('options appear in listbox from slotted <select>', async () => {
@@ -618,16 +621,18 @@ test('multiple: chip touch-target overlap is returned between wrapped rows', asy
   expect(second.top - first.bottom).toBeCloseTo(16, 0);
 });
 
-test('--rc-combobox-toggle-size controls the toggle button inline size', async () => {
+test('--rc-combobox-toggle-icon-size controls the toggle inline size and icon box', async () => {
   const screen = render(makeCombobox());
   const $host = await getHost(screen);
 
-  $host.style.setProperty('--rc-combobox-toggle-size', '37px');
+  $host.style.setProperty('--rc-combobox-toggle-icon-size', '37px');
   await $host.updateComplete;
 
   const $toggle = $host.renderRoot.querySelector<HTMLButtonElement>('#toggle')!;
+  const $box = $host.renderRoot.querySelector<HTMLElement>('#toggle-icon')!;
 
   expect(getComputedStyle($toggle).inlineSize).toBe('37px');
+  expect(getComputedStyle($box).blockSize).toBe('37px');
 });
 
 test('toggle button click opens and closes the popup', async () => {
@@ -936,4 +941,14 @@ test('falls back to text registered for rc-select', async () => {
       'פריטים שנבחרו',
     ),
   );
+});
+
+test('the toggle-icon slot follows the icon box contract', async () => {
+  await expectIconBoxContract({
+    markup: (icon) =>
+      `<rc-combobox placeholder="Search">${icon}<select aria-label="Fruit"><option>Apple</option></select></rc-combobox>`,
+    box: (host) => host.shadowRoot!.querySelector('#toggle-icon'),
+    slot: 'toggle-icon',
+    sizeProperty: '--rc-combobox-toggle-icon-size',
+  });
 });

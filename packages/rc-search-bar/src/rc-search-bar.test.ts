@@ -5,6 +5,7 @@ import { render } from 'vitest-browser-lit';
 
 import { registerMessages } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { expectIconBoxContract } from '../../../test-helpers/icon-slot.js';
 import './define.js';
 import type { RCSearchBar } from './rc-search-bar.js';
 
@@ -703,4 +704,14 @@ test('names the clear button in its own locale, and an override wins', async () 
   await host.updateComplete;
 
   expect(clear()).toBe('إلغاء');
+});
+
+test('the clear-icon slot follows the icon box contract', async () => {
+  await expectIconBoxContract({
+    markup: (icon) =>
+      `<rc-search-bar>${icon}<input type="search" aria-label="Search" value="abc" /></rc-search-bar>`,
+    box: (host) => host.shadowRoot!.querySelector('#clear-icon'),
+    slot: 'clear-icon',
+    sizeProperty: '--rc-search-bar-clear-icon-size',
+  });
 });

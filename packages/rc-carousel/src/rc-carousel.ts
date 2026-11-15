@@ -189,6 +189,9 @@ const SETTLE_DEBOUNCE_MS = 120;
  *   Previous/next button background.
  * @cssprop [--rc-carousel-navigation-button-color=CanvasText] -
  *   Previous/next button icon color.
+ * @cssprop {<length>} [--rc-carousel-navigation-icon-size=1.5rem] - Previous/next icon box size. The
+ *   built-in chevrons fill it, and a slotted `previous-icon` or `next-icon` is
+ *   centered and clipped to it.
  * @cssprop [--rc-carousel-navigation-inset=8px] - Previous/next button
  *   inset from the track edge.
  * @cssprop [--rc-carousel-pagination-item-size=8px] - Slide-picker dot
@@ -1228,9 +1231,7 @@ export class RCCarousel extends LitElement {
                 <span aria-hidden="true">
                   <slot name="previous-icon">
                     <svg
-                      viewBox="0 0 6 10"
-                      width="10"
-                      height="16"
+                      viewBox="-4.5 -2.5 15 15"
                       fill="none"
                       stroke="currentColor"
                       stroke-width="1.5"
@@ -1256,9 +1257,7 @@ export class RCCarousel extends LitElement {
                 <span aria-hidden="true">
                   <slot name="next-icon">
                     <svg
-                      viewBox="0 0 6 10"
-                      width="10"
-                      height="16"
+                      viewBox="-4.5 -2.5 15 15"
                       fill="none"
                       stroke="currentColor"
                       stroke-width="1.5"

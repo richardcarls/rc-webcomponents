@@ -211,7 +211,8 @@ export interface RCChipRemoveDetail {
  * @cssprop [--rc-chip-remove-target-size=1.5rem] - Minimum inline and block size of the remove
  *   indicator's hit target.
  * @cssprop [--rc-chip-remove-radius=9999px] - Border radius of the remove indicator.
- * @cssprop [--rc-chip-remove-icon-size=smaller] - Font size for a slotted remove icon.
+ * @cssprop {<length>} [--rc-chip-remove-icon-size=1.125rem] - Remove icon box size. The built-in close
+ *   icon fills it, and a slotted `remove-icon` is centered and clipped to it.
  * @cssprop [--rc-chip-removable-padding-inline-end=calc(var(--rc-chip-remove-target-size, 1.5rem) + var(--rc-chip-remove-offset-inline, 0.125rem))] - Override for removable chip content end padding.
  *
  * @attr variant - Chip variant: `assist`, `filter`, `input`, or `suggestion`.
@@ -349,7 +350,16 @@ export class RCChip extends LitElement {
       ${this.removable
         ? html`
             <span part="remove" aria-hidden="true">
-              <slot name="remove-icon">×</slot>
+              <span id="remove-icon">
+                <slot name="remove-icon">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path
+                      fill="currentColor"
+                      d="M6.4 5 5 6.4l5.6 5.6L5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6Z"
+                    />
+                  </svg>
+                </slot>
+              </span>
             </span>
           `
         : ''}

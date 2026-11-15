@@ -5,7 +5,7 @@
    */
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) {
     --rc-adaptive-menu-gap: var(--substrate-control-gap, 0.5rem);
-    --rc-adaptive-menu-icon-size: 1.25rem;
+    --rc-adaptive-menu-overflow-icon-size: 1.25rem;
 
     --rc-adaptive-menu-trigger-background: transparent;
     --rc-adaptive-menu-trigger-border: 0;

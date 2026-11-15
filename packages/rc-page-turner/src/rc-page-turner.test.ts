@@ -7,6 +7,7 @@ import { render } from 'vitest-browser-lit';
 import { HORIZONTAL_LTR_FLOW, type Flow } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
+import { expectIconBoxContract } from '../../../test-helpers/icon-slot.js';
 import './define.js';
 import type { RCPageTurnerPage } from './rc-page-turner-page.js';
 import {
@@ -940,6 +941,7 @@ test('describes pages that upgrade after the turner, as inserted markup does', a
 });
 
 test('navigation icons sit at the center of their buttons', async () => {
+  // WebKit snaps the translated button to half pixels, so allow 0.5px.
   const { turner } = await setup();
 
   for (const part of ['previous', 'next'] as const) {
@@ -949,7 +951,17 @@ test('navigation icons sit at the center of their buttons', async () => {
     const blockOffset = icon.top + icon.height / 2 - (button.top + button.height / 2);
     const inlineOffset = icon.left + icon.width / 2 - (button.left + button.width / 2);
 
-    expect(Math.abs(blockOffset)).toBeLessThan(0.5);
-    expect(Math.abs(inlineOffset)).toBeLessThan(0.5);
+    expect(Math.abs(blockOffset)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(inlineOffset)).toBeLessThanOrEqual(0.5);
   }
+});
+
+test('the previous-icon slot follows the icon box contract', async () => {
+  await expectIconBoxContract({
+    markup: (icon) =>
+      `<rc-page-turner navigation aria-label="Pages" style="inline-size: 20rem; block-size: 12rem">${icon}<rc-page-turner-page><p>One</p></rc-page-turner-page><rc-page-turner-page><p>Two</p></rc-page-turner-page></rc-page-turner>`,
+    box: (host) => host.shadowRoot!.querySelector("[part~='navigation-button-previous'] > span"),
+    slot: 'previous-icon',
+    sizeProperty: '--rc-page-turner-navigation-icon-size',
+  });
 });

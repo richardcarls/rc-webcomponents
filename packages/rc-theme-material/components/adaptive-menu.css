@@ -29,7 +29,7 @@
         calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 100%),
       transparent
     );
-    --rc-adaptive-menu-icon-size: 1.5rem;
+    --rc-adaptive-menu-overflow-icon-size: 1.5rem;
     --rc-adaptive-menu-popup-min-inline-size: 7rem;
     --rc-adaptive-menu-item-min-block-size: 3rem;
     --rc-adaptive-menu-item-padding-block: 0;

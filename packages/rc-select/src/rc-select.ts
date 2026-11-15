@@ -190,7 +190,8 @@ declare module '@rcarls/rc-common' {
  *   generated multi-select chips.
  * @cssprop [--rc-chip-touch-target-overlap-block-start=0px] - Space returned between wrapped chip rows after a touch target overlaps the field's leading padding.
  * @cssprop [--rc-chip-touch-target-overlap-block-end=0px] - Space returned between wrapped chip rows after a touch target overlaps the field's trailing padding.
- * @cssprop [--rc-select-toggle-indicator-size=1.1em] - Inline size of the toggle indicator container.
+ * @cssprop {<length>} [--rc-select-toggle-indicator-size=1.1em] - Toggle indicator box size. The built-in
+ *   chevron fills it, and a slotted `toggle-indicator` is centered and clipped to it.
  * @cssprop [--rc-select-dialog-gap=1rem] - Gap between fullscreen dialog regions.
  * @cssprop [--rc-select-dialog-header-gap=0.5rem] - Gap between fullscreen dialog header slots.
  */
@@ -1574,13 +1575,7 @@ export class RCSelect extends LitElement {
                     aria-label=${this._text.cancel}
                     @click=${() => this.closePopup()}
                   >
-                    <svg
-                      part="dialog-cancel-icon"
-                      aria-hidden="true"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      height="24"
-                    >
+                    <svg part="dialog-cancel-icon" aria-hidden="true" viewBox="0 0 24 24">
                       <path
                         d="M6.4 5 5 6.4l5.6 5.6L5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6Z"
                       />
@@ -1662,9 +1657,7 @@ export class RCSelect extends LitElement {
           <span part="toggle-indicator" aria-hidden="true">
             <slot name="toggle-indicator">
               <svg
-                width="10"
-                height="6"
-                viewBox="0 0 10 6"
+                viewBox="-3.8 -5.8 17.6 17.6"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="1.5"

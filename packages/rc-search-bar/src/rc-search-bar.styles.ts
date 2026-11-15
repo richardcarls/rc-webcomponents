@@ -1,8 +1,8 @@
-import { css } from 'lit';
+import { css, type CSSResultGroup } from 'lit';
 
-import { rcToken } from '@rcarls/rc-common';
+import { iconBoxStyles, rcToken } from '@rcarls/rc-common';
 
-export const searchBarStyles = css`
+const searchBarStylesBase = css`
   :host {
     display: inline-flex;
     position: relative;
@@ -170,5 +170,14 @@ export const searchBarStyles = css`
     outline-offset: ${rcToken('--rc-focus-ring-offset')};
   }
 `;
+
+export const searchBarStyles: CSSResultGroup = [
+  searchBarStylesBase,
+  iconBoxStyles({
+    box: '#clear-icon',
+    size: '--rc-search-bar-clear-icon-size',
+    fallback: '1.25em',
+  }),
+];
 
 export default searchBarStyles;

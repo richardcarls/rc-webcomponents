@@ -6,6 +6,7 @@ import { registerMessages } from '@rcarls/rc-common';
 import './define.js';
 import type { RCSelect } from './rc-select.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { expectIconBoxContract } from '../../../test-helpers/icon-slot.js';
 
 function makeSelect(opts?: {
   multiple?: boolean;
@@ -1277,4 +1278,14 @@ test('names selected-value chips in its own locale, and an override wins', async
   expect(host.shadowRoot?.querySelector('[part~="chip"]')?.getAttribute('aria-label')).toBe(
     'Remove Apple now',
   );
+});
+
+test('the toggle-indicator slot follows the icon box contract', async () => {
+  await expectIconBoxContract({
+    markup: (icon) =>
+      `<rc-select placeholder="Choose">${icon}<select aria-label="Fruit"><option>Apple</option></select></rc-select>`,
+    box: (host) => host.shadowRoot!.querySelector("[part='toggle-indicator']"),
+    slot: 'toggle-indicator',
+    sizeProperty: '--rc-select-toggle-indicator-size',
+  });
 });
