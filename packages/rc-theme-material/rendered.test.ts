@@ -1063,6 +1063,9 @@ test.runIf(isChromium).each(['light', 'dark'] as const)(
     const menu = scope.querySelector('rc-adaptive-menu');
 
     expect(menu).not.toBeNull();
+    // Programmatic focus matches :focus-visible only after keyboard input,
+    // so pin the modality instead of inheriting an earlier test's clicks.
+    await userEvent.keyboard('{Shift}');
     menu!.openMenu();
     await settle(scope);
 
