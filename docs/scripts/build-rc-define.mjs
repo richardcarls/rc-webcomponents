@@ -56,7 +56,7 @@ await build({
     },
     outDir,
     sourcemap: true,
-    target: 'es2022',
+    target: 'es2021',
   },
   resolve: {
     dedupe: ['lit', '@lit/reactive-element'],

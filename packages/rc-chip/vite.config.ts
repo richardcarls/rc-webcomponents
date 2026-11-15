@@ -15,6 +15,7 @@ export default defineConfig({
   ],
   publicDir: process.env.NODE_ENV === 'production' ? false : resolve(__dirname, 'public'),
   build: {
+    target: 'es2021',
     sourcemap: true,
     lib: {
       entry: {
