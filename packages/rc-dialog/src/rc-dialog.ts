@@ -607,13 +607,15 @@ export class RCDialog extends ReactiveElement {
     this._stopVisualViewportTracking();
 
     // Restore focus to the element that triggered the open, per APG focus management.
-    if (this._$opener instanceof HTMLElement) {
-      if (this._$opener.isConnected) {
-        this._$opener.focus();
+    const $opener = this._$opener as HTMLElement | null;
+
+    if ($opener && typeof $opener.focus === 'function') {
+      if ($opener.isConnected) {
+        $opener.focus();
       } else {
         // Opener was removed from the DOM while the dialog was open; fall back
         // to body so focus is not left stranded.
-        document.body.focus();
+        this.ownerDocument.body.focus();
       }
     }
 
@@ -774,7 +776,7 @@ export class RCDialog extends ReactiveElement {
       }
 
       // Capture focus owner before the dialog steals it, so we can restore on close.
-      this._$opener = document.activeElement;
+      this._$opener = $dialog.ownerDocument.activeElement;
 
       if (modal) {
         $dialog.showModal();
@@ -841,7 +843,8 @@ export class RCDialog extends ReactiveElement {
 
   /** Opens the dialog with `show()`, optionally keeping focus where it was. */
   private _showNonModal($dialog: HTMLDialogElement, moveFocus: boolean): void {
-    const $previous = document.activeElement;
+    const $document = $dialog.ownerDocument;
+    const $previous = $document.activeElement;
 
     $dialog.show();
 
@@ -850,19 +853,25 @@ export class RCDialog extends ReactiveElement {
     // switch reopens the dialog, stays put.
     if (
       !moveFocus &&
-      document.activeElement !== $previous &&
-      $dialog.contains(document.activeElement)
+      $document.activeElement !== $previous &&
+      $dialog.contains($document.activeElement)
     ) {
       const $opener = this._$opener;
       const $restore =
-        $previous instanceof HTMLElement && $previous !== document.body && $previous.isConnected
+        $previous !== $document.body &&
+        $previous?.isConnected &&
+        typeof ($previous as HTMLElement).focus === 'function'
           ? $previous
           : $opener;
 
-      if ($restore instanceof HTMLElement && $restore !== document.body && $restore.isConnected) {
-        $restore.focus({ preventScroll: true });
-      } else if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
+      if (
+        $restore !== $document.body &&
+        $restore?.isConnected &&
+        typeof ($restore as HTMLElement).focus === 'function'
+      ) {
+        ($restore as HTMLElement).focus({ preventScroll: true });
+      } else {
+        ($document.activeElement as HTMLElement | null)?.blur?.();
       }
     }
   }

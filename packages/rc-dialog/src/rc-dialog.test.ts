@@ -1127,6 +1127,41 @@ test('a non-modal dialog already open when it connects leaves focus in place', a
   host.open = false;
 });
 
+test('a dialog in an iframe preserves and restores focus in its own document', async () => {
+  const $frame = document.createElement('iframe');
+
+  document.body.append($frame);
+
+  try {
+    const $document = $frame.contentDocument!;
+    const $opener = $document.createElement('button');
+    // Upgrade in the parent registry before adopting into the iframe document.
+    const host = document.createElement('rc-dialog') as RCDialog;
+
+    $opener.textContent = 'Open';
+    host.modal = false;
+    host.open = true;
+    host.innerHTML = '<dialog aria-label="In-frame dialog"><button>Inside</button></dialog>';
+    $document.body.append($opener);
+    $opener.focus();
+    $document.body.append(host);
+    await host.updateComplete;
+
+    expect(host.querySelector('dialog')?.open).toBe(true);
+    expect($document.activeElement).toBe($opener);
+
+    host.open = false;
+    await vi.waitFor(() => expect($document.activeElement).toBe($opener));
+
+    host.show();
+    expect(host.querySelector('dialog')?.contains($document.activeElement)).toBe(true);
+    host.close();
+    await vi.waitFor(() => expect($document.activeElement).toBe($opener));
+  } finally {
+    $frame.remove();
+  }
+});
+
 // Group D — focus fallback when opener is removed from DOM
 
 test('focus falls back to document.body when opener is removed before close', async () => {
