@@ -442,9 +442,9 @@ export class RCButton extends LitElement {
   /**
    * Text-backed icons (an icon-font ligature or glyph, an emoji) read as a
    * label, so the button gets label padding and no icon sizing. Warn once
-   * when a button named by `aria-label` or `aria-labelledby` shows only a
-   * ligature-shaped word (lowercase, digits, underscores) or one or two
-   * characters, the shape of such an icon.
+   * when a button named by `aria-label` or `aria-labelledby` shows an icon-font
+   * ligature in a known icon-font wrapper or a short symbol glyph. Ordinary
+   * short words and abbreviations are labels too.
    */
   private _warnUnmarkedTextIcon($button: HTMLButtonElement): void {
     if (
@@ -456,7 +456,18 @@ export class RCButton extends LitElement {
     }
 
     const text = $button.textContent?.trim() ?? '';
-    const looksLikeIcon = /^[a-z0-9_]+$/.test(text) || (text !== '' && [...text].length <= 2);
+    const $content = $button.firstElementChild;
+    const hasIconFontClass =
+      $button.childElementCount === 1 &&
+      $content !== null &&
+      [...$content.classList].some((name) =>
+        /^(?:material-icons(?:-outlined|-round|-sharp|-two-tone)?|material-symbols-(?:outlined|rounded|sharp))$/.test(
+          name,
+        ),
+      );
+    const looksLikeIcon =
+      (hasIconFontClass && text !== '') ||
+      ([...text].length <= 2 && /[\u2190-\u2bff\u{1f300}-\u{1faff}]/u.test(text));
 
     if (looksLikeIcon && text !== $button.getAttribute('aria-label')?.trim()) {
       this._warnedUnmarkedTextIcon = true;
