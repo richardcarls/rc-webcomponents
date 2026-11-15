@@ -1,15 +1,15 @@
 @layer rc-theme-material.components {
-  :where(.rc-theme-material, :host(.rc-theme-material))
-    :where([data-rc-icon]) {
+  :where(.rc-theme-material, :host(.rc-theme-material)) :where([data-rc-icon]) {
     display: inline-grid;
     place-items: center;
     /*
-     * Reserve the icon square even while the slot is empty, as an SVG icon
-     * element (such as <iconify-icon>) is for a frame after it mounts. An
-     * icon-font glyph already fills 1em, so it renders the same.
+     * The icon is a 1em square at the theme size: it holds that square while
+     * an SVG icon element (such as <iconify-icon>) is still empty, and a
+     * marked <svg> or <img> takes the theme size whatever its own width and
+     * height say. An icon-font glyph already fills 1em.
      */
-    min-inline-size: 1em;
-    min-block-size: 1em;
+    inline-size: 1em;
+    block-size: 1em;
     font-size: var(--rc-icon-font-size, 1.5rem);
     /*
      * Unlayered icon-font boilerplate otherwise beats this layered theme rule.
@@ -19,9 +19,11 @@
     line-height: var(--rc-icon-font-line-height, var(--rc-icon-font-size, 1.5rem)) !important;
   }
 
+
   /* Button and chip icons take the compact size. */
   :where(.rc-theme-material, :host(.rc-theme-material))
-    :where(rc-button > :is(button, a), rc-chip) :where([data-rc-icon]) {
+    :where(rc-button > :is(button, a), rc-chip)
+    :where([data-rc-icon]) {
     display: inline-grid;
     place-items: center;
     min-inline-size: 1em;
@@ -56,6 +58,8 @@
     rc-button[icon-only]
     > button
     > :not([data-rc-label]) {
+    inline-size: 1em;
+    block-size: 1em;
     font-size: var(--rc-icon-button-icon-font-size, 1.5rem);
     line-height: var(--rc-icon-button-icon-font-size, 1.5rem) !important;
   }

@@ -8,12 +8,17 @@
    * arrows, the disclosure triangle, the checkbox tick) come from the
    * --win31-glyph-* data URIs in defaults.css instead.
    */
-  :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where([data-rc-icon]) {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) :where([data-rc-icon]) {
     display: inline-grid;
     place-items: center;
-    inline-size: var(--rc-icon-font-size, var(--win31-check-size));
-    block-size: var(--rc-icon-font-size, var(--win31-check-size));
+    /*
+     * The icon is a 1em square at the theme size: it holds that square while
+     * an SVG icon element (such as <iconify-icon>) is still empty, and a
+     * marked <svg> or <img> takes the theme size whatever its own width and
+     * height say. An icon-font glyph already fills 1em.
+     */
+    inline-size: 1em;
+    block-size: 1em;
     font-size: var(--rc-icon-font-size, var(--win31-check-size));
     /*
      * Unlayered icon-font boilerplate otherwise beats this layered theme rule.
@@ -25,7 +30,8 @@
 
   /* Button and chip icons take the compact size. */
   :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where(rc-button > :is(button, a), rc-chip) :where([data-rc-icon]) {
+    :where(rc-button > :is(button, a), rc-chip)
+    :where([data-rc-icon]) {
     display: inline-grid;
     place-items: center;
     /* Reserve the icon square while an SVG icon element is still empty. */
@@ -38,20 +44,15 @@
     ) !important;
   }
 
-  :where(.rc-theme-win31, :host(.rc-theme-win31))
-    rc-button[icon-only]
-    :where([data-rc-icon]) {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-button[icon-only] :where([data-rc-icon]) {
     font-size: var(--rc-icon-button-icon-font-size, var(--win31-scrollbar-size));
     line-height: var(--rc-icon-button-icon-font-size, var(--win31-scrollbar-size)) !important;
   }
 
+
   /* Period art is pixel art. Never let the UA smooth it. */
-  :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where([data-rc-icon])
-    img,
-  :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where([data-rc-icon])
-    svg {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) :where([data-rc-icon]) img,
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) :where([data-rc-icon]) svg {
     image-rendering: pixelated;
   }
 }

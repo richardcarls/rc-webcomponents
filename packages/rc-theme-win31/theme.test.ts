@@ -1,6 +1,7 @@
 import { afterEach, expect, test } from 'vitest';
 
 import './theme.css';
+import { expectThemeIconMarkers } from '../../test-helpers/icon-slot.js';
 
 afterEach(() => {
   document.body.replaceChildren();
@@ -21,4 +22,8 @@ test('theme quick start loads defaults, bridge, and component styles', () => {
   expect(scopeStyles.getPropertyValue('--rc-accent')).not.toBe('');
   expect(listboxStyles.display).toBe('block');
   expect(listboxStyles.borderRadius).toBe('0px');
+});
+
+test('data-rc-icon markers follow the shared icon contract', async () => {
+  await expectThemeIconMarkers('rc-theme-win31');
 });
