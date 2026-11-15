@@ -938,3 +938,18 @@ test('describes pages that upgrade after the turner, as inserted markup does', a
   window.removeEventListener('error', onError);
   document.querySelector('rc-page-turner')?.remove();
 });
+
+test('navigation icons sit at the center of their buttons', async () => {
+  const { turner } = await setup();
+
+  for (const part of ['previous', 'next'] as const) {
+    const button = shadowButton(turner, part).getBoundingClientRect();
+    const icon = shadowButton(turner, part).querySelector('svg')!.getBoundingClientRect();
+
+    const blockOffset = icon.top + icon.height / 2 - (button.top + button.height / 2);
+    const inlineOffset = icon.left + icon.width / 2 - (button.left + button.width / 2);
+
+    expect(Math.abs(blockOffset)).toBeLessThan(0.5);
+    expect(Math.abs(inlineOffset)).toBeLessThan(0.5);
+  }
+});

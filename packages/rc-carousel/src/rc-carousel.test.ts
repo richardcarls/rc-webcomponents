@@ -305,6 +305,34 @@ test('navigation buttons step with a button trigger and use aria-disabled (not d
   expect(changed.mock.calls[1]?.[0]?.detail).toEqual({ index: 0, trigger: 'button' });
 });
 
+test('navigation icons sit at the center of their buttons', async () => {
+  const screen = render(html`
+    <rc-carousel data-testid="carousel" aria-label="Test carousel" navigation>
+      <rc-carousel-item>One</rc-carousel-item>
+      <rc-carousel-item>Two</rc-carousel-item>
+    </rc-carousel>
+  `);
+  const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
+
+  await settle(carousel);
+
+  for (const part of ['previous', 'next']) {
+    const button = carousel.renderRoot.querySelector<HTMLButtonElement>(
+      `[part~="navigation-button-${part}"]`,
+    )!;
+    const buttonBox = button.getBoundingClientRect();
+    const iconBox = button.querySelector('svg')!.getBoundingClientRect();
+
+    expect(
+      Math.abs(iconBox.top + iconBox.height / 2 - (buttonBox.top + buttonBox.height / 2)),
+    ).toBeLessThan(0.5);
+
+    expect(
+      Math.abs(iconBox.left + iconBox.width / 2 - (buttonBox.left + buttonBox.width / 2)),
+    ).toBeLessThan(0.5);
+  }
+});
+
 test('loop wraps navigation seamlessly instead of clamping at the ends', async () => {
   const screen = render(html`
     <rc-carousel data-testid="carousel" aria-label="Test carousel" navigation loop>

@@ -89,6 +89,16 @@ export const pageTurnerStyles = css`
     cursor: pointer;
   }
 
+  /*
+   * The icon wrapper centers its icon as a grid item. Left inline, the icon
+   * would sit on the text baseline above the line's descender space and
+   * render above the button's center.
+   */
+  [part~='navigation-button'] > span {
+    display: grid;
+    place-items: center;
+  }
+
   [part~='navigation-button'][aria-disabled='true'] {
     opacity: 0.38;
     cursor: default;
