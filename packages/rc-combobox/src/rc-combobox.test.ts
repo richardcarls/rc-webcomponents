@@ -303,6 +303,15 @@ test('rc-combobox has no automated accessibility violations', async () => {
   await expectNoA11yViolations($host);
 });
 
+test('the toggle icon keeps its own size inside the toggle button', async () => {
+  const screen = render(makeCombobox());
+  const $host = await getHost(screen);
+  const $icon = $host.renderRoot.querySelector('#toggle svg')!;
+
+  expect($icon.getBoundingClientRect().width).toBe(10);
+  expect($icon.getBoundingClientRect().height).toBe(6);
+});
+
 test('options appear in listbox from slotted <select>', async () => {
   const screen = render(makeCombobox());
   const $host = await getHost(screen);
