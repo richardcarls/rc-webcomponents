@@ -88,6 +88,14 @@ const LIGHT_DOM_CSS = cssText`
   rc-popover > [slot='content'][hidden] {
     display: none !important;
   }
+
+  @supports not (height: 100dvh) {
+    rc-popover > [slot='content'] {
+      /* No logical viewport units either: assume horizontal writing. */
+      max-inline-size: var(--rc-popover-max-inline-size, min(20rem, calc(100vw - 1rem)));
+      max-block-size: var(--rc-popover-max-block-size, calc(100vh - 1rem));
+    }
+  }
 }
 `;
 

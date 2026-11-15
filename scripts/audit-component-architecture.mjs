@@ -258,7 +258,8 @@ export const PACKAGE_ID_SELECTOR_BUDGETS = {
   // Grew by two when the overflow trigger gained token-driven :hover and
   // :active states, so themes no longer need ::part rules that cannot reach
   // menus inside other shadow roots.
-  'rc-adaptive-menu': 16,
+  // The legacy viewport-unit fallback repeats the popup's ID selector.
+  'rc-adaptive-menu': 17,
   'rc-app-bar': 29,
   'rc-carousel': 7,
   'rc-chip-group': 10,

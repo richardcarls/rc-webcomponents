@@ -204,6 +204,18 @@ export const DIALOG_BASE_CSS = cssText`
     resize: none;
     transform: none;
   }
+
+  @supports not (height: 100dvh) {
+    /* No logical viewport units either: assume horizontal writing. */
+    rc-dialog > dialog {
+      max-block-size: var(--rc-dialog-max-block-size, calc(100vh - 2rem));
+    }
+
+    rc-dialog[variant='side'] > dialog {
+      block-size: 100vh;
+      max-block-size: none;
+    }
+  }
 }
 `;
 
