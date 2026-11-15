@@ -128,6 +128,7 @@ export const comboboxStyles = css`
     align-items: center;
     justify-content: center;
     inline-size: var(--rc-combobox-toggle-size, 1.1em);
+    padding: 0;
     border: none;
     background: transparent;
     color: inherit;
