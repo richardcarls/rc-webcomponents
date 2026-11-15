@@ -3,6 +3,7 @@
 ---
 
 `rc-button` logs a development warning when a button named by `aria-label`
-or `aria-labelledby` shows only a ligature-shaped word or one or two
-characters without `data-rc-icon`, the shape of an icon-font or emoji icon
-that would otherwise be sized as a label.
+or `aria-labelledby` shows a text-backed icon without `data-rc-icon`: a
+ligature inside a Material Icons or Material Symbols class, or a one- or
+two-character arrow, symbol, or emoji glyph. Such an icon would otherwise be
+sized as a label. Ordinary short words and abbreviations don't warn.
