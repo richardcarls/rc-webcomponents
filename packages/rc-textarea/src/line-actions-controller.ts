@@ -78,7 +78,11 @@ let widgetSheetInstance: CSSStyleSheet | undefined;
 
 // Built on first use and shared by every instance. Constructing it lazily keeps
 // the module importable where `CSSStyleSheet` does not exist (a server render).
-function widgetSheet(): CSSStyleSheet {
+function widgetSheet(): CSSStyleSheet | string {
+  if (typeof CSSStyleSheet !== 'function' || !CSSStyleSheet.prototype.replaceSync) {
+    return WIDGET_CSS;
+  }
+
   if (!widgetSheetInstance) {
     widgetSheetInstance = new CSSStyleSheet();
     widgetSheetInstance.replaceSync(WIDGET_CSS);

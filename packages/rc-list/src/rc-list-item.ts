@@ -6,6 +6,7 @@ import {
   DEFAULT_INTERACTIVE_SELECTOR,
   MorphRecoveryController,
   setCustomState,
+  optionalInternals,
 } from '@rcarls/rc-common';
 
 import listItemStyles from './rc-list-item.styles.js';
@@ -148,7 +149,7 @@ export class RCListItem extends LitElement {
 
   static override styles = listItemStyles;
 
-  private readonly _internals: ElementInternals;
+  private readonly _internals: ElementInternals | undefined;
 
   /** Sets the row position state; `null` clears it. Called by the parent `rc-list`. @internal */
   _setListPosition(position: RCListItemPosition | null): void {
@@ -210,8 +211,7 @@ export class RCListItem extends LitElement {
 
   constructor() {
     super();
-    this._internals = this.attachInternals();
-    this._internals.role = 'listitem';
+    this._internals = optionalInternals(this, 'listitem');
 
     this.addEventListener('click', this._handleToggleClick);
 

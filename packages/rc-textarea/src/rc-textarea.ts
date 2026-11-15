@@ -15,6 +15,7 @@ import {
   MorphRecoveryController,
   nativeLabelText,
   setCustomState,
+  optionalInternals,
 } from '@rcarls/rc-common';
 import { RCDocument, getText } from './document.js';
 import {
@@ -360,7 +361,7 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-line-action-shadow=0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)] - Line-action popover shadow
  */
 export class RCTextarea extends LitElement {
-  private readonly _internals = this.attachInternals();
+  private readonly _internals = optionalInternals(this);
 
   /** Writes the element's attributes again after a DOM morph removes them. */
   protected readonly _morphRecovery = new MorphRecoveryController(this, {
@@ -534,6 +535,7 @@ export class RCTextarea extends LitElement {
 
   /** Stylesheets adopted into the shadow root by the active plugin. */
   protected _pluginSheets = new Set<CSSStyleSheet>();
+  protected _pluginStyleElements = new Map<CSSStyleSheet, HTMLStyleElement>();
 
   protected _savedSelection: SavedSelection | null = null;
   protected _rafHandle: number | null = null;
@@ -1719,16 +1721,31 @@ export class RCTextarea extends LitElement {
       adoptStyleSheet(sheetOrCssText: CSSStyleSheet | string): CSSStyleSheet {
         let sheet: CSSStyleSheet;
 
+        const $shadowRoot = component.shadowRoot;
+
         if (typeof sheetOrCssText === 'string') {
-          sheet = new CSSStyleSheet();
-          sheet.replaceSync(sheetOrCssText);
+          if (typeof CSSStyleSheet !== 'function' || !CSSStyleSheet.prototype.replaceSync) {
+            const $style = component.ownerDocument.createElement('style');
+
+            $style.textContent = sheetOrCssText;
+            $shadowRoot?.appendChild($style);
+            // A <style> element's sheet is null while disconnected and is
+            // replaced when it reconnects, so key it on an opaque handle.
+            sheet = {} as CSSStyleSheet;
+            component._pluginStyleElements.set(sheet, $style);
+          } else {
+            sheet = new CSSStyleSheet();
+            sheet.replaceSync(sheetOrCssText);
+          }
         } else {
           sheet = sheetOrCssText;
         }
 
-        const $shadowRoot = component.shadowRoot;
-
-        if ($shadowRoot && !$shadowRoot.adoptedStyleSheets.includes(sheet)) {
+        if (
+          $shadowRoot &&
+          !component._pluginStyleElements.has(sheet) &&
+          !$shadowRoot.adoptedStyleSheets.includes(sheet)
+        ) {
           $shadowRoot.adoptedStyleSheets = [...$shadowRoot.adoptedStyleSheets, sheet];
         }
 
@@ -1738,8 +1755,14 @@ export class RCTextarea extends LitElement {
       },
       removeStyleSheet(sheet: CSSStyleSheet): void {
         const $shadowRoot = component.shadowRoot;
+        const $style = component._pluginStyleElements.get(sheet);
 
-        if ($shadowRoot) {
+        if ($style) {
+          $style.remove();
+          component._pluginStyleElements.delete(sheet);
+        }
+
+        if ($shadowRoot && !$style) {
           $shadowRoot.adoptedStyleSheets = $shadowRoot.adoptedStyleSheets.filter(
             (s) => s !== sheet,
           );
@@ -1790,7 +1813,13 @@ export class RCTextarea extends LitElement {
 
     const $shadowRoot = this.shadowRoot;
 
-    if ($shadowRoot) {
+    for (const $style of this._pluginStyleElements.values()) {
+      $style.remove();
+    }
+
+    this._pluginStyleElements.clear();
+
+    if ($shadowRoot && 'adoptedStyleSheets' in $shadowRoot) {
       $shadowRoot.adoptedStyleSheets = $shadowRoot.adoptedStyleSheets.filter(
         (s) => !this._pluginSheets.has(s),
       );

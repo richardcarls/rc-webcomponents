@@ -164,6 +164,10 @@ function propertyFirstProps(element) {
   return own;
 }
 
+function ownPropsType(own) {
+  return own.length ? ['{', ...own, '        }'].join('\n') : 'Record<never, never>';
+}
+
 /** React 19 sets a prop as a property when the element has it, else as an attribute. */
 export function reactTypings(elements) {
   const entries = elements.map((element) => {
@@ -171,9 +175,7 @@ export function reactTypings(elements) {
 
     return `      '${element.tag}': RCElementProps<
         ${element.className},
-        {
-${own.join('\n')}
-        },
+        ${ownPropsType(own)},
         ${eventUnion(element.events)}
       >;`;
   });
@@ -233,9 +235,7 @@ export function solidTypings(elements) {
 
     return `      '${element.tag}': RCElementProps<
         ${element.className},
-        {
-${own.join('\n')}
-        },
+        ${ownPropsType(own)},
         ${eventUnion(element.events)}
       >;`;
   });
@@ -298,9 +298,7 @@ export function vueTypings(elements) {
 
     return `    '${element.tag}': RCVueElement<
       ${element.className},
-      {
-${own.join('\n')}
-      },
+      ${ownPropsType(own)},
       ${eventUnion(element.events)}
     >;`;
   });
@@ -341,9 +339,7 @@ export function svelteTypings(elements) {
 
     return `    '${element.tag}': RCElementProps<
       ${element.className},
-      {
-${own.join('\n')}
-      },
+      ${ownPropsType(own)},
       ${eventUnion(element.events)}
     >;`;
   });

@@ -71,7 +71,11 @@ let sourceHighlightSheetInstance: CSSStyleSheet | undefined;
 
 // Built on first use and shared by every instance. Constructing it lazily keeps
 // the module importable where `CSSStyleSheet` does not exist (a server render).
-function sourceHighlightSheet(): CSSStyleSheet {
+function sourceHighlightSheet(): CSSStyleSheet | string {
+  if (typeof CSSStyleSheet !== 'function' || !CSSStyleSheet.prototype.replaceSync) {
+    return SOURCE_HIGHLIGHT_CSS;
+  }
+
   if (!sourceHighlightSheetInstance) {
     sourceHighlightSheetInstance = new CSSStyleSheet();
     sourceHighlightSheetInstance.replaceSync(SOURCE_HIGHLIGHT_CSS);

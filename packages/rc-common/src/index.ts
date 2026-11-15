@@ -14,6 +14,8 @@ export * from './NavigationIndicatorController.js';
 export * from './RafScheduler.js';
 export * from './TypeaheadController.js';
 export * from './visualViewport.js';
+export * from './optionalInternals.js';
+export * from './randomId.js';
 export * from './softKeyboard.js';
 export * from './cssText.js';
 export * from './customStates.js';

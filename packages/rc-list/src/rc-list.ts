@@ -8,6 +8,7 @@ import {
   includeDefaults,
   MorphRecoveryController,
   setCustomState,
+  optionalInternals,
 } from '@rcarls/rc-common';
 import type { RCListItem, RCListItemPosition } from './rc-list-item.js';
 import { ensureListBaseStyles } from './listBaseStyles.js';
@@ -72,7 +73,6 @@ function rowPosition(item: Element, index: number, count: number): RCListItemPos
 
   return at === 0 ? 'first' : at === of - 1 ? 'last' : 'middle';
 }
-
 
 /**
  * Shared-column list layout with optional native-backed selection.
@@ -145,7 +145,7 @@ export class RCList extends LitElement {
 
   static override styles = listStyles;
 
-  private readonly _internals: ElementInternals;
+  private readonly _internals: ElementInternals | undefined;
   private _syncQueued = false;
   private readonly _warnedInvalidChildren = new WeakSet<Element>();
   private readonly _warnedInvalidSelection = new WeakMap<RCListItem, RCListSelection>();
@@ -191,8 +191,7 @@ export class RCList extends LitElement {
 
   constructor() {
     super();
-    this._internals = this.attachInternals();
-    this._internals.role = 'list';
+    this._internals = optionalInternals(this, 'list');
 
     this._reorder = new ReorderController(this, {
       items: () => (this.reorderable ? this._visibleItems() : []),

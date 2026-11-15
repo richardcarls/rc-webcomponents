@@ -1,3 +1,4 @@
+import { randomId } from '@rcarls/rc-common';
 import type { DecorationInput, RCTextareaPluginAPI } from './types.js';
 
 export interface SourceFoldRange {
@@ -70,7 +71,7 @@ export class FoldingActionController {
 
     if (entry.target instanceof HTMLElement) {
       if (!entry.target.id) {
-        entry.target.id = `rc-fold-${crypto.randomUUID()}`;
+        entry.target.id = `rc-fold-${randomId()}`;
       }
 
       entry.$button.setAttribute('aria-controls', entry.target.id);

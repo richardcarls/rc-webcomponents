@@ -255,7 +255,6 @@ declare module 'solid-js' {
           'prop:mouseDragging'?: RCCarousel['mouseDragging'];
           'prop:navigation'?: RCCarousel['navigation'];
           'prop:pagination'?: RCCarousel['pagination'];
-          'prop:role'?: RCCarousel['role'];
         },
         'rc-carousel-change' | 'rc-carousel-static-change'
       >;
@@ -264,7 +263,6 @@ declare module 'solid-js' {
         RCCarouselItem,
         {
           'prop:position'?: RCCarouselItem['position'];
-          'prop:role'?: RCCarouselItem['role'];
           'prop:roleDescription'?: RCCarouselItem['roleDescription'];
         },
         never
@@ -497,7 +495,6 @@ declare module 'solid-js' {
           'prop:ordered'?: RCList['ordered'];
           'prop:reorderMessages'?: RCList['reorderMessages'];
           'prop:reorderable'?: RCList['reorderable'];
-          'prop:role'?: RCList['role'];
           'prop:selection'?: RCList['selection'];
           'prop:variant'?: RCList['variant'];
         },
@@ -520,7 +517,6 @@ declare module 'solid-js' {
           'prop:disabled'?: RCListItem['disabled'];
           'prop:expanded'?: RCListItem['expanded'];
           'prop:interactive'?: RCListItem['interactive'];
-          'prop:role'?: RCListItem['role'];
           'prop:selected'?: RCListItem['selected'];
         },
         'rc-list-item-toggle'
@@ -638,18 +634,11 @@ declare module 'solid-js' {
           'prop:messages'?: RCPageTurner['messages'];
           'prop:mouseDragging'?: RCPageTurner['mouseDragging'];
           'prop:navigation'?: RCPageTurner['navigation'];
-          'prop:role'?: RCPageTurner['role'];
         },
         'rc-page-turner-change'
       >;
 
-      'rc-page-turner-page': RCElementProps<
-        RCPageTurnerPage,
-        {
-          'prop:role'?: RCPageTurnerPage['role'];
-        },
-        never
-      >;
+      'rc-page-turner-page': RCElementProps<RCPageTurnerPage, Record<never, never>, never>;
 
       'rc-pagination': RCElementProps<
         RCPagination,

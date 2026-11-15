@@ -11,6 +11,7 @@ import {
   includeDefaults,
   MorphRecoveryController,
   setCustomState,
+  optionalInternals,
 } from '@rcarls/rc-common';
 
 import appBarStyles from './rc-app-bar.styles.js';
@@ -200,7 +201,7 @@ export class RCAppBar extends LitElement {
   private readonly _reducedMotion =
     typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 
-  private _internals = this.attachInternals();
+  private _internals = optionalInternals(this);
 
   private _resizeObserver: ResizeObserver | null = null;
 
