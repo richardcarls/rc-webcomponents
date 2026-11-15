@@ -1,8 +1,8 @@
-import { css } from 'lit';
+import { css, type CSSResultGroup } from 'lit';
 
-import { rcToken } from '@rcarls/rc-common';
+import { iconBoxStyles, rcToken } from '@rcarls/rc-common';
 
-export const adaptiveMenuStyles = css`
+const adaptiveMenuStylesBase = css`
   :host {
     display: block;
     inline-size: fit-content;
@@ -141,8 +141,6 @@ export const adaptiveMenuStyles = css`
   }
 
   #overflow-icon {
-    inline-size: var(--rc-adaptive-menu-icon-size, 1.5em);
-    block-size: var(--rc-adaptive-menu-icon-size, 1.5em);
     fill: currentColor;
   }
 
@@ -181,5 +179,14 @@ export const adaptiveMenuStyles = css`
     }
   }
 `;
+
+export const adaptiveMenuStyles: CSSResultGroup = [
+  adaptiveMenuStylesBase,
+  iconBoxStyles({
+    box: '#overflow-icon-box',
+    size: '--rc-adaptive-menu-overflow-icon-size',
+    fallback: '1.5em',
+  }),
+];
 
 export default adaptiveMenuStyles;

@@ -5,7 +5,7 @@
    */
   :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) {
     --rc-adaptive-menu-gap: var(--tailwind-control-gap, 0.5rem);
-    --rc-adaptive-menu-icon-size: 1.25rem;
+    --rc-adaptive-menu-overflow-icon-size: 1.25rem;
 
     --rc-adaptive-menu-trigger-background: transparent;
     --rc-adaptive-menu-trigger-border: 0;

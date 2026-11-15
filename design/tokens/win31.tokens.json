@@ -855,23 +855,6 @@
           }
         },
         {
-          "name": "adaptive-menu/icon-size",
-          "type": "FLOAT",
-          "scopes": [
-            "WIDTH_HEIGHT"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-adaptive-menu-icon-size)"
-          },
-          "cssVar": "--rc-adaptive-menu-icon-size",
-          "values": {
-            "Value": {
-              "alias": "size/check-size",
-              "collection": "Size"
-            }
-          }
-        },
-        {
           "name": "adaptive-menu/item-gap",
           "type": "FLOAT",
           "scopes": [
@@ -936,6 +919,23 @@
           "cssVar": "--rc-adaptive-menu-item-padding-inline",
           "values": {
             "Value": 8
+          }
+        },
+        {
+          "name": "adaptive-menu/overflow-icon-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-overflow-icon-size)"
+          },
+          "cssVar": "--rc-adaptive-menu-overflow-icon-size",
+          "values": {
+            "Value": {
+              "alias": "size/check-size",
+              "collection": "Size"
+            }
           }
         },
         {

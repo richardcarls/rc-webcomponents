@@ -5,6 +5,7 @@ import { render } from 'vitest-browser-lit';
 
 import { registerMessages } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { expectIconBoxContract } from '../../../test-helpers/icon-slot.js';
 import './define.js';
 import type { RCAdaptiveMenu } from './rc-adaptive-menu.js';
 
@@ -733,4 +734,14 @@ test('accepts actions added while its first render is still pending', async () =
     window.removeEventListener('error', onError);
     host.remove();
   }
+});
+
+test('the overflow-icon slot follows the icon box contract', async () => {
+  await expectIconBoxContract({
+    markup: (icon) =>
+      `<rc-adaptive-menu max-shown="1">${icon}<button type="button">One</button><button type="button">Two</button></rc-adaptive-menu>`,
+    box: (host) => host.shadowRoot!.querySelector('#overflow-icon-box'),
+    slot: 'overflow-icon',
+    sizeProperty: '--rc-adaptive-menu-overflow-icon-size',
+  });
 });

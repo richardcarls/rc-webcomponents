@@ -1,8 +1,8 @@
-import { css } from 'lit';
+import { css, type CSSResultGroup } from 'lit';
 
-import { rcToken } from '@rcarls/rc-common';
+import { iconBoxStyles, rcToken } from '@rcarls/rc-common';
 
-export const menuButtonStyles = css`
+const menuButtonStylesBase = css`
   :host {
     display: inline-block;
   }
@@ -169,19 +169,9 @@ export const menuButtonStyles = css`
       --rc-menu-button-indicator-inset,
       var(--rc-menu-button-trigger-padding-inline, ${rcToken('--rc-control-padding-inline')})
     );
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: var(--rc-menu-button-indicator-size, 1em);
-    block-size: var(--rc-menu-button-indicator-size, 1em);
     color: var(--rc-menu-button-indicator-color, currentColor);
     pointer-events: none;
     transform: translateY(-50%);
-  }
-
-  slot[name='indicator']::slotted(*) {
-    inline-size: 100%;
-    block-size: 100%;
   }
 
   #popup {
@@ -239,5 +229,15 @@ export const menuButtonStyles = css`
     }
   }
 `;
+
+export const menuButtonStyles: CSSResultGroup = [
+  menuButtonStylesBase,
+  iconBoxStyles({
+    box: "slot[name='indicator']",
+    slot: "slot[name='indicator']",
+    size: '--rc-menu-button-indicator-size',
+    fallback: '1em',
+  }),
+];
 
 export default menuButtonStyles;

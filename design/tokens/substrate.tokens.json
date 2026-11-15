@@ -1462,20 +1462,6 @@
           }
         },
         {
-          "name": "adaptive-menu/icon-size",
-          "type": "FLOAT",
-          "scopes": [
-            "WIDTH_HEIGHT"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-adaptive-menu-icon-size)"
-          },
-          "cssVar": "--rc-adaptive-menu-icon-size",
-          "values": {
-            "Value": 20
-          }
-        },
-        {
           "name": "adaptive-menu/item-gap",
           "type": "FLOAT",
           "scopes": [
@@ -1540,6 +1526,20 @@
               "alias": "size/item-padding-inline",
               "collection": "Size"
             }
+          }
+        },
+        {
+          "name": "adaptive-menu/overflow-icon-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-overflow-icon-size)"
+          },
+          "cssVar": "--rc-adaptive-menu-overflow-icon-size",
+          "values": {
+            "Value": 20
           }
         },
         {

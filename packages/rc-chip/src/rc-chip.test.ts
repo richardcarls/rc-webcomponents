@@ -3,6 +3,7 @@ import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { expectIconBoxContract } from '../../../test-helpers/icon-slot.js';
 import './define.js';
 import type { RCChip } from './rc-chip.js';
 
@@ -394,9 +395,8 @@ test('removable chip indicator is presentational and adds no button semantics', 
 
   const removeIcon = host.querySelector<HTMLElement>('[slot="remove-icon"]')!;
 
-  expect(parseFloat(getComputedStyle(removeIcon).fontSize)).toBeLessThan(
-    parseFloat(getComputedStyle(host).fontSize),
-  );
+  // The icon box's size wins over the icon's own inline font size.
+  expect(getComputedStyle(removeIcon).fontSize).toBe('18px');
 
   await expectNoA11yViolations(host);
 });
@@ -511,4 +511,13 @@ test('shows a pointer over an interactive chip only', async () => {
   expect(await cursor('filter')).toBe('pointer');
   expect(await cursor('disabled')).toBe('default');
   expect(await cursor('readonly')).not.toBe('pointer');
+});
+
+test('the remove-icon slot follows the icon box contract', async () => {
+  await expectIconBoxContract({
+    markup: (icon) => `<rc-chip removable>${icon}<button type="button">Chip</button></rc-chip>`,
+    box: (host) => host.shadowRoot!.querySelector('#remove-icon'),
+    slot: 'remove-icon',
+    sizeProperty: '--rc-chip-remove-icon-size',
+  });
 });

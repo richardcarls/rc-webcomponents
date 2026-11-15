@@ -1,8 +1,8 @@
-import { css } from 'lit';
+import { css, type CSSResultGroup } from 'lit';
 
-import { rcToken } from '@rcarls/rc-common';
+import { iconBoxStyles, rcToken } from '@rcarls/rc-common';
 
-export const comboboxStyles = css`
+const comboboxStylesBase = css`
   :host {
     display: inline-block;
   }
@@ -127,7 +127,7 @@ export const comboboxStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    inline-size: var(--rc-combobox-toggle-size, 1.1em);
+    inline-size: var(--rc-combobox-toggle-icon-size, 1.1em);
     padding: 0;
     border: none;
     background: transparent;
@@ -340,5 +340,14 @@ export const comboboxStyles = css`
     padding-top: 0.3em;
   }
 `;
+
+export const comboboxStyles: CSSResultGroup = [
+  comboboxStylesBase,
+  iconBoxStyles({
+    box: '#toggle-icon',
+    size: '--rc-combobox-toggle-icon-size',
+    fallback: '1.1em',
+  }),
+];
 
 export default comboboxStyles;

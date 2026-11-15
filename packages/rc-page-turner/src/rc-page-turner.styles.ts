@@ -1,6 +1,8 @@
-import { css } from 'lit';
+import { css, type CSSResultGroup } from 'lit';
 
-export const pageTurnerStyles = css`
+import { iconBoxStyles } from '@rcarls/rc-common';
+
+const pageTurnerStylesBase = css`
   :host {
     display: block;
     position: relative;
@@ -89,16 +91,6 @@ export const pageTurnerStyles = css`
     cursor: pointer;
   }
 
-  /*
-   * The icon wrapper centers its icon as a grid item. Left inline, the icon
-   * would sit on the text baseline above the line's descender space and
-   * render above the button's center.
-   */
-  [part~='navigation-button'] > span {
-    display: grid;
-    place-items: center;
-  }
-
   [part~='navigation-button'][aria-disabled='true'] {
     opacity: 0.38;
     cursor: default;
@@ -129,5 +121,14 @@ export const pageTurnerStyles = css`
     }
   }
 `;
+
+export const pageTurnerStyles: CSSResultGroup = [
+  pageTurnerStylesBase,
+  iconBoxStyles({
+    box: "[part~='navigation-button'] > span",
+    size: '--rc-page-turner-navigation-icon-size',
+    fallback: '1.5rem',
+  }),
+];
 
 export default pageTurnerStyles;

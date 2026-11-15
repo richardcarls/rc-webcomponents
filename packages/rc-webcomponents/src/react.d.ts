@@ -882,11 +882,11 @@ declare module 'react' {
   interface CSSProperties {
     '--rc-accordion-gap'?: string | number;
     '--rc-adaptive-menu-gap'?: string | number;
-    '--rc-adaptive-menu-icon-size'?: string | number;
     '--rc-adaptive-menu-item-gap'?: string | number;
     '--rc-adaptive-menu-item-min-block-size'?: string | number;
     '--rc-adaptive-menu-item-padding-block'?: string | number;
     '--rc-adaptive-menu-item-padding-inline'?: string | number;
+    '--rc-adaptive-menu-overflow-icon-size'?: string | number;
     '--rc-adaptive-menu-popup-background'?: string | number;
     '--rc-adaptive-menu-popup-border'?: string | number;
     '--rc-adaptive-menu-popup-color'?: string | number;
@@ -1042,6 +1042,7 @@ declare module 'react' {
     '--rc-carousel-navigation-button-background'?: string | number;
     '--rc-carousel-navigation-button-color'?: string | number;
     '--rc-carousel-navigation-button-size'?: string | number;
+    '--rc-carousel-navigation-icon-size'?: string | number;
     '--rc-carousel-navigation-inset'?: string | number;
     '--rc-carousel-pagination-item-active-color'?: string | number;
     '--rc-carousel-pagination-item-color'?: string | number;
@@ -1120,7 +1121,7 @@ declare module 'react' {
     '--rc-combobox-padding-inline'?: string | number;
     '--rc-combobox-radius'?: string | number;
     '--rc-combobox-shadow'?: string | number;
-    '--rc-combobox-toggle-size'?: string | number;
+    '--rc-combobox-toggle-icon-size'?: string | number;
     '--rc-data-table-cell-padding-block'?: string | number;
     '--rc-data-table-cell-padding-inline'?: string | number;
     '--rc-data-table-sort-ascending'?: string | number;
@@ -1507,6 +1508,7 @@ declare module 'react' {
     '--rc-page-turner-navigation-button-background'?: string | number;
     '--rc-page-turner-navigation-button-color'?: string | number;
     '--rc-page-turner-navigation-button-size'?: string | number;
+    '--rc-page-turner-navigation-icon-size'?: string | number;
     '--rc-page-turner-navigation-inset'?: string | number;
     '--rc-page-turner-page-back-background'?: string | number;
     '--rc-page-turner-page-background'?: string | number;
@@ -1563,6 +1565,7 @@ declare module 'react' {
     '--rc-search-bar-bg'?: string | number;
     '--rc-search-bar-border'?: string | number;
     '--rc-search-bar-clear-color'?: string | number;
+    '--rc-search-bar-clear-icon-size'?: string | number;
     '--rc-search-bar-color'?: string | number;
     '--rc-search-bar-gap'?: string | number;
     '--rc-search-bar-height'?: string | number;

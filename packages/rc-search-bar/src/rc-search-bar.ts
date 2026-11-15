@@ -134,7 +134,7 @@ declare module '@rcarls/rc-common' {
  * @slot - The required native `<input type="search">`
  * @slot leading - Decorative leading icon; mark it `aria-hidden="true"`
  * @slot trailing - Optional trailing content after the clear button
- * @slot clear-icon - Optional glyph replacing the default clear glyph
+ * @slot clear-icon - Optional icon replacing the default clear icon
  * @slot suggestions - Rich search view suggestions; takes precedence over
  *   datalist-derived suggestions.
  *
@@ -163,7 +163,9 @@ declare module '@rcarls/rc-common' {
  * @cssprop [--rc-search-bar-color=FieldText] - Wrapper text color
  * @cssprop [--rc-search-bar-icon-color=GrayText] - Leading icon color
  * @cssprop [--rc-search-bar-icon-size] - Leading slot font size, so `1em` icons size to it (inherits when unset)
- * @cssprop [--rc-search-bar-clear-color=GrayText] - Clear button glyph color
+ * @cssprop [--rc-search-bar-clear-color=GrayText] - Clear button icon color
+ * @cssprop {<length>} [--rc-search-bar-clear-icon-size=1.25em] - Clear icon box size. The built-in icon
+ *   fills it, and a slotted `clear-icon` is centered and clipped to it.
  * @cssprop [--rc-search-bar-radius=var(--rc-control-radius)] - Wrapper border radius
  * @cssprop [--rc-search-bar-height=var(--rc-control-block-size)] - Wrapper block size
  * @cssprop [--rc-search-bar-padding-inline=var(--rc-control-padding-inline)] - Wrapper horizontal padding
@@ -818,7 +820,16 @@ export class RCSearchBar extends LitElement {
           ?disabled=${this._inputDisabled}
           @click=${this._handleClear}
         >
-          <slot name="clear-icon"><span aria-hidden="true">&#10005;</span></slot>
+          <span id="clear-icon" aria-hidden="true">
+            <slot name="clear-icon">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path
+                  fill="currentColor"
+                  d="M6.4 5 5 6.4l5.6 5.6L5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6Z"
+                />
+              </svg>
+            </slot>
+          </span>
         </button>
 
         <span id="trailing" part="trailing" class=${classMap({ empty: !this._hasTrailing })}>

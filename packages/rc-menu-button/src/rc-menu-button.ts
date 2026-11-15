@@ -97,7 +97,8 @@ export interface RCMenuButtonToggleEvent {
  * @cssprop [--rc-menu-button-trigger-open-background=color-mix(in srgb, Highlight 12%, transparent)] - Trigger background when the menu is open
  * @cssprop [--rc-menu-button-trigger-open-color=inherit] - Trigger text color when the menu is open
  * @cssprop [--rc-menu-button-trigger-open-border-color=currentColor] - Trigger border color when the menu is open
- * @cssprop [--rc-menu-button-indicator-size=1em] - Inline and block size of the slotted indicator
+ * @cssprop {<length>} [--rc-menu-button-indicator-size=1em] - Indicator icon box size. A slotted indicator
+ *   is centered and clipped to it
  * @cssprop [--rc-menu-button-indicator-color=currentColor] - Color of the slotted indicator
  * @cssprop [--rc-menu-button-indicator-inset=var(--rc-menu-button-trigger-padding-inline)] - Indicator distance from the trigger's inline end
  * @cssprop [--rc-menu-button-icon-size] - Inline size of an `icon-only` trigger's visible box.

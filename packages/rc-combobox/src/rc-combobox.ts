@@ -135,7 +135,9 @@ declare module '@rcarls/rc-common' {
  *   generated multi-select chips.
  * @cssprop [--rc-chip-touch-target-overlap-block-start=0px] - Space returned between wrapped chip rows after a touch target overlaps the field's leading padding.
  * @cssprop [--rc-chip-touch-target-overlap-block-end=0px] - Space returned between wrapped chip rows after a touch target overlaps the field's trailing padding.
- * @cssprop [--rc-combobox-toggle-size=1.1em] - Inline size of the toggle button's icon area.
+ * @cssprop {<length>} [--rc-combobox-toggle-icon-size=1.1em] - Toggle icon box size, and the toggle's
+ *   inline size. The built-in chevron fills it, and a slotted `toggle-icon` is
+ *   centered and clipped to it.
  */
 export class RCCombobox extends RCSelect {
   static override styles = comboboxStyles;
@@ -695,20 +697,20 @@ export class RCCombobox extends RCSelect {
           </div>
 
           <span id="toggle" part="toggle" aria-hidden="true">
-            <slot name="toggle-icon">
-              <svg
-                width="10"
-                height="6"
-                viewBox="0 0 10 6"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="1,1 5,5 9,1"></polyline>
-              </svg>
-            </slot>
+            <span id="toggle-icon">
+              <slot name="toggle-icon">
+                <svg
+                  viewBox="-3.8 -5.8 17.6 17.6"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="1,1 5,5 9,1"></polyline>
+                </svg>
+              </slot>
+            </span>
           </span>
         </div>
 
@@ -752,20 +754,20 @@ export class RCCombobox extends RCSelect {
           tabindex="-1"
           @click=${this._handleToggleClick}
         >
-          <slot name="toggle-icon">
-            <svg
-              width="10"
-              height="6"
-              viewBox="0 0 10 6"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="1,1 5,5 9,1" />
-            </svg>
-          </slot>
+          <span id="toggle-icon">
+            <slot name="toggle-icon">
+              <svg
+                viewBox="-3.8 -5.8 17.6 17.6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="1,1 5,5 9,1" />
+              </svg>
+            </slot>
+          </span>
         </button>
       </div>
 

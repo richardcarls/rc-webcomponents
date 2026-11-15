@@ -256,6 +256,7 @@ export class RCButton extends LitElement {
   protected _pressedOwned = false;
   protected _authorPressed: string | null = null;
   protected _iconOnlyOwned = false;
+  private _warnedUnmarkedTextIcon = false;
   protected _slotMicrotaskQueued = false;
 
   override connectedCallback(): void {
@@ -346,9 +347,7 @@ export class RCButton extends LitElement {
         ) ?? null;
 
     if (!$nextButton && !$nextAnchor && import.meta.env.DEV) {
-      const $misplaced = this.querySelector(
-        ':scope > [data-rc-icon], :scope > [data-rc-label]',
-      );
+      const $misplaced = this.querySelector(':scope > [data-rc-icon], :scope > [data-rc-label]');
 
       console.warn(
         $misplaced
@@ -406,7 +405,9 @@ export class RCButton extends LitElement {
 
   protected _classifyButton(): void {
     const $button = this._$button;
-    const hasMarkedIcon = !!$button?.querySelector(':scope > [data-rc-icon]:not([data-rc-icon="selected"])');
+    const hasMarkedIcon = !!$button?.querySelector(
+      ':scope > [data-rc-icon]:not([data-rc-icon="selected"])',
+    );
     const hasSelectedIcon = !!$button?.querySelector(':scope > [data-rc-icon="selected"]');
     const hasLabel = this._hasLabel($button);
     // `data-rc-icon` is an opt-in marker, easy for a consumer's own
@@ -431,6 +432,39 @@ export class RCButton extends LitElement {
     } else if (this._iconOnlyOwned) {
       this._iconOnlyOwned = false;
       this.iconOnly = false;
+    }
+
+    if (import.meta.env.DEV && $button && hasLabel && !hasMarkedIcon) {
+      this._warnUnmarkedTextIcon($button);
+    }
+  }
+
+  /**
+   * Text-backed icons (an icon-font ligature or glyph, an emoji) read as a
+   * label, so the button gets label padding and no icon sizing. Warn once
+   * when a button named by `aria-label` or `aria-labelledby` shows only a
+   * ligature-shaped word (lowercase, digits, underscores) or one or two
+   * characters, the shape of such an icon.
+   */
+  private _warnUnmarkedTextIcon($button: HTMLButtonElement): void {
+    if (
+      this._warnedUnmarkedTextIcon ||
+      !($button.hasAttribute('aria-label') || $button.hasAttribute('aria-labelledby')) ||
+      $button.querySelector(':scope > [data-rc-label]')
+    ) {
+      return;
+    }
+
+    const text = $button.textContent?.trim() ?? '';
+    const looksLikeIcon = /^[a-z0-9_]+$/.test(text) || (text !== '' && [...text].length <= 2);
+
+    if (looksLikeIcon && text !== $button.getAttribute('aria-label')?.trim()) {
+      this._warnedUnmarkedTextIcon = true;
+
+      console.warn(
+        `[rc-button] "${text}" looks like a text-backed icon (an icon font or emoji). Mark its element with data-rc-icon so the button sizes it as an icon instead of a label.`,
+        this,
+      );
     }
   }
 
@@ -467,11 +501,7 @@ export class RCButton extends LitElement {
       }
 
       // data-rc-button-progress marks consumer content that must not count as a label.
-      if (
-        $node.matches(
-          '[data-rc-icon], [data-rc-button-progress], [aria-hidden="true"]',
-        )
-      ) {
+      if ($node.matches('[data-rc-icon], [data-rc-button-progress], [aria-hidden="true"]')) {
         continue;
       }
 

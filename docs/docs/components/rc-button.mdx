@@ -50,6 +50,13 @@ Mark custom progress-adjacent content with `data-rc-button-progress` so it is
 excluded from label detection, the same way `data-rc-icon` and
 `data-rc-icon="selected"` are.
 
+An element child with no visible text, such as an `<svg>`, `<img>`, or
+`<iconify-icon>`, counts as an icon without a marker. A text-backed icon (an
+icon-font ligature such as `arrow_back`, a glyph, or an emoji) is text, so
+mark its element with `data-rc-icon`. Without the marker, the button treats it
+as a label: it gets label padding and no icon-only sizing, and a development
+build logs a warning.
+
 A direct `<a href>` child gets the same visual/layout styling (border,
 padding, background, `full-width`) for a real navigation action styled as a
 button, without losing native link affordances (open in new tab, copy link):

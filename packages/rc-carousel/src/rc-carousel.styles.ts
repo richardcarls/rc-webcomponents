@@ -1,6 +1,8 @@
-import { css } from 'lit';
+import { css, type CSSResultGroup } from 'lit';
 
-export const carouselStyles = css`
+import { iconBoxStyles } from '@rcarls/rc-common';
+
+const carouselStylesBase = css`
   :host {
     display: block;
     position: relative;
@@ -123,16 +125,6 @@ export const carouselStyles = css`
     cursor: pointer;
   }
 
-  /*
-   * The icon wrapper centers its icon as a grid item. Left inline, the icon
-   * would sit on the text baseline above the line's descender space and
-   * render above the button's center.
-   */
-  [part~='navigation-button'] > span {
-    display: grid;
-    place-items: center;
-  }
-
   [part~='navigation-button'][aria-disabled='true'] {
     opacity: 0.38;
     cursor: default;
@@ -182,5 +174,14 @@ export const carouselStyles = css`
     transform: scaleX(-1);
   }
 `;
+
+export const carouselStyles: CSSResultGroup = [
+  carouselStylesBase,
+  iconBoxStyles({
+    box: "[part~='navigation-button'] > span",
+    size: '--rc-carousel-navigation-icon-size',
+    fallback: '1.5rem',
+  }),
+];
 
 export default carouselStyles;

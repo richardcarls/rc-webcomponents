@@ -268,7 +268,8 @@ declare module '@rcarls/rc-common' {
  * @cssprop [--rc-item-line-height=inherit] - Overflow action label line height; shared with menu and listbox items.
  * @cssprop [--rc-item-letter-spacing=inherit] - Overflow action label letter spacing; shared with menu and listbox items.
  * @cssprop [--rc-item-icon-size=inherit] - Overflow action leading icon size; shared with menu items.
- * @cssprop [--rc-adaptive-menu-icon-size=1.5em] - Default overflow icon size.
+ * @cssprop {<length>} [--rc-adaptive-menu-overflow-icon-size=1.5em] - Overflow icon box size. The built-in
+ *   icon fills it, and a slotted `overflow-icon` is centered and clipped to it.
  * @cssprop [--rc-adaptive-menu-popup-min-inline-size=10em] - Overflow popup minimum inline size.
  * @cssprop [--rc-adaptive-menu-popup-max-inline-size=calc(100dvi - 0.5rem)] - Overflow popup viewport-aware inline limit.
  * @cssprop [--rc-adaptive-menu-popup-max-block-size=calc(100dvb - 0.5rem)] - Overflow popup viewport-aware block limit.
@@ -532,13 +533,15 @@ export class RCAdaptiveMenu extends LitElement {
             })}
             @click=${this._onTriggerClick}
           >
-            <slot name="overflow-icon">
-              <svg id="overflow-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="5" r="2"></circle>
-                <circle cx="12" cy="12" r="2"></circle>
-                <circle cx="12" cy="19" r="2"></circle>
-              </svg>
-            </slot>
+            <span id="overflow-icon-box">
+              <slot name="overflow-icon">
+                <svg id="overflow-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="5" r="2"></circle>
+                  <circle cx="12" cy="12" r="2"></circle>
+                  <circle cx="12" cy="19" r="2"></circle>
+                </svg>
+              </slot>
+            </span>
           </button>
         </span>
       </div>

@@ -7,6 +7,7 @@ import type { RCMenu } from '@rcarls/rc-menu';
 import './define.js';
 import type { RCMenuButton } from './rc-menu-button.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { expectIconBoxContract } from '../../../test-helpers/icon-slot.js';
 
 function pressKey($target: HTMLElement, key: string): void {
   $target.dispatchEvent(
@@ -969,4 +970,14 @@ test('RCMenuButton shows a pointer over an enabled trigger only', async () => {
   expect(await cursor('disabled-trigger')).toBe('default');
   // A submenu trigger is a row of its parent menu, like the menu's other items.
   expect(await cursor('submenu-trigger')).toBe('default');
+});
+
+test('the indicator slot follows the icon box contract', async () => {
+  await expectIconBoxContract({
+    markup: (icon) =>
+      `<rc-menu-button><button slot="trigger">Options</button>${icon}<rc-menu label="Options"><button>Cut</button></rc-menu></rc-menu-button>`,
+    box: (host) => host.shadowRoot!.querySelector("slot[name='indicator']"),
+    slot: 'indicator',
+    sizeProperty: '--rc-menu-button-indicator-size',
+  });
 });

@@ -6,6 +6,7 @@ import { logicalRect, registerMessages, resolveFlow, setScrollOffset } from '@rc
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
 import { unexpectedOverflow } from '../../../test-helpers/rendered-ui.js';
+import { expectIconBoxContract } from '../../../test-helpers/icon-slot.js';
 import './define.js';
 import type { RCCarousel } from './rc-carousel.js';
 import type { RCCarouselChangeDetail } from './rc-carousel.js';
@@ -306,6 +307,7 @@ test('navigation buttons step with a button trigger and use aria-disabled (not d
 });
 
 test('navigation icons sit at the center of their buttons', async () => {
+  // WebKit snaps the translated button to half pixels, so allow 0.5px.
   const screen = render(html`
     <rc-carousel data-testid="carousel" aria-label="Test carousel" navigation>
       <rc-carousel-item>One</rc-carousel-item>
@@ -325,11 +327,11 @@ test('navigation icons sit at the center of their buttons', async () => {
 
     expect(
       Math.abs(iconBox.top + iconBox.height / 2 - (buttonBox.top + buttonBox.height / 2)),
-    ).toBeLessThan(0.5);
+    ).toBeLessThanOrEqual(0.5);
 
     expect(
       Math.abs(iconBox.left + iconBox.width / 2 - (buttonBox.left + buttonBox.width / 2)),
-    ).toBeLessThan(0.5);
+    ).toBeLessThanOrEqual(0.5);
   }
 });
 
@@ -1173,5 +1175,15 @@ describe('localization', () => {
     expect(carousel.getAttribute('aria-roledescription')).toBe('gallery');
 
     wrapper.remove();
+  });
+});
+
+test('the previous-icon slot follows the icon box contract', async () => {
+  await expectIconBoxContract({
+    markup: (icon) =>
+      `<rc-carousel navigation aria-label="Slides" style="inline-size: 20rem; block-size: 8rem">${icon}<rc-carousel-item>One</rc-carousel-item><rc-carousel-item>Two</rc-carousel-item></rc-carousel>`,
+    box: (host) => host.shadowRoot!.querySelector("[part~='navigation-button-previous'] > span"),
+    slot: 'previous-icon',
+    sizeProperty: '--rc-carousel-navigation-icon-size',
   });
 });

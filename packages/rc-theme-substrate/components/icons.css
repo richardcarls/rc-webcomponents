@@ -1,8 +1,15 @@
 @layer rc-theme-substrate.components {
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
-    :where([data-rc-icon]) {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) :where([data-rc-icon]) {
     display: inline-grid;
     place-items: center;
+    /*
+     * The icon is a 1em square at the theme size: it holds that square while
+     * an SVG icon element (such as <iconify-icon>) is still empty, and a
+     * marked <svg> or <img> takes the theme size whatever its own width and
+     * height say. An icon-font glyph already fills 1em.
+     */
+    inline-size: 1em;
+    block-size: 1em;
     font-size: var(--rc-icon-font-size, 1.5rem);
     /*
      * Unlayered icon-font boilerplate otherwise beats this layered theme rule.
@@ -11,4 +18,5 @@
      */
     line-height: var(--rc-icon-font-line-height, var(--rc-icon-font-size, 1.5rem)) !important;
   }
+
 }

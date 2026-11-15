@@ -1,8 +1,8 @@
-import { css } from 'lit';
+import { css, type CSSResultGroup } from 'lit';
 
-import { rcToken } from '@rcarls/rc-common';
+import { iconBoxStyles, rcToken } from '@rcarls/rc-common';
 
-export const chipStyles = css`
+const chipStylesBase = css`
   :host {
     display: inline-grid;
     position: relative;
@@ -143,11 +143,6 @@ export const chipStyles = css`
     display: inline-grid;
   }
 
-  ::slotted([slot='remove-icon']) {
-    /* Keep icon-font utility classes from overriding the chip's compact icon size. */
-    font-size: var(--rc-chip-remove-icon-size, smaller) !important;
-  }
-
   :host([removable]) ::slotted(button),
   :host([removable]) ::slotted(a),
   :host([removable]) ::slotted(label),
@@ -184,5 +179,14 @@ export const chipStyles = css`
     }
   }
 `;
+
+export const chipStyles: CSSResultGroup = [
+  chipStylesBase,
+  iconBoxStyles({
+    box: '#remove-icon',
+    size: '--rc-chip-remove-icon-size',
+    fallback: '1.125rem',
+  }),
+];
 
 export default chipStyles;

@@ -20,6 +20,7 @@ export * from './softKeyboard.js';
 export * from './cssText.js';
 export * from './customStates.js';
 export * from './cssZoom.js';
+export * from './iconBox.js';
 export * from './findNearestScrollAncestor.js';
 export * from './flow.js';
 export * from './FlowController.js';

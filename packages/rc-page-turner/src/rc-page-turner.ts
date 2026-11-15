@@ -195,6 +195,9 @@ interface DragTurn {
  *   Previous/next button background.
  * @cssprop [--rc-page-turner-navigation-button-color=CanvasText] -
  *   Previous/next button icon color.
+ * @cssprop {<length>} [--rc-page-turner-navigation-icon-size=1.5rem] - Previous/next icon box size. The
+ *   built-in chevrons fill it, and a slotted `previous-icon` or `next-icon` is
+ *   centered and clipped to it.
  * @cssprop [--rc-page-turner-navigation-inset=8px] - Previous/next button
  *   inset from the viewport edge.
  *
@@ -1036,9 +1039,7 @@ export class RCPageTurner extends LitElement {
                 <span aria-hidden="true">
                   <slot name="previous-icon">
                     <svg
-                      viewBox="0 0 6 10"
-                      width="10"
-                      height="16"
+                      viewBox="-4.5 -2.5 15 15"
                       fill="none"
                       stroke="currentColor"
                       stroke-width="1.5"
@@ -1060,9 +1061,7 @@ export class RCPageTurner extends LitElement {
                 <span aria-hidden="true">
                   <slot name="next-icon">
                     <svg
-                      viewBox="0 0 6 10"
-                      width="10"
-                      height="16"
+                      viewBox="-4.5 -2.5 15 15"
                       fill="none"
                       stroke="currentColor"
                       stroke-width="1.5"

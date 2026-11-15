@@ -1,8 +1,8 @@
-import { css } from 'lit';
+import { css, type CSSResultGroup } from 'lit';
 
-import { rcToken } from '@rcarls/rc-common';
+import { iconBoxStyles, rcToken } from '@rcarls/rc-common';
 
-export const selectStyles = css`
+const selectStylesBase = css`
   :host {
     display: inline-block;
   }
@@ -50,14 +50,6 @@ export const selectStyles = css`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  [part='toggle-indicator'] {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: var(--rc-select-toggle-indicator-size, 1.1em);
   }
 
   [part='chips'] {
@@ -249,6 +241,8 @@ export const selectStyles = css`
   }
 
   [part~='dialog-cancel-icon'] {
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
     fill: currentColor;
   }
 
@@ -297,5 +291,14 @@ export const selectStyles = css`
     padding-top: 0.3em;
   }
 `;
+
+export const selectStyles: CSSResultGroup = [
+  selectStylesBase,
+  iconBoxStyles({
+    box: "[part='toggle-indicator']",
+    size: '--rc-select-toggle-indicator-size',
+    fallback: '1.1em',
+  }),
+];
 
 export default selectStyles;

@@ -1,6 +1,7 @@
 import { afterEach, expect, test } from 'vitest';
 
 import './theme.css';
+import { expectThemeIconMarkers } from '../../test-helpers/icon-slot.js';
 
 afterEach(() => {
   document.body.replaceChildren();
@@ -106,4 +107,8 @@ test('reduced motion zeroes spatial duration but only shortens effects duration'
   expect(Number.parseFloat(effectsFast!)).toBeLessThan(150);
   expect(Number.parseFloat(effectsDefault!)).toBeLessThan(200);
   expect(Number.parseFloat(effectsSlow!)).toBeLessThan(300);
+});
+
+test('data-rc-icon markers follow the shared icon contract', async () => {
+  await expectThemeIconMarkers('rc-theme-material');
 });
