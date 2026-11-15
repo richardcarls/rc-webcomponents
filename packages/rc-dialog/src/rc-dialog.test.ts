@@ -1127,40 +1127,49 @@ test('a non-modal dialog already open when it connects leaves focus in place', a
   host.open = false;
 });
 
-test('a dialog in an iframe preserves and restores focus in its own document', async () => {
-  const $frame = document.createElement('iframe');
+// Gecko doesn't keep a custom element upgraded in one window working after
+// it moves into another window's document (its connectedCallback can't
+// reach the class's methods), so the cross-document setup only runs in
+// Chromium and WebKit.
+const isGecko = navigator.userAgent.includes('Firefox');
 
-  document.body.append($frame);
+test.skipIf(isGecko)(
+  'a dialog in an iframe preserves and restores focus in its own document',
+  async () => {
+    const $frame = document.createElement('iframe');
 
-  try {
-    const $document = $frame.contentDocument!;
-    const $opener = $document.createElement('button');
-    // Upgrade in the parent registry before adopting into the iframe document.
-    const host = document.createElement('rc-dialog') as RCDialog;
+    document.body.append($frame);
 
-    $opener.textContent = 'Open';
-    host.modal = false;
-    host.open = true;
-    host.innerHTML = '<dialog aria-label="In-frame dialog"><button>Inside</button></dialog>';
-    $document.body.append($opener);
-    $opener.focus();
-    $document.body.append(host);
-    await host.updateComplete;
+    try {
+      const $document = $frame.contentDocument!;
+      const $opener = $document.createElement('button');
+      // Upgrade in the parent registry before adopting into the iframe document.
+      const host = document.createElement('rc-dialog') as RCDialog;
 
-    expect(host.querySelector('dialog')?.open).toBe(true);
-    expect($document.activeElement).toBe($opener);
+      $opener.textContent = 'Open';
+      host.modal = false;
+      host.open = true;
+      host.innerHTML = '<dialog aria-label="In-frame dialog"><button>Inside</button></dialog>';
+      $document.body.append($opener);
+      $opener.focus();
+      $document.body.append(host);
+      await host.updateComplete;
 
-    host.open = false;
-    await vi.waitFor(() => expect($document.activeElement).toBe($opener));
+      expect(host.querySelector('dialog')?.open).toBe(true);
+      expect($document.activeElement).toBe($opener);
 
-    host.show();
-    expect(host.querySelector('dialog')?.contains($document.activeElement)).toBe(true);
-    host.close();
-    await vi.waitFor(() => expect($document.activeElement).toBe($opener));
-  } finally {
-    $frame.remove();
-  }
-});
+      host.open = false;
+      await vi.waitFor(() => expect($document.activeElement).toBe($opener));
+
+      host.show();
+      expect(host.querySelector('dialog')?.contains($document.activeElement)).toBe(true);
+      host.close();
+      await vi.waitFor(() => expect($document.activeElement).toBe($opener));
+    } finally {
+      $frame.remove();
+    }
+  },
+);
 
 // Group D — focus fallback when opener is removed from DOM
 
