@@ -29,7 +29,7 @@ jobs:
 
       - name: Upload performance report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: performance-report
           path: .performance/
@@ -38,7 +38,7 @@ jobs:
 
       - name: Upload visual test diffs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: visual-test-diffs
           path: .vitest-attachments/
@@ -51,7 +51,7 @@ jobs:
 
       # The fixture compiles the committed C# bindings; validate checks they
       # match the element typings.
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
@@ -75,7 +75,7 @@ jobs:
           ruby-version: '3.4'
           working-directory: scripts/server-templates/rails
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
