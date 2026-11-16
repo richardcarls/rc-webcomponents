@@ -506,6 +506,16 @@ export class RCVirtualScroller extends LitElement {
         };
   }
 
+  /**
+   * Whether an ancestor skips this element's contents (`content-visibility:
+   * hidden`). Skipped content keeps its boxes but is not laid out: Firefox then
+   * reports unlaid grid rows as `0px` tracks, which would read as an irregular
+   * layout and mount the whole collection.
+   */
+  private _skipped(): boolean {
+    return typeof this.checkVisibility === 'function' && !this.checkVisibility();
+  }
+
   private _effectiveLineSize(): number {
     return this._geometry.measured ? this._geometry.lineSize : this.itemSize;
   }
@@ -595,7 +605,12 @@ export class RCVirtualScroller extends LitElement {
       return;
     }
 
-    if (!$target || !this.getClientRects().length || !$target.getClientRects().length) {
+    if (
+      !$target ||
+      !this.getClientRects().length ||
+      !$target.getClientRects().length ||
+      this._skipped()
+    ) {
       // An unavailable layout is not a new measurement. Only clamp a changed
       // collection; preserve the mounted slice and spacer geometry while hidden.
       if (this._lastDetail && this._lastDetail.end > this.count) {
