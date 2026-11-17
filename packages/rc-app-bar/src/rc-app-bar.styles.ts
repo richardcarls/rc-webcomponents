@@ -12,7 +12,7 @@ export const appBarStyles = css`
     --rc-app-bar-collapse-progress: 0;
     --_rc-app-bar-edge-size: 0px;
     --_rc-app-bar-expanded-opacity: 1;
-    --_rc-app-bar-expanded-size: 0px;
+    --_rc-app-bar-expanded-size: auto;
     transition: translate var(--rc-app-bar-transition-duration, 200ms) ease;
   }
 
