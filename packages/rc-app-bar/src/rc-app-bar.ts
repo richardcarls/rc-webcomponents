@@ -515,7 +515,15 @@ export class RCAppBar extends LitElement {
     const remainingRow = this._collapseDistanceHostCssPx * (1 - this._collapseProgress);
 
     this._setGeometryProperty('--_rc-app-bar-collapse-offset', `${-offset}px`);
-    this._setGeometryProperty('--_rc-app-bar-expanded-size', `${remainingRow}px`);
+
+    // Fully expanded, the title row takes its own height: a measured size is
+    // only needed to animate the collapse, and one measured while the bar was
+    // hidden (0) would paint the expanded bar compact for a frame.
+    this._setGeometryProperty(
+      '--_rc-app-bar-expanded-size',
+      this._collapseProgress > 0 ? `${remainingRow}px` : 'auto',
+    );
+
     this._setGeometryProperty('--_rc-app-bar-expanded-opacity', `${1 - this._collapseProgress}`);
   }
 

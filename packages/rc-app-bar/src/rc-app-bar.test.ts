@@ -116,6 +116,29 @@ test('expanded title row uses the title content natural height', async () => {
   });
 });
 
+test('expanding from collapsed shows the title row before the next measurement', async () => {
+  const screen = render(html`
+    <rc-app-bar data-testid="host" variant="expanded" scroll-behavior="collapse">
+      <span>Recipe title</span>
+    </rc-app-bar>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+
+  // Collapsed before its first measurement, so no expanded size is known.
+  host.scrolled = true;
+  await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+  const collapsedHeight = host.getBoundingClientRect().height;
+
+  host.scrolled = false;
+  await host.updateComplete;
+
+  // Before the queued measurement runs: the row already takes its height.
+  expect(host.matches(':state(collapsed)')).toBe(false);
+  expect(host.getBoundingClientRect().height).toBeGreaterThan(collapsedHeight);
+});
+
 test('slot changes defer layout measurement to an animation frame', async () => {
   const screen = render(html`
     <rc-app-bar data-testid="host" center-symmetric>
