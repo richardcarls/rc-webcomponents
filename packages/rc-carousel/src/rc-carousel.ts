@@ -196,6 +196,8 @@ const SETTLE_DEBOUNCE_MS = 120;
  *   inset from the track edge.
  * @cssprop [--rc-carousel-pagination-item-size=8px] - Slide-picker dot
  *   diameter.
+ * @cssprop [--rc-carousel-pagination-target-size=24px] - Slide-picker dot hit area; the dots
+ *   are spaced at least this far apart, center to center.
  * @cssprop [--rc-carousel-pagination-item-color=color-mix(in srgb, CanvasText 40%, transparent)] -
  *   Inactive slide-picker dot color.
  * @cssprop [--rc-carousel-pagination-item-active-color=Highlight] - Active
