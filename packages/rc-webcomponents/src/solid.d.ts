@@ -1187,6 +1187,7 @@ declare module 'solid-js' {
       '--rc-carousel-pagination-item-active-color'?: string | number;
       '--rc-carousel-pagination-item-color'?: string | number;
       '--rc-carousel-pagination-item-size'?: string | number;
+      '--rc-carousel-pagination-target-size'?: string | number;
       '--rc-carousel-peek'?: string | number;
       '--rc-carousel-slide-size'?: string | number;
       '--rc-carousel-slides-per-view'?: string | number;

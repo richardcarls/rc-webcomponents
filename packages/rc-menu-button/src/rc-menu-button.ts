@@ -475,16 +475,27 @@ export class RCMenuButton extends LitElement {
     if (this.getAttribute('tabindex') === '-1') {
       if ($trigger.getAttribute('tabindex') !== '-1') {
         $trigger.setAttribute('tabindex', '-1');
-        this._suppressedTrigger = $trigger;
+        this._$suppressedTrigger = $trigger;
       }
-    } else if (this._suppressedTrigger === $trigger) {
-      this._suppressedTrigger = undefined;
-      $trigger.removeAttribute('tabindex');
+    } else {
+      this._releaseTriggerTabindex($trigger);
     }
   }
 
   /** The trigger this element suppressed with `tabindex="-1"`, if any. */
-  private _suppressedTrigger?: HTMLElement;
+  private _$suppressedTrigger?: HTMLElement;
+
+  private _releaseTriggerTabindex($trigger: HTMLElement) {
+    if (this._$suppressedTrigger !== $trigger) {
+      return;
+    }
+
+    this._$suppressedTrigger = undefined;
+
+    if ($trigger.getAttribute('tabindex') === '-1') {
+      $trigger.removeAttribute('tabindex');
+    }
+  }
 
   /**
    * Overrides the default focus() so that programmatic focus calls (e.g. from
@@ -505,11 +516,7 @@ export class RCMenuButton extends LitElement {
       return;
     }
 
-    if (this._suppressedTrigger === $trigger) {
-      this._suppressedTrigger = undefined;
-      $trigger.removeAttribute('tabindex');
-    }
-
+    this._releaseTriggerTabindex($trigger);
     $trigger.focus(options);
   }
 

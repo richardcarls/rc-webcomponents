@@ -88,6 +88,8 @@ its own active slide from there.
 `aria-current`, not `role="tablist"`; see [Accessibility](#accessibility)).
 Both step through `next()`/`previous()`/`goToIndex()` under the hood and
 report `trigger: 'button'`.
+Pagination dots wrap onto centered rows when space is limited. Each dot has a
+24px hit area by default, adjustable with `--rc-carousel-pagination-target-size`.
 
 Arrow keys move focus-independent of a rendered picker: with focus on the
 track, ArrowLeft/ArrowRight (RTL-aware) step one slide and Home/End jump to

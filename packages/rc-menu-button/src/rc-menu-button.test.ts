@@ -147,6 +147,33 @@ test('RCMenuButton suppresses the trigger while a roving parent marks the host i
   await vi.waitFor(() => expect($trigger).not.toHaveAttribute('tabindex'));
 });
 
+test.each(['reactivate', 'focus'])(
+  'RCMenuButton preserves a replacement tabindex on %s',
+  async (action) => {
+    const screen = render(html`
+      <rc-menu-button data-testid="host" tabindex="-1">
+        <button slot="trigger" data-testid="trigger">Options</button>
+        <rc-menu label="Options"><button>Cut</button></rc-menu>
+      </rc-menu-button>
+    `);
+    const $host = screen.getByTestId('host').element() as RCMenuButton;
+    const $trigger = screen.getByTestId('trigger').element() as HTMLElement;
+
+    await vi.waitFor(() => expect($trigger).toHaveAttribute('tabindex', '-1'));
+    $trigger.setAttribute('tabindex', '0');
+
+    if (action === 'focus') {
+      $host.focus();
+      expect($trigger).toHaveFocus();
+    } else {
+      $host.setAttribute('tabindex', '0');
+      await Promise.resolve();
+    }
+
+    expect($trigger).toHaveAttribute('tabindex', '0');
+  },
+);
+
 test('RCMenuButton keeps a trigger tabindex it did not write when it syncs again', async () => {
   const screen = render(html`
     <rc-menu-button data-testid="host">
