@@ -65,31 +65,55 @@ function threeItems({ mouseDragging = false } = {}) {
   `;
 }
 
-test('gives each small pagination dot a 24px hit area, spaced so the areas do not overlap', async () => {
-  const screen = render(html`
-    <rc-carousel data-testid="carousel" aria-label="Test carousel" pagination style="inline-size: 320px">
-      <rc-carousel-item>One</rc-carousel-item>
-      <rc-carousel-item>Two</rc-carousel-item>
-      <rc-carousel-item>Three</rc-carousel-item>
-    </rc-carousel>
-  `);
-  const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
+for (const flow of FLOW_FIXTURES) {
+  test(`wraps pagination dots with separate 24px targets in ${flowLabel(flow)}`, async () => {
+    const screen = render(
+      inFlow(
+        html`
+          <rc-carousel
+            data-testid="carousel"
+            aria-label="Slides"
+            pagination
+            style="inline-size: 320px; block-size: 120px"
+          >
+            ${Array.from(
+              { length: 15 },
+              (_, index) => html`<rc-carousel-item>${index + 1}</rc-carousel-item>`,
+            )}
+          </rc-carousel>
+        `,
+        flow,
+      ),
+    );
+    const $carousel = screen.getByTestId('carousel').element() as RCCarousel;
 
-  await settle(carousel);
+    await settle($carousel);
 
-  const [first, second] = Array.from(
-    carousel.renderRoot.querySelectorAll<HTMLButtonElement>('[data-pagination-item]'),
-  );
-  const a = first!.getBoundingClientRect();
-  const b = second!.getBoundingClientRect();
-  const centerY = a.top + a.height / 2;
+    const $root = $carousel.shadowRoot!;
+    const $dots = $root.querySelectorAll<HTMLButtonElement>('[data-pagination-item]');
+    const rows = new Set<number>();
 
-  // The dot itself keeps its 8px size.
-  expect(a.width).toBe(8);
-  // 10px beside the dot's center, in the gap before the next dot, is still that dot.
-  expect(carousel.renderRoot.elementFromPoint(a.left + a.width / 2 + 10, centerY)).toBe(first);
-  expect(b.left + b.width / 2 - (a.left + a.width / 2)).toBeGreaterThanOrEqual(24);
-});
+    expect($dots).toHaveLength(15);
+
+    for (const $dot of $dots) {
+      const rect = $dot.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+
+      rows.add(flow.writingMode === 'horizontal-tb' ? y : x);
+      expect(rect.width).toBe(8);
+      expect(rect.height).toBe(8);
+
+      for (const dx of [-11, 11]) {
+        for (const dy of [-11, 11]) {
+          expect($root.elementFromPoint(x + dx, y + dy)).toBe($dot);
+        }
+      }
+    }
+
+    expect(rows.size).toBe(2);
+  });
+}
 
 test('renders with APG carousel roles and preserves the authored label', async () => {
   const screen = render(threeItems());

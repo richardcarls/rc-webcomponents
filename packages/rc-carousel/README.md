@@ -40,6 +40,8 @@ Navigation and pagination buttons use `aria-disabled`, never native
 `disabled`, so a boundary stays Tab-reachable. Off-screen and peeking
 slides get `aria-hidden`/`inert` via an `IntersectionObserver`. The picker
 is APG's "grouped" (non-tab) style, deliberately not `role="tablist"`.
+Pagination dots wrap onto centered rows when space is limited. Each dot has a
+24px hit area by default, adjustable with `--rc-carousel-pagination-target-size`.
 
 See the [full documentation](https://richardcarls.github.io/rc-webcomponents/components/rc-carousel)
 for the complete API, accessibility notes, and live demo.

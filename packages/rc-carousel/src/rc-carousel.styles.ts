@@ -144,16 +144,24 @@ const carouselStylesBase = css`
     inset-inline: 0;
     display: flex;
     justify-content: center;
-    /* Far enough apart that the enlarged targets below don't overlap. */
-    gap: max(
-      var(--_rc-carousel-gap),
-      var(--rc-carousel-pagination-target-size, 24px) -
-        var(--rc-carousel-pagination-item-size, 8px)
+    flex-wrap: wrap;
+    --_rc-carousel-dot-overhang: max(
+      0px,
+      (
+          var(--rc-carousel-pagination-target-size, 24px) - var(
+              --rc-carousel-pagination-item-size,
+              8px
+            )
+        ) /
+        2
     );
+    padding-inline: var(--_rc-carousel-dot-overhang);
+    gap: max(var(--_rc-carousel-gap), 2 * var(--_rc-carousel-dot-overhang));
   }
 
   [part~='pagination-item'] {
     position: relative;
+    flex: none;
     inline-size: var(--rc-carousel-pagination-item-size, 8px);
     block-size: var(--rc-carousel-pagination-item-size, 8px);
     padding: 0;
@@ -173,7 +181,7 @@ const carouselStylesBase = css`
     inset: 50% auto auto 50%;
     inline-size: var(--rc-carousel-pagination-target-size, 24px);
     block-size: var(--rc-carousel-pagination-target-size, 24px);
-    translate: -50% -50%;
+    transform: translate(-50%, -50%);
   }
 
   [part~='pagination-item-active'] {
