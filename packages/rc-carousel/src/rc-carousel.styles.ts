@@ -144,10 +144,16 @@ const carouselStylesBase = css`
     inset-inline: 0;
     display: flex;
     justify-content: center;
-    gap: var(--_rc-carousel-gap);
+    /* Far enough apart that the enlarged targets below don't overlap. */
+    gap: max(
+      var(--_rc-carousel-gap),
+      var(--rc-carousel-pagination-target-size, 24px) -
+        var(--rc-carousel-pagination-item-size, 8px)
+    );
   }
 
   [part~='pagination-item'] {
+    position: relative;
     inline-size: var(--rc-carousel-pagination-item-size, 8px);
     block-size: var(--rc-carousel-pagination-item-size, 8px);
     padding: 0;
@@ -158,6 +164,16 @@ const carouselStylesBase = css`
       color-mix(in srgb, CanvasText 40%, transparent)
     );
     cursor: pointer;
+  }
+
+  /* The dot stays small; its hit area meets the 24px minimum target size. */
+  [part~='pagination-item']::before {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    inline-size: var(--rc-carousel-pagination-target-size, 24px);
+    block-size: var(--rc-carousel-pagination-target-size, 24px);
+    translate: -50% -50%;
   }
 
   [part~='pagination-item-active'] {
