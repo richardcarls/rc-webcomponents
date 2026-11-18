@@ -460,6 +460,10 @@ export class RCMenuButton extends LitElement {
    * (`tabindex="0"`) or standalone (no tabindex), the trigger retains its
    * natural focusability so that Chrome's delegatesFocus can route sequential
    * Tab navigation through the host to the trigger.
+   *
+   * Only a suppression written here is lifted again: a roving-tabindex owner
+   * of the trigger itself (rc-adaptive-menu) keeps its own tabindex. Removing
+   * it from the focused trigger also forced a synchronous layout.
    */
   protected _syncTriggerTabindex() {
     const $trigger = this._$trigger?.deref();
@@ -469,11 +473,18 @@ export class RCMenuButton extends LitElement {
     }
 
     if (this.getAttribute('tabindex') === '-1') {
-      $trigger.setAttribute('tabindex', '-1');
-    } else {
+      if ($trigger.getAttribute('tabindex') !== '-1') {
+        $trigger.setAttribute('tabindex', '-1');
+        this._suppressedTrigger = $trigger;
+      }
+    } else if (this._suppressedTrigger === $trigger) {
+      this._suppressedTrigger = undefined;
       $trigger.removeAttribute('tabindex');
     }
   }
+
+  /** The trigger this element suppressed with `tabindex="-1"`, if any. */
+  private _suppressedTrigger?: HTMLElement;
 
   /**
    * Overrides the default focus() so that programmatic focus calls (e.g. from
@@ -494,7 +505,11 @@ export class RCMenuButton extends LitElement {
       return;
     }
 
-    $trigger.removeAttribute('tabindex');
+    if (this._suppressedTrigger === $trigger) {
+      this._suppressedTrigger = undefined;
+      $trigger.removeAttribute('tabindex');
+    }
+
     $trigger.focus(options);
   }
 

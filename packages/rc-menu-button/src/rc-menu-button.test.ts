@@ -128,6 +128,52 @@ test('RCMenuButton renders with correct ARIA attributes', async () => {
   await expect.element(menu).toBeInTheDocument();
 });
 
+test('RCMenuButton suppresses the trigger while a roving parent marks the host inactive', async () => {
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options"><button>Cut</button></rc-menu>
+    </rc-menu-button>
+  `);
+  const $host = screen.getByTestId('host').element() as RCMenuButton;
+  const $trigger = screen.getByTestId('trigger').element() as HTMLElement;
+
+  await $host.updateComplete;
+
+  $host.setAttribute('tabindex', '-1');
+  await vi.waitFor(() => expect($trigger).toHaveAttribute('tabindex', '-1'));
+
+  $host.setAttribute('tabindex', '0');
+  await vi.waitFor(() => expect($trigger).not.toHaveAttribute('tabindex'));
+});
+
+test('RCMenuButton keeps a trigger tabindex it did not write when it syncs again', async () => {
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options"><button>Cut</button></rc-menu>
+    </rc-menu-button>
+  `);
+  const $host = screen.getByTestId('host').element() as RCMenuButton;
+  const $trigger = screen.getByTestId('trigger').element() as HTMLElement;
+
+  await $host.updateComplete;
+
+  // A roving-tabindex owner of the trigger itself, as rc-adaptive-menu is.
+  $trigger.setAttribute('tabindex', '0');
+  $trigger.focus();
+
+  // Recovery after a morph re-dispatches slotchange to resync.
+  for (const $slot of $host.shadowRoot?.querySelectorAll('slot') ?? []) {
+    $slot.dispatchEvent(new Event('slotchange', { bubbles: true }));
+  }
+
+  await $host.updateComplete;
+
+  expect($trigger).toHaveAttribute('tabindex', '0');
+  expect($trigger).toHaveFocus();
+});
+
 test('RCMenuButton renders an author-supplied indicator inside the trigger bounds', async () => {
   const screen = render(html`
     <rc-menu-button data-testid="host" orientation="vertical">
