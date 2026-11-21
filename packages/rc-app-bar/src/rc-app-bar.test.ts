@@ -391,6 +391,61 @@ test('continuous collapse maps expanded-row scroll distance to progress', async 
   expect(host.matches(':state(collapsed)')).toBe(true);
 });
 
+test('the collapsing title row never covers the leading and trailing actions', async () => {
+  // As in an app shell: the bar stays put above the content that scrolls.
+  const screen = render(html`
+    <rc-app-bar
+      data-testid="host"
+      variant="expanded"
+      scroll-behavior="collapse"
+      scroll-target="#covering-scroll"
+    >
+      <button slot="leading" data-testid="back" style="block-size: 40px; inline-size: 40px">
+        Back
+      </button>
+      <div style="height: 80px">A recipe with a long two-line title</div>
+      <button slot="trailing" data-testid="more" style="block-size: 40px; inline-size: 40px">
+        More
+      </button>
+    </rc-app-bar>
+    <div data-testid="sc" style="height: 200px; overflow-y: auto;">
+      <div style="height: 1000px;"></div>
+    </div>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+  const sc = (await screen.getByTestId('sc').element()) as HTMLElement;
+  const back = (await screen.getByTestId('back').element()) as HTMLElement;
+  const more = (await screen.getByTestId('more').element()) as HTMLElement;
+
+  sc.id = 'covering-scroll';
+  host.scrollTarget = sc;
+  await host.updateComplete;
+
+  let distance = 0;
+
+  await vi.waitFor(() => {
+    distance = Number.parseFloat(host.style.getPropertyValue('--_rc-app-bar-collapse-distance'));
+    expect(distance).toBeGreaterThan(0);
+  });
+
+  const hitAtCenter = (el: HTMLElement): Element | null => {
+    const rect = el.getBoundingClientRect();
+
+    return document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+  };
+
+  // Partway through the collapse the title row has moved up into the
+  // compact row, where it must stay behind the actions.
+  for (const fraction of [0.25, 0.5, 0.75, 0.9]) {
+    scrollTo(sc, distance * fraction);
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    expect(hitAtCenter(back), `leading at ${fraction}`).toBe(back);
+    expect(hitAtCenter(more), `trailing at ${fraction}`).toBe(more);
+  }
+});
+
 test('continuous collapse converts a zoomed scroll target into host CSS pixels', async () => {
   const screen = render(html`
     <div
