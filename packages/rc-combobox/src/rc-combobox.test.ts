@@ -147,6 +147,28 @@ test('dialog mode stages selection until Done and restores trigger focus', async
   expect($host.shadowRoot!.activeElement).toBe($trigger);
 });
 
+test('dialog mode draws the cancel icon at 24px inside its 44px target', async () => {
+  const screen = render(makeCombobox({ popupMode: 'dialog' }));
+  const $host = await getHost(screen);
+
+  $host.openPopup();
+
+  await vi.waitFor(() => {
+    expect($host.renderRoot.querySelector<HTMLDialogElement>('#dialog')?.open).toBe(true);
+  });
+
+  const $cancel = $host.renderRoot.querySelector<HTMLElement>('[part~="dialog-cancel"]')!;
+  const $icon = $host.renderRoot.querySelector<SVGElement>('[part~="dialog-cancel-icon"]')!;
+  const cancelBox = $cancel.getBoundingClientRect();
+  const iconBox = $icon.getBoundingClientRect();
+
+  expect(cancelBox.width).toBeGreaterThanOrEqual(44);
+  expect(iconBox.width).toBeCloseTo(24, 0);
+  expect(iconBox.height).toBeCloseTo(24, 0);
+  // Centered in the target.
+  expect(iconBox.left - cancelBox.left).toBeCloseTo(cancelBox.right - iconBox.right, 0);
+});
+
 test('dialog mode follows a native close request such as Android Back', async () => {
   const screen = render(makeCombobox({ popupMode: 'dialog' }));
   const $host = await getHost(screen);

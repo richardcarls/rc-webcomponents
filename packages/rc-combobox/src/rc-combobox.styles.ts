@@ -273,6 +273,8 @@ const comboboxStylesBase = css`
   }
 
   [part~='dialog-cancel-icon'] {
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
     fill: currentColor;
   }
 
