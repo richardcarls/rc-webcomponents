@@ -56,6 +56,13 @@ export const appBarStyles = css`
     display: flex;
     align-items: center;
     min-inline-size: 0;
+    /*
+     * The expanded title row comes later in the tree and slides up into the
+     * compact row while it collapses; it must pass under the actions, not
+     * paint over them and take their taps. Grid items stack with z-index
+     * without being positioned.
+     */
+    z-index: 1;
   }
 
   #leading {
