@@ -58,6 +58,22 @@
     color: var(--md-sys-color-on-surface-variant, ButtonText);
   }
 
+  /* A new value: a tertiary container chip, set apart from existing values. */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-select::part(chip-created) {
+    border-color: transparent;
+    background: var(--md-sys-color-tertiary-container, Mark);
+    color: var(--md-sys-color-on-tertiary-container, MarkText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-select::part(chip-created):hover {
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-on-tertiary-container, MarkText) 8%,
+      var(--md-sys-color-tertiary-container, Mark)
+    );
+    color: var(--md-sys-color-on-tertiary-container, MarkText);
+  }
+
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-select::part(chips) {
     --rc-chip-block-size: 2rem;
     --rc-chip-touch-target-block-size: 3rem;

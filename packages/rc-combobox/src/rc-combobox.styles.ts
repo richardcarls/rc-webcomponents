@@ -63,7 +63,7 @@ const comboboxStylesBase = css`
   }
 
   /* Input-chip chrome; rc-chip keeps the native button as the removal action. */
-  [part='chip'] {
+  [part~='chip'] {
     display: inline-flex;
     align-items: center;
     gap: var(--rc-combobox-chip-gap, calc(${rcToken('--rc-control-gap')} * 0.8));
@@ -92,6 +92,20 @@ const comboboxStylesBase = css`
       outline: ${rcToken('--rc-focus-ring')};
       outline-offset: ${rcToken('--rc-focus-ring-offset')};
     }
+  }
+
+  /* A new value: an accent outline and a leading plus icon. */
+  [part~='chip-created'] {
+    border: var(--rc-combobox-chip-created-border, 1px dashed ${rcToken('--rc-accent')});
+    background: var(--rc-combobox-chip-created-background, ${rcToken('--rc-button-bg')});
+    color: var(--rc-combobox-chip-created-text, ${rcToken('--rc-accent')});
+  }
+
+  [part='chip-created-icon'] {
+    flex: none;
+    inline-size: 1.125em;
+    block-size: 1.125em;
+    margin-inline-start: -0.125em;
   }
 
   /* Decorative × icon inside the chip — no interaction, aria-hidden. */

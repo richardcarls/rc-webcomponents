@@ -71,6 +71,9 @@ declare module '@rcarls/rc-common' {
  * @csspart anchor - Outer container (includes chips + input + toggle).
  * @csspart chips - The chip group container (multiple mode).
  * @csspart chip - Individual chip (multiple mode).
+ * @csspart chip-created - A chip for a new value, alongside `chip`: one the Create action
+ *   added, or an option marked `created`.
+ * @csspart chip-created-icon - Decorative plus icon before a created chip's label.
  * @csspart chip-label - Text label inside a chip.
  * @csspart chip-remove - Remove button inside a chip.
  * @csspart input - The text input element.
@@ -129,6 +132,12 @@ declare module '@rcarls/rc-common' {
  * @cssprop [--rc-combobox-chip-gap=calc(var(--rc-control-gap) * 0.8)] - Gap between chip
  *   content items.
  * @cssprop [--rc-combobox-chip-border=var(--rc-border)] - Multi-select chip border.
+ * @cssprop {*} [--rc-combobox-chip-created-border=1px dashed var(--rc-accent)] - Border of a chip
+ *   for a new value.
+ * @cssprop {*} [--rc-combobox-chip-created-background=var(--rc-button-bg)] - Background of a chip
+ *   for a new value.
+ * @cssprop {<color>} [--rc-combobox-chip-created-text=var(--rc-accent)] - Text and icon color of a chip
+ *   for a new value.
  * @cssprop [--rc-chip-remove-target-size=1.5rem] - Inherited remove-target width reserved by
  *   generated multi-select chips.
  * @cssprop [--rc-chip-remove-offset-inline=0.125rem] - Inherited edge offset reserved by
@@ -180,7 +189,7 @@ export class RCCombobox extends RCSelect {
   // Guard against _handleInputFocus re-opening the popup immediately after close.
   private _closingPopup = false;
 
-  private _provisionalOptions = new Map<string, { value: string; label: string }>();
+  private _provisionalOptions = new Map<string, { value: string; label: string; created: true }>();
   private _preDialogOptions: typeof this._options | null = null;
 
   private get _$filterInput(): HTMLInputElement | null {
@@ -350,7 +359,7 @@ export class RCCombobox extends RCSelect {
     }
 
     if (this._activePopupMode === 'dialog') {
-      const option = { value: text, label: text };
+      const option = { value: text, label: text, created: true as const };
 
       this._preDialogOptions ??= [...this._options];
       this._provisionalOptions.set(text, option);
@@ -389,7 +398,7 @@ export class RCCombobox extends RCSelect {
       return;
     }
 
-    this._addOption({ value: text, label: text });
+    this._addOption({ value: text, label: text, created: true });
 
     if (this.multiple) {
       this._$listbox?.toggleOption(text);

@@ -675,6 +675,35 @@ test('multiple: chips render for selected values', async () => {
   );
 });
 
+test('multiple: a chip whose option is created is marked new, with its own name', async () => {
+  const screen = render(makeSelect({ multiple: true }));
+  const host = await getHost(screen);
+
+  host.options = [
+    { value: 'apple', label: 'Apple' },
+    { value: 'kiwi', label: 'Kiwi', created: true },
+  ];
+
+  host.value = ['apple', 'kiwi'];
+  await host.updateComplete;
+
+  const [$existing, $created] = host.renderRoot.querySelectorAll<HTMLElement>('[part~="chip"]');
+
+  expect($existing.part.contains('chip-created')).toBe(false);
+  expect($created.part.contains('chip-created')).toBe(true);
+  expect($created.querySelector('[part="chip-created-icon"]')).not.toBeNull();
+  expect($created.getAttribute('aria-label')).toBe('Remove new item \u2068Kiwi\u2069');
+  expect(getComputedStyle($created).borderStyle).toBe('dashed');
+
+  // The icon sits before the label, inside the chip's own padding.
+  const $icon = $created.querySelector<SVGElement>('[part="chip-created-icon"]')!;
+  const $label = $created.querySelector<HTMLElement>('[part~="chip-label"]')!;
+
+  expect($icon.getBoundingClientRect().right).toBeLessThanOrEqual(
+    $label.getBoundingClientRect().left,
+  );
+});
+
 test('multiple: chip touch-target overlap is returned between wrapped rows', async () => {
   const screen = render(makeSelectedSelect());
   const host = screen.container.querySelector('rc-select') as RCSelect;

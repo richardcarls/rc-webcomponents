@@ -1238,6 +1238,9 @@ declare module 'solid-js' {
       '--rc-chip-touch-target-overlap-block-start'?: string | number;
       '--rc-combobox-border'?: string | number;
       '--rc-combobox-chip-border'?: string | number;
+      '--rc-combobox-chip-created-background'?: string | number;
+      '--rc-combobox-chip-created-border'?: string | number;
+      '--rc-combobox-chip-created-text'?: string | number;
       '--rc-combobox-chip-gap'?: string | number;
       '--rc-combobox-chip-padding-block'?: string | number;
       '--rc-combobox-chip-padding-inline-end'?: string | number;
@@ -1750,6 +1753,9 @@ declare module 'solid-js' {
       '--rc-segmented-button-vertical-divider'?: string | number;
       '--rc-select-border'?: string | number;
       '--rc-select-chip-border'?: string | number;
+      '--rc-select-chip-created-background'?: string | number;
+      '--rc-select-chip-created-border'?: string | number;
+      '--rc-select-chip-created-text'?: string | number;
       '--rc-select-chip-gap'?: string | number;
       '--rc-select-chip-padding-block'?: string | number;
       '--rc-select-chip-padding-inline-end'?: string | number;

@@ -188,6 +188,7 @@ public class RcFormattingChangeEventArgs : EventArgs
 
 public class RcItemsCollectionSelectableOption
 {
+    public bool? Created { get; set; }
     public System.Text.Json.JsonElement? Data { get; set; }
     public bool? Disabled { get; set; }
     public string? Kind { get; set; }
@@ -248,6 +249,7 @@ public class RcNavigationRailToggleEventArgs : EventArgs
 public class RcOption
 {
     public string? Action { get; set; }
+    public bool? Created { get; set; }
     public System.Text.Json.JsonElement? Data { get; set; }
     public bool? Disabled { get; set; }
     public string? Kind { get; set; }
