@@ -974,3 +974,103 @@ test('the toggle-icon slot follows the icon box contract', async () => {
     sizeProperty: '--rc-combobox-toggle-icon-size',
   });
 });
+
+test('created: a chip for a value the Create action added is marked new', async () => {
+  const screen = render(makeCombobox({ allowCreate: true, multiple: true }));
+  const $host = await getHost(screen);
+  const $input = $host.renderRoot.querySelector<HTMLInputElement>('#trigger')!;
+
+  // A controlled consumer, like a framework wrapper: it writes back each change.
+  $host.value = ['apple'];
+
+  $host.addEventListener('rc-select-change', (event) => {
+    $host.value = event.detail.selectedValues;
+  });
+
+  $input.value = 'mango';
+  $input.dispatchEvent(new InputEvent('input', { bubbles: true }));
+  await $host.updateComplete;
+
+  $host.renderRoot
+    .querySelector<HTMLElement>('[data-action="create"]')!
+    .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+  await vi.waitFor(() => {
+    expect($host.renderRoot.querySelectorAll('[part~="chip"]')).toHaveLength(2);
+  });
+
+  const [$existing, $created] = $host.renderRoot.querySelectorAll<HTMLElement>('[part~="chip"]');
+
+  expect($existing.part.contains('chip-created')).toBe(false);
+  expect($existing.querySelector('[part="chip-created-icon"]')).toBeNull();
+  expect($existing.getAttribute('aria-label')).toBe('Remove ⁨Apple⁩');
+  expect($created.part.contains('chip-created')).toBe(true);
+  expect($created.querySelector('[part="chip-created-icon"]')).not.toBeNull();
+  expect($created.getAttribute('aria-label')).toBe('Remove new item ⁨mango⁩');
+  expect(getComputedStyle($created).borderStyle).toBe('dashed');
+});
+
+test('created: options marked created render new chips, and the marker follows the options', async () => {
+  const screen = render(makeCombobox({ multiple: true }));
+  const $host = await getHost(screen);
+
+  $host.options = [
+    { value: 'apple', label: 'Apple' },
+    { value: 'kiwi', label: 'Kiwi', created: true },
+  ];
+
+  $host.value = ['apple', 'kiwi'];
+  await $host.updateComplete;
+
+  const created = () =>
+    Array.from(
+      $host.renderRoot.querySelectorAll<HTMLElement>('[part~="chip-created"]'),
+      ($chip) => $chip.textContent?.trim(),
+    );
+
+  expect(created()).toEqual(['Kiwi']);
+
+  $host.options = [
+    { value: 'apple', label: 'Apple' },
+    { value: 'kiwi', label: 'Kiwi' },
+  ];
+
+  await $host.updateComplete;
+
+  expect(created()).toEqual([]);
+});
+
+test('created: a provisional creation shows as new in the dialog and after Done', async () => {
+  const screen = render(makeCombobox({ allowCreate: true, multiple: true, popupMode: 'dialog' }));
+  const $host = await getHost(screen);
+
+  $host.openPopup();
+
+  await vi.waitFor(() => {
+    expect($host.renderRoot.querySelector<HTMLDialogElement>('#dialog')?.open).toBe(true);
+  });
+
+  const $input = $host.renderRoot.querySelector<HTMLInputElement>('#dialog-input')!;
+
+  $input.value = 'Mango';
+  $input.dispatchEvent(new InputEvent('input', { bubbles: true }));
+  await $host.updateComplete;
+
+  $host.renderRoot
+    .querySelector('#dialog-listbox')!
+    .querySelector<HTMLElement>('[data-action="create"]')!
+    .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+  await vi.waitFor(() => {
+    expect(
+      $host.renderRoot.querySelector('[part~="dialog-selected"] [part~="chip-created"]'),
+    ).not.toBeNull();
+  });
+
+  $host.renderRoot.querySelector<HTMLButtonElement>('[part~="dialog-confirm"]')!.click();
+
+  await vi.waitFor(() => {
+    expect($host.selectedValues).toEqual(['Mango']);
+    expect($host.renderRoot.querySelector('[part~="anchor"] [part~="chip-created"]')).not.toBeNull();
+  });
+});

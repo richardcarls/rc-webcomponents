@@ -9,6 +9,11 @@ export interface ItemsCollectionBaseOption {
 
 export interface ItemsCollectionSelectableOption extends ItemsCollectionBaseOption {
   kind?: 'option';
+  /**
+   * The value is new: it isn't among the values the consumer already had. A
+   * combobox marks the options its Create action adds, and its chips show it.
+   */
+  created?: boolean;
 }
 
 export interface ItemsCollectionActionOption extends ItemsCollectionBaseOption {

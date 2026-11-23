@@ -138,7 +138,8 @@ export const THEME_OWNED_TOKEN_PREFIXES = {
 export const THEME_SELECTOR_BUDGETS = {
   'rc-theme-material': {
     // Grouped fields and expanded list details add three part selectors.
-    parts: 111,
+    // +4: created chips in rc-select and rc-combobox, and their hover.
+    parts: 115,
     // Shared [data-rc-icon]/[data-rc-label] roles, custom states, and :has()
     // structure replaced most per-component markers (92 before). The rest:
     // rc-pagination and rc-data-table style their authored [data-rc-page] and

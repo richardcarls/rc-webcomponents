@@ -103,6 +103,26 @@ Add the `allow-create` attribute to show a **"Create 'X'"** option when typed te
 </rc-combobox>
 ```
 
+### New values
+
+A chip for a value the Create action added is marked new: it has the `chip-created` part beside
+`chip`, a leading plus icon (`chip-created-icon`), an accent dashed outline by default, and the
+accessible name "Remove new item X". Style it with `--rc-combobox-chip-created-border`,
+`--rc-combobox-chip-created-background`, and `--rc-combobox-chip-created-text`, or
+`::part(chip-created)`. `rc-theme-material` fills it with the tertiary container color.
+
+An application that passes `options` decides which values are new: set `created: true` on an
+option whose value it doesn't already have, such as a category arriving with an imported
+record. Options passed without `created` show plain chips, so a controlled consumer that
+re-renders `options` after a create keeps the mark by setting it.
+
+```js
+combobox.options = [
+  { value: 'dinner', label: 'Dinner' },
+  { value: 'street food', label: 'Street food', created: true },
+];
+```
+
 ## Dialog popup
 
 Set `popup-mode="dialog"` when the available viewport is too constrained for an anchored

@@ -74,6 +74,8 @@ export interface RCSelectMessages {
   selectedItems: string;
   /** Accessible name of a selected-value chip. */
   remove: (label: string) => string;
+  /** Accessible name of a selected-value chip whose option is `created`. */
+  removeCreated: (label: string) => string;
   /** Compact trigger text for several selected values. */
   summary: (first: string, more: number, locale?: string) => string;
   /** Dialog confirmation action. */
@@ -86,6 +88,7 @@ export const DEFAULT_SELECT_MESSAGES: Readonly<RCSelectMessages> = Object.freeze
   options: 'Options',
   selectedItems: 'Selected items',
   remove: (label: string) => `Remove ${bidiIsolate(label)}`,
+  removeCreated: (label: string) => `Remove new item ${bidiIsolate(label)}`,
   summary: (first: string, more: number, locale?: string) =>
     `${bidiIsolate(first)}, +${numberFormat(locale, { useGrouping: false }).format(more)} more`,
   done: 'Done',
@@ -134,6 +137,8 @@ declare module '@rcarls/rc-common' {
  * @csspart trigger - The combobox trigger element (div).
  * @csspart chips - The chips group container (when multiple).
  * @csspart chip - Individual chip (when multiple).
+ * @csspart chip-created - A chip whose option is `created`, alongside `chip`.
+ * @csspart chip-created-icon - Decorative plus icon before a created chip's label.
  * @csspart chip-label - Text label inside a chip.
  * @csspart chip-remove - Remove button inside a chip.
  * @csspart value-display - The text label showing selected value(s).
@@ -184,6 +189,12 @@ declare module '@rcarls/rc-common' {
  * @cssprop [--rc-select-chip-gap=calc(var(--rc-control-gap) * 0.8)] - Gap between chip
  *   content items.
  * @cssprop [--rc-select-chip-border=var(--rc-border)] - Multi-select chip border.
+ * @cssprop {*} [--rc-select-chip-created-border=1px dashed var(--rc-accent)] - Border of a chip
+ *   whose option is `created`.
+ * @cssprop {*} [--rc-select-chip-created-background=var(--rc-button-bg)] - Background of a chip
+ *   whose option is `created`.
+ * @cssprop {<color>} [--rc-select-chip-created-text=var(--rc-accent)] - Text and icon color of a chip
+ *   whose option is `created`.
  * @cssprop [--rc-chip-remove-target-size=1.5rem] - Inherited remove-target width reserved by
  *   generated multi-select chips.
  * @cssprop [--rc-chip-remove-offset-inline=0.125rem] - Inherited edge offset reserved by
@@ -694,7 +705,7 @@ export class RCSelect extends LitElement {
     this._pickerGuardForm = $form;
 
     $form?.addEventListener('formdata', this._handleFormData);
-    // Capture so invalid submissions are cancelled before consumer submit handlers run.
+    // Capture so invalid submissions are canceled before consumer submit handlers run.
     $form?.addEventListener('submit', this._handleFormSubmit, { capture: true });
   }
 
@@ -914,6 +925,13 @@ export class RCSelect extends LitElement {
    */
   protected _optionsFromSelect($select: HTMLSelectElement): ListboxOption[] {
     const options: ListboxOption[] = [];
+    // A native <option> can't say it's new, so a created option keeps the mark
+    // it had while the element inserted it.
+    const created = new Set(
+      this._options.flatMap((option) =>
+        option.kind !== 'action' && option.created ? [option.value] : [],
+      ),
+    );
 
     for (const $option of $select.options) {
       if (!$option.value) {
@@ -924,6 +942,7 @@ export class RCSelect extends LitElement {
         value: $option.value,
         label: $option.text,
         disabled: $option.disabled,
+        ...(created.has($option.value) && { created: true }),
       });
     }
 
@@ -1200,6 +1219,13 @@ export class RCSelect extends LitElement {
     }
 
     return window.matchMedia('(pointer: coarse)').matches ? 'compact' : 'chips';
+  }
+
+  /** Whether the option for `value` is marked `created`. */
+  protected _isCreated(value: string): boolean {
+    return this._options.some(
+      (option) => option.value === value && option.kind !== 'action' && option.created === true,
+    );
   }
 
   /** Looks up the display label for `value` from native `<select>` option text; returns `value` itself as a fallback. */
@@ -1681,6 +1707,7 @@ export class RCSelect extends LitElement {
       <rc-chip-group part="chips" kind="generic" layout="wrap" aria-label=${text.selectedItems}>
         ${[...values].map((value) => {
           const label = this._labelFor(value);
+          const created = this._isCreated(value);
 
           return html`
             <rc-chip
@@ -1694,12 +1721,17 @@ export class RCSelect extends LitElement {
             >
               <button
                 type="button"
-                part="chip"
+                part=${created ? 'chip chip-created' : 'chip'}
                 tabindex="-1"
-                aria-label=${text.remove(label)}
+                aria-label=${created ? text.removeCreated(label) : text.remove(label)}
                 @click=${(event: MouseEvent) => event.stopPropagation()}
                 @keydown=${(event: KeyboardEvent) => this._handleChipKeyDown(event, value)}
               >
+                ${created
+                  ? html`<svg part="chip-created-icon" aria-hidden="true" viewBox="0 0 24 24">
+                      <path d="M11 13H5v-2h6V5h2v6h6v2h-6v6h-2z" fill="currentColor" />
+                    </svg>`
+                  : nothing}
                 <span part="chip-label">${label}</span>
               </button>
               <span slot="remove-icon" part="chip-remove" aria-hidden="true">&#215;</span>
