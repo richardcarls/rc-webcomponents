@@ -24,12 +24,12 @@
       "lazyChunks": 1
     },
     "select": {
-      "initialRaw": 118483,
-      "initialGzip": 31075,
-      "initialBrotli": 27191,
-      "totalRaw": 207615,
-      "totalGzip": 52932,
-      "totalBrotli": 46328,
+      "initialRaw": 121669,
+      "initialGzip": 31960,
+      "initialBrotli": 27976,
+      "totalRaw": 216596,
+      "totalGzip": 55621,
+      "totalBrotli": 48685,
       "largestLazyGzip": 8641,
       "initialChunks": 2,
       "lazyChunks": 4
@@ -220,10 +220,10 @@
       "lazyChunks": 1
     },
     "select": {
-      "initialGzip": 32629,
-      "initialBrotli": 28551,
-      "totalGzip": 55579,
-      "totalBrotli": 48645,
+      "initialGzip": 33558,
+      "initialBrotli": 29375,
+      "totalGzip": 58403,
+      "totalBrotli": 51120,
       "largestLazyGzip": 9665,
       "initialChunks": 2,
       "lazyChunks": 4
